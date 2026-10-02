@@ -41,7 +41,7 @@
   $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
 
   /* ---------- BOOKING CONVERSATION ---------- */
-  /* A few questions, one at a time; the answers become a WhatsApp message (or an email). */
+  /* A few questions, one at a time; the answers become a WhatsApp message or an email. */
   var renderBooking = null;
   (function booking() {
     var box = $('#booking'), dataEl = $('#booking-data');
@@ -50,79 +50,112 @@
     var log = $('#chat-log'), input = $('#chat-input'), restart = $('.chat-restart', box);
     var T = {
       pt: {
-        hello: 'Olá. Antes de nos sentarmos, só preciso de saber três coisas.',
-        need: 'O que tem em mãos?',
+        hello: ['Bom dia! Que bom ter passado por cá.', 'Boa tarde! Que bom ter passado por cá.', 'Boa noite! Que bom ter passado por cá.'],
+        intro: 'Antes de nos sentarmos à mesa, conte-me só um bocadinho.',
+        need: 'Então, o que é que tem entre mãos?',
         needs: {
-          tudo: 'Um lugar novo — quero tudo, do zero à porta aberta',
-          partes: 'Um projecto a andar — preciso de algumas partes',
-          melhorar: 'Um negócio que já existe — quero melhorar algo'
+          tudo: 'Um lugar que ainda não existe — quero começar do zero',
+          partes: 'Já está a andar — mas faltam algumas peças',
+          melhorar: 'A casa já está aberta — quero que fique melhor'
         },
-        partsQ: { partes: 'Que partes? Escolha as que quiser.', melhorar: 'O que gostaria de melhorar? Se ainda não souber, vemos juntos.' },
-        unsure: 'Ainda não sei',
+        partsQ: { partes: 'Boa. Que peças faltam? Pode escolher várias.', melhorar: 'Gosto disso. Onde sente que pode ficar melhor? Se não souber bem, descobrimos juntos.' },
+        unsure: 'Ainda não sei bem',
         go: 'Continuar',
-        where: 'Onde fica — ou vai ficar?',
+        where: 'E onde é que isto acontece — ou vai acontecer?',
         places: ['Lisboa', 'Porto', 'Algarve', 'Fora de Portugal'],
         wherePh: 'Outro sítio…',
-        name: 'E como se chama?',
-        namePh: 'O seu nome',
+        when: 'Já tem uma altura em mente para nos sentarmos? Se não, não há pressa — eu proponho.',
+        whenModes: { dia: 'Sim, já sei o dia', altura: 'Mais ou menos', livre: 'Proponha você' },
+        pick: { dia: 'Óptimo. Que dia? E, se tiver preferência, a que parte do dia.', altura: 'Combinado. Mais ou menos quando?' },
+        periods: ['Esta semana', 'Na próxima semana', 'Nas próximas duas semanas', 'Ainda este mês', 'No próximo mês'],
+        dayparts: ['De manhã', 'Ao almoço', 'À tarde', 'Ao fim do dia'], daypartLabel: 'Parte do dia (opcional)',
+        week: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'], prev: 'Mês anterior', next: 'Mês seguinte',
+        name: 'Para terminar: como se chama? E, se já tiver nome, o projecto ou a casa.',
+        namePh: 'O seu nome', companyPh: 'Nome do projecto ou da casa (opcional)',
         send: 'Enviar',
-        done: function (n) { return 'Obrigado, ' + n + '. Envie-me isto por WhatsApp ou por email, como preferir, e combinamos dia e hora — de preferência à mesa.'; },
-        viaWa: 'WhatsApp', viaEmail: 'Email',
+        done: function (n) { return 'Prazer, ' + n + '. Já tenho tudo o que preciso. Por onde prefere que continuemos a conversa?'; },
+        viaWa: 'Continuamos no WhatsApp', viaEmail: 'Prefiro por email',
         msg: {
-          intro: 'Olá Sakim! Vim pelo site e gostava de marcar uma consulta.',
-          need: 'Tenho em mãos', partes: 'Partes', melhorar: 'Quero melhorar', where: 'Onde', name: 'Nome',
+          intro: 'Olá Sakim! Vim pelo site e gostava que nos sentássemos a conversar.',
+          need: 'O que tenho entre mãos', partes: 'Peças que faltam', melhorar: 'O que quero melhorar', where: 'Onde', when: 'Quando',
+          whenever: 'quando lhe der jeito — proponha você', name: 'Nome', company: 'Projecto / casa',
           subject: 'Consulta — Sakim Lab'
         }
       },
       en: {
-        hello: 'Hello. Before we sit down, I only need to know three things.',
-        need: 'What do you have in mind?',
+        hello: ['Good morning! Glad you stopped by.', 'Good afternoon! Glad you stopped by.', 'Good evening! Glad you stopped by.'],
+        intro: 'Before we sit down at the table, tell me a little.',
+        need: 'So, what are you working on?',
         needs: {
-          tudo: 'A new place — I want everything, from zero to opening night',
-          partes: 'A project under way — I need some parts',
-          melhorar: 'An existing business — I want to improve something'
+          tudo: "A place that doesn't exist yet — I'd like to start from zero",
+          partes: "It's already under way — but some pieces are missing",
+          melhorar: 'My place is already open — I want it to be better'
         },
-        partsQ: { partes: 'Which parts? Pick as many as you like.', melhorar: 'What would you like to improve? If you are not sure yet, we will look at it together.' },
-        unsure: 'Not sure yet',
+        partsQ: { partes: 'Good. Which pieces are missing? Pick as many as you like.', melhorar: "I like that. Where do you feel it could be better? If you're not sure, we'll find out together." },
+        unsure: "I'm not quite sure",
         go: 'Continue',
-        where: 'Where is it — or where will it be?',
+        where: 'And where does this happen — or where will it?',
         places: ['Lisbon', 'Porto', 'Algarve', 'Outside Portugal'],
         wherePh: 'Somewhere else…',
-        name: 'And what is your name?',
-        namePh: 'Your name',
+        when: "Do you already have a time in mind to sit down together? If not, no rush — I'll suggest one.",
+        whenModes: { dia: 'Yes, I know the day', altura: 'Roughly', livre: 'You tell me' },
+        pick: { dia: 'Great. Which day? And, if you have a preference, what part of the day.', altura: 'Fine by me. Roughly when?' },
+        periods: ['This week', 'Next week', 'In the next couple of weeks', 'Later this month', 'Next month'],
+        dayparts: ['In the morning', 'Over lunch', 'In the afternoon', 'In the evening'], daypartLabel: 'Part of the day (optional)',
+        week: ['M', 'T', 'W', 'T', 'F', 'S', 'S'], prev: 'Previous month', next: 'Next month',
+        name: "Last thing: what's your name? And the project or the place, if it already has one.",
+        namePh: 'Your name', companyPh: 'Project or place name (optional)',
         send: 'Send',
-        done: function (n) { return 'Thank you, ' + n + '. Send me this on WhatsApp or by email, whichever you prefer, and we will find a day and time — ideally at a table.'; },
-        viaWa: 'WhatsApp', viaEmail: 'Email',
+        done: function (n) { return 'Nice to meet you, ' + n + '. I have everything I need. Where would you like to carry on the conversation?'; },
+        viaWa: "Let's continue on WhatsApp", viaEmail: "I'd rather email",
         msg: {
-          intro: 'Hello Sakim! I found you through the website and would like to book a consultation.',
-          need: 'What I have in mind', partes: 'Parts', melhorar: 'I want to improve', where: 'Where', name: 'Name',
+          intro: 'Hello Sakim! I found you through the website and would love to sit down and talk.',
+          need: 'What I have', partes: 'Pieces missing', melhorar: 'What I want to improve', where: 'Where', when: 'When',
+          whenever: 'whenever suits you — you suggest', name: 'Name', company: 'Project / place',
           subject: 'Consultation — Sakim Lab'
         }
       }
     };
-    var st, shown = 0, touched = false;
-    function reset() { st = { step: 'need', need: null, parts: [], unsure: false, where: '', name: '' }; shown = 0; }
+
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+    var minDay = addDays(today, 1), maxDay = addDays(today, 120), calMonth;
+    var st, shown = 0, touched = false, lastStep = null;
+    function reset() {
+      st = { step: 'need', need: null, parts: [], unsure: false, where: '', when: null, date: null, period: -1, daypart: -1, picked: false, name: '', company: '' };
+      calMonth = new Date(minDay.getFullYear(), minDay.getMonth(), 1);
+      shown = 0;
+    }
     reset();
 
     function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
-    function partNames() {
-      return st.parts.map(function (id) { return data.services.find(function (x) { return x.id === id; })[lang]; });
-    }
+    function lower(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
+    function fmt(d) { return new Intl.DateTimeFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).format(d); }
     function partsAnswer() {
-      var names = partNames();
+      var names = st.parts.map(function (id) { return data.services.find(function (x) { return x.id === id; })[lang]; });
       if (st.unsure) names.push(T[lang].unsure);
       return names.join(', ');
     }
+    function whenAnswer() {
+      var L = T[lang];
+      var base = st.when === 'dia' ? fmt(st.date) : L.periods[st.period];
+      var answer = st.daypart > -1 ? base + ', ' + lower(L.dayparts[st.daypart]) : base;
+      return answer.charAt(0).toUpperCase() + answer.slice(1);
+    }
+    function whoAnswer() { return st.company ? st.name + ' · ' + st.company : st.name; }
     function message() {
-      var m = T[lang].msg, lines = [m.intro, ''];
-      lines.push('• ' + m.need + ': ' + T[lang].needs[st.need]);
+      var L = T[lang], m = L.msg, lines = [m.intro, ''];
+      lines.push('• ' + m.need + ': ' + L.needs[st.need]);
       if (st.need !== 'tudo') lines.push('• ' + m[st.need] + ': ' + partsAnswer());
       lines.push('• ' + m.where + ': ' + st.where);
+      lines.push('• ' + m.when + ': ' + (st.when === 'livre' ? m.whenever : whenAnswer()));
       lines.push('• ' + m.name + ': ' + st.name);
+      if (st.company) lines.push('• ' + m.company + ': ' + st.company);
       return lines.join('\n');
     }
     function conversation() {
-      var L = T[lang], c = [['bot', L.hello], ['bot', L.need]];
+      var L = T[lang], h = new Date().getHours();
+      var c = [['bot', L.hello[h >= 5 && h < 13 ? 0 : h >= 13 && h < 20 ? 1 : 2]], ['bot', L.intro], ['bot', L.need]];
       if (!st.need) return c;
       c.push(['me', L.needs[st.need]]);
       if (st.need !== 'tudo') {
@@ -133,20 +166,95 @@
       c.push(['bot', L.where]);
       if (!st.where) return c;
       c.push(['me', st.where]);
+      c.push(['bot', L.when]);
+      if (!st.when) return c;
+      c.push(['me', L.whenModes[st.when]]);
+      if (st.when !== 'livre') {
+        c.push(['bot', L.pick[st.when]]);
+        if (!st.picked) return c;
+        c.push(['me', whenAnswer()]);
+      }
       c.push(['bot', L.name]);
       if (!st.name) return c;
-      c.push(['me', st.name]);
+      c.push(['me', whoAnswer()]);
       c.push(['bot', L.done(st.name)]);
       return c;
     }
     function go(next) { touched = true; st.step = next; render(); }
+    function focusLater(i) { if (touched) setTimeout(function () { i.focus({ preventScroll: true }); }, 400); }
     function textField(ph, onSend) {
       var f = el('form', 'chat-field'), i = el('input'), b = el('button', null, T[lang].send);
       i.type = 'text'; i.placeholder = ph; i.maxLength = 80; i.autocomplete = 'off'; i.setAttribute('aria-label', ph);
       b.type = 'submit';
       f.appendChild(i); f.appendChild(b);
       f.addEventListener('submit', function (e) { e.preventDefault(); var v = i.value.trim(); if (v) onSend(v); });
-      if (touched) setTimeout(function () { i.focus({ preventScroll: true }); }, 400);
+      focusLater(i);
+      return f;
+    }
+    function chips(labels, isOn, onTap) {
+      var row = el('div', 'chat-chips');
+      labels.forEach(function (label, i) {
+        var on = isOn(i);
+        var b = el('button', 'chat-chip' + (on ? ' on' : ''), label); b.type = 'button'; b.setAttribute('aria-pressed', on);
+        b.addEventListener('click', function () {
+          onTap(i);
+          $$('.chat-chip', row).forEach(function (x, j) { var now = isOn(j); x.classList.toggle('on', now); x.setAttribute('aria-pressed', now); });
+        });
+        row.appendChild(b);
+      });
+      return row;
+    }
+    function calendar(onChange) {
+      var cal = el('div', 'cal');
+      function draw() {
+        var L = T[lang];
+        cal.innerHTML = '';
+        var head = el('div', 'cal-head');
+        var prev = el('button', 'cal-nav', '‹'), next = el('button', 'cal-nav', '›');
+        prev.type = next.type = 'button';
+        prev.setAttribute('aria-label', L.prev); next.setAttribute('aria-label', L.next);
+        prev.disabled = calMonth <= new Date(minDay.getFullYear(), minDay.getMonth(), 1);
+        next.disabled = calMonth >= new Date(maxDay.getFullYear(), maxDay.getMonth(), 1);
+        prev.addEventListener('click', function () { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); draw(); });
+        next.addEventListener('click', function () { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); draw(); });
+        var month = new Intl.DateTimeFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', { month: 'long', year: 'numeric' }).format(calMonth);
+        head.appendChild(prev); head.appendChild(el('span', 'cal-title', month.charAt(0).toUpperCase() + month.slice(1))); head.appendChild(next);
+        cal.appendChild(head);
+        var grid = el('div', 'cal-grid');
+        L.week.forEach(function (w) { grid.appendChild(el('span', 'cal-wd', w)); });
+        for (var i = 0; i < (calMonth.getDay() + 6) % 7; i++) grid.appendChild(el('span'));
+        var days = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
+        for (var d = 1; d <= days; d++) {
+          (function (day) {
+            var b = el('button', 'cal-day', String(day.getDate())); b.type = 'button';
+            var on = !!st.date && st.date.getTime() === day.getTime();
+            b.setAttribute('aria-label', fmt(day)); b.setAttribute('aria-pressed', on);
+            b.disabled = day < minDay || day > maxDay;
+            if (on) b.classList.add('on');
+            b.addEventListener('click', function () { st.date = day; draw(); onChange(); });
+            grid.appendChild(b);
+          })(new Date(calMonth.getFullYear(), calMonth.getMonth(), d));
+        }
+        cal.appendChild(grid);
+      }
+      draw();
+      return cal;
+    }
+    function nameForm() {
+      var L = T[lang], f = el('form', 'chat-form');
+      var n = el('input'), c = el('input'), b = el('button', 'chat-go', L.send + ' →');
+      n.type = c.type = 'text'; n.maxLength = c.maxLength = 80; n.autocomplete = 'name'; c.autocomplete = 'organization';
+      n.placeholder = L.namePh; c.placeholder = L.companyPh;
+      n.setAttribute('aria-label', L.namePh); c.setAttribute('aria-label', L.companyPh);
+      n.required = true; b.type = 'submit';
+      [n, c].forEach(function (i) { var w = el('div', 'chat-field'); w.appendChild(i); f.appendChild(w); });
+      f.appendChild(b);
+      f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = n.value.trim(); if (!v) { n.focus(); return; }
+        st.name = v; st.company = c.value.trim(); go('done');
+      });
+      focusLater(n);
       return f;
     }
     function controls() {
@@ -158,44 +266,53 @@
           wrap.appendChild(b);
         });
       } else if (st.step === 'parts') {
-        var chips = el('div', 'chat-chips');
-        var opts = data.services.map(function (x) { return { id: x.id, label: x[lang] }; });
-        if (st.need === 'melhorar') opts.push({ id: '?', label: L.unsure });
+        var ids = data.services.map(function (x) { return x.id; });
+        var labels = data.services.map(function (x) { return x[lang]; });
+        if (st.need === 'melhorar') { ids.push('?'); labels.push(L.unsure); }
         var next = el('button', 'chat-go', L.go + ' →'); next.type = 'button';
         var sync = function () { next.disabled = !st.parts.length && !st.unsure; };
-        opts.forEach(function (o) {
-          var on = o.id === '?' ? st.unsure : st.parts.indexOf(o.id) > -1;
-          var b = el('button', 'chat-chip' + (on ? ' on' : ''), o.label); b.type = 'button'; b.setAttribute('aria-pressed', on);
-          b.addEventListener('click', function () {
-            if (o.id === '?') st.unsure = !st.unsure;
-            else { var i = st.parts.indexOf(o.id); if (i > -1) st.parts.splice(i, 1); else st.parts.push(o.id); }
-            var now = o.id === '?' ? st.unsure : st.parts.indexOf(o.id) > -1;
-            b.classList.toggle('on', now); b.setAttribute('aria-pressed', now); sync();
-          });
-          chips.appendChild(b);
-        });
+        wrap.appendChild(chips(labels,
+          function (i) { return ids[i] === '?' ? st.unsure : st.parts.indexOf(ids[i]) > -1; },
+          function (i) {
+            if (ids[i] === '?') st.unsure = !st.unsure;
+            else { var k = st.parts.indexOf(ids[i]); if (k > -1) st.parts.splice(k, 1); else st.parts.push(ids[i]); }
+            sync();
+          }));
         next.addEventListener('click', function () { go('where'); });
         sync();
-        wrap.appendChild(chips); wrap.appendChild(next);
+        wrap.appendChild(next);
       } else if (st.step === 'where') {
-        var places = el('div', 'chat-chips');
-        L.places.forEach(function (p) {
-          var b = el('button', 'chat-chip', p); b.type = 'button';
-          b.addEventListener('click', function () { st.where = p; go('name'); });
-          places.appendChild(b);
+        wrap.appendChild(chips(L.places, function () { return false; }, function (i) { st.where = L.places[i]; go('when'); }));
+        wrap.appendChild(textField(L.wherePh, function (v) { st.where = v; go('when'); }));
+      } else if (st.step === 'when') {
+        ['dia', 'altura', 'livre'].forEach(function (k) {
+          var b = el('button', 'chat-option', L.whenModes[k]); b.type = 'button';
+          b.addEventListener('click', function () { st.when = k; go(k === 'livre' ? 'name' : 'pick'); });
+          wrap.appendChild(b);
         });
-        wrap.appendChild(places);
-        wrap.appendChild(textField(L.wherePh, function (v) { st.where = v; go('name'); }));
+      } else if (st.step === 'pick') {
+        var day = st.when === 'dia';
+        var cont = el('button', 'chat-go', L.go + ' →'); cont.type = 'button';
+        var ready = function () { cont.disabled = day ? !st.date : st.period < 0; };
+        if (day) wrap.appendChild(calendar(ready));
+        else wrap.appendChild(chips(L.periods, function (i) { return st.period === i; }, function (i) { st.period = i; ready(); }));
+        wrap.appendChild(el('span', 'chat-hint mono', L.daypartLabel));
+        wrap.appendChild(chips(L.dayparts, function (i) { return st.daypart === i; }, function (i) { st.daypart = st.daypart === i ? -1 : i; }));
+        cont.addEventListener('click', function () { st.picked = true; go('name'); });
+        ready();
+        wrap.appendChild(cont);
       } else if (st.step === 'name') {
-        wrap.appendChild(textField(L.namePh, function (v) { st.name = v; go('done'); }));
+        wrap.appendChild(nameForm());
       } else if (st.step === 'done') {
         var text = message(), row = el('div', 'chat-sends');
-        var wa = el('a', 'chat-send', L.viaWa + ' →');
-        wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
-        wa.target = '_blank'; wa.rel = 'noopener';
-        var mail = el('a', 'chat-send', L.viaEmail + ' →');
+        if (data.whatsapp) {
+          var wa = el('a', 'chat-send', L.viaWa + ' →');
+          wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
+          wa.target = '_blank'; wa.rel = 'noopener';
+          row.appendChild(wa);
+        }
+        var mail = el('a', 'chat-send alt', L.viaEmail + ' →');
         mail.href = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(text);
-        if (data.whatsapp) row.appendChild(wa);
         row.appendChild(mail);
         wrap.appendChild(row);
       }
@@ -211,7 +328,10 @@
       });
       shown = c.length;
       input.innerHTML = '';
-      input.appendChild(controls());
+      var ctl = controls();
+      if (st.step === lastStep) ctl.classList.add('still');
+      lastStep = st.step;
+      input.appendChild(ctl);
       restart.hidden = st.step === 'need';
       log.scrollTop = log.scrollHeight;
       setTimeout(function () { log.scrollTop = log.scrollHeight; }, 800);
