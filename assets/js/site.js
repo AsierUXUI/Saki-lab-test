@@ -66,8 +66,8 @@
         name: 'E como se chama?',
         namePh: 'O seu nome',
         send: 'Enviar',
-        done: function (n) { return 'Obrigado, ' + n + '. Envie-me isto e combinamos dia e hora — de preferência à mesa.'; },
-        viaWa: 'Enviar pelo WhatsApp', viaEmail: 'Enviar por email', orEmail: 'ou por email',
+        done: function (n) { return 'Obrigado, ' + n + '. Envie-me isto por WhatsApp ou por email, como preferir, e combinamos dia e hora — de preferência à mesa.'; },
+        viaWa: 'WhatsApp', viaEmail: 'Email',
         msg: {
           intro: 'Olá Sakim! Vim pelo site e gostava de marcar uma consulta.',
           need: 'Tenho em mãos', partes: 'Partes', melhorar: 'Quero melhorar', where: 'Onde', name: 'Nome',
@@ -91,8 +91,8 @@
         name: 'And what is your name?',
         namePh: 'Your name',
         send: 'Send',
-        done: function (n) { return 'Thank you, ' + n + '. Send me this and we will find a day and time — ideally at a table.'; },
-        viaWa: 'Send on WhatsApp', viaEmail: 'Send by email', orEmail: 'or by email',
+        done: function (n) { return 'Thank you, ' + n + '. Send me this on WhatsApp or by email, whichever you prefer, and we will find a day and time — ideally at a table.'; },
+        viaWa: 'WhatsApp', viaEmail: 'Email',
         msg: {
           intro: 'Hello Sakim! I found you through the website and would like to book a consultation.',
           need: 'What I have in mind', partes: 'Parts', melhorar: 'I want to improve', where: 'Where', name: 'Name',
@@ -189,19 +189,15 @@
       } else if (st.step === 'name') {
         wrap.appendChild(textField(L.namePh, function (v) { st.name = v; go('done'); }));
       } else if (st.step === 'done') {
-        var text = message();
-        var main = el('a', 'chat-send'), alt = el('a', 'chat-alt mono');
-        var mail = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(text);
-        if (data.whatsapp) {
-          main.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
-          main.target = '_blank'; main.rel = 'noopener';
-          main.textContent = L.viaWa + ' →';
-          alt.href = mail; alt.textContent = L.orEmail;
-        } else {
-          main.href = mail; main.textContent = L.viaEmail + ' →';
-        }
-        wrap.appendChild(main);
-        if (data.whatsapp) wrap.appendChild(alt);
+        var text = message(), row = el('div', 'chat-sends');
+        var wa = el('a', 'chat-send', L.viaWa + ' →');
+        wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
+        wa.target = '_blank'; wa.rel = 'noopener';
+        var mail = el('a', 'chat-send', L.viaEmail + ' →');
+        mail.href = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(text);
+        if (data.whatsapp) row.appendChild(wa);
+        row.appendChild(mail);
+        wrap.appendChild(row);
       }
       return wrap;
     }

@@ -16,8 +16,8 @@ BY_SLUG = {p["slug"]: p for p in PLACES}
 EMAIL = "studio@sakinlab.com"
 INSTAGRAM = "sakinlab"
 # His WhatsApp number in international format, digits only (e.g. "351912345678").
-# While it is empty, meeting requests are sent by email instead.
-WHATSAPP = ""
+# Visitors can send their request on WhatsApp or by email; while this is empty only email is offered.
+WHATSAPP = "351913915323"
 
 # What he can take on. Shown on the method page and offered in the booking conversation.
 SERVICES = [
