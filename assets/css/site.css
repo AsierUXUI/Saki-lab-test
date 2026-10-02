@@ -121,7 +121,7 @@ em { font-style: italic; }
 .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 35%, transparent 30%, rgba(11,9,8,.55) 90%), linear-gradient(to top, var(--ink) 2%, rgba(11,9,8,.35) 40%, rgba(11,9,8,0) 70%, rgba(11,9,8,.45)); }
 .hero-content { position: relative; z-index: 2; padding: 0 var(--gutter) clamp(24px, 5vh, 56px); }
 .hero-eyebrow { color: var(--amber); margin-bottom: clamp(16px, 3vh, 32px); display: flex; gap: 18px; flex-wrap: wrap; }
-.hero h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(54px, 11.5vw, 200px); line-height: .88; letter-spacing: -.025em; }
+.hero h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(50px, 9.6vw, 180px); line-height: .88; letter-spacing: -.025em; }
 .hero h1 em { color: var(--ember); }
 .hero-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; margin-top: clamp(24px, 4vh, 48px); padding-top: 20px; border-top: 1px solid var(--line); }
 .hero-sub { max-width: 460px; font-size: clamp(15px, 1.2vw, 18px); color: var(--mute); }
@@ -295,4 +295,66 @@ footer { padding: clamp(80px, 14vh, 140px) var(--gutter) 28px; overflow: hidden;
 @media (prefers-reduced-motion: reduce) {
   .grain, .scroll-cue b::after { animation: none; }
   .hero-media.slides img { transition: opacity 1s; transform: none; }
+}
+
+/* NAV CTA */
+.nav-links a.nav-cta { border: 1px solid currentColor; border-radius: 999px; padding: 7px 16px; margin: -8px 0; }
+.nav-links a.nav-cta::after { display: none; }
+.nav-links a.nav-cta:hover, .nav-links a.nav-cta[aria-current] { background: var(--cream); color: var(--ink); }
+
+/* SERVICES (method) */
+.services { padding: clamp(100px, 16vh, 180px) var(--gutter) 0; }
+.services-head { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px 48px; align-items: end; margin-bottom: clamp(48px, 8vh, 88px); }
+.services-head .label { grid-column: 1 / -1; margin-bottom: 0; }
+.services-head p { color: var(--mute); font-size: clamp(16px, 1.3vw, 19px); max-width: 460px; }
+.services-list { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
+.services-list li { padding: 28px 28px 32px 0; border-bottom: 1px solid var(--line); display: grid; gap: 10px; align-content: start; }
+.services-list .mono { color: var(--ember); }
+.services-list h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(26px, 2.4vw, 38px); line-height: 1.05; }
+.services-list p { color: var(--mute); font-size: 15px; max-width: 320px; }
+@media (max-width: 900px) { .services-list { grid-template-columns: 1fr 1fr; } .services-head { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .services-list { grid-template-columns: 1fr; } }
+
+/* BOOKING */
+.booking { min-height: 100svh; padding: clamp(110px, 16vh, 160px) var(--gutter) clamp(48px, 8vh, 96px); display: grid; grid-template-columns: 1fr minmax(320px, 560px); gap: clamp(32px, 6vw, 96px); align-items: center; }
+.booking h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(46px, 6.6vw, 118px); line-height: .92; letter-spacing: -.025em; }
+.booking h1 em { color: var(--ember); }
+.booking-sub { color: var(--mute); font-size: clamp(16px, 1.3vw, 19px); max-width: 440px; margin: 28px 0 36px; }
+.booking .links { max-width: 460px; }
+.chat { display: flex; flex-direction: column; height: min(76svh, 700px); min-height: 520px; border: 1px solid var(--line); border-radius: 22px; background: rgba(239, 231, 218, .03); backdrop-filter: blur(6px); overflow: hidden; }
+.chat-head { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.chat-head img { width: 38px; height: 38px; border-radius: 50%; }
+.chat-head strong { display: block; font-family: var(--serif); font-weight: 400; font-size: 22px; line-height: 1; }
+.chat-head .mono { color: var(--amber); font-size: 9.5px; }
+.chat-restart { margin-left: auto; color: var(--mute); }
+.chat-restart:hover { color: var(--cream); }
+.chat-log { flex: 1; overflow-y: auto; padding: 24px 20px 12px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; overscroll-behavior: contain; }
+.chat-msg { max-width: 86%; line-height: 1.35; }
+.chat-msg.bot { align-self: flex-start; font-family: var(--serif); font-size: clamp(20px, 1.7vw, 24px); }
+.chat-msg.me { align-self: flex-end; background: var(--ember); color: var(--ink); font-size: 15px; font-weight: 400; padding: 10px 16px; border-radius: 18px 18px 4px 18px; }
+.chat-msg.new { animation: msg-in .6s var(--ease) both; }
+@keyframes msg-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.chat-input { padding: 12px 20px 20px; }
+.chat-controls { display: grid; gap: 10px; animation: msg-in .6s .5s var(--ease) both; }
+.chat-option { text-align: left; padding: 14px 18px; border: 1px solid var(--line); border-radius: 14px; font-size: 15px; transition: border-color .3s, background .3s, color .3s; }
+.chat-option:hover, .chat-option:focus-visible { border-color: var(--ember); background: rgba(232, 98, 26, .1); }
+.chat-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chat-chip { padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; transition: border-color .3s, background .3s, color .3s; }
+.chat-chip:hover { border-color: var(--cream); }
+.chat-chip.on { background: var(--cream); color: var(--ink); border-color: var(--cream); }
+.chat-go, .chat-send { justify-self: start; padding: 12px 22px; border-radius: 999px; background: var(--ember); color: var(--ink); font-weight: 500; font-size: 15px; transition: background .3s, opacity .3s; }
+.chat-go:hover, .chat-send:hover { background: var(--amber); }
+.chat-go:disabled { opacity: .3; cursor: default; }
+.chat-send { padding: 16px 26px; font-size: 16px; }
+.chat-alt { color: var(--mute); justify-self: start; padding: 4px 2px; }
+.chat-alt:hover { color: var(--cream); }
+.chat-field { display: flex; gap: 8px; border-bottom: 1px solid var(--line); }
+.chat-field input { flex: 1; min-width: 0; background: none; border: 0; color: var(--cream); font: inherit; font-size: 17px; padding: 12px 2px; outline: none; }
+.chat-field input::placeholder { color: var(--mute); }
+.chat-field button { color: var(--ember); font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; padding: 0 4px; }
+.chat-field:focus-within { border-color: var(--ember); }
+@media (max-width: 900px) {
+  .booking { grid-template-columns: 1fr; align-items: start; }
+  .chat { height: auto; min-height: 0; }
+  .chat-log { max-height: 60svh; }
 }

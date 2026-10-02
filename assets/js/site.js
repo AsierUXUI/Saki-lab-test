@@ -34,10 +34,196 @@
     $$('[data-alt-' + l + ']').forEach(function (el) { el.alt = el.getAttribute('data-alt-' + l); });
     $$('.lang button').forEach(function (b) { b.classList.toggle('on', b.dataset.lang === l); });
     splitManifesto();
+    if (renderBooking) renderBooking();
     tick();
     if (window.ScrollTrigger && document.body.classList.contains('anim')) { setupManifesto(); ScrollTrigger.refresh(); }
   }
   $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
+
+  /* ---------- BOOKING CONVERSATION ---------- */
+  /* A few questions, one at a time; the answers become a WhatsApp message (or an email). */
+  var renderBooking = null;
+  (function booking() {
+    var box = $('#booking'), dataEl = $('#booking-data');
+    if (!box || !dataEl) return;
+    var data = JSON.parse(dataEl.textContent);
+    var log = $('#chat-log'), input = $('#chat-input'), restart = $('.chat-restart', box);
+    var T = {
+      pt: {
+        hello: 'Olá. Antes de nos sentarmos, só preciso de saber três coisas.',
+        need: 'O que tem em mãos?',
+        needs: {
+          tudo: 'Um lugar novo — quero tudo, do zero à porta aberta',
+          partes: 'Um projecto a andar — preciso de algumas partes',
+          melhorar: 'Um negócio que já existe — quero melhorar algo'
+        },
+        partsQ: { partes: 'Que partes? Escolha as que quiser.', melhorar: 'O que gostaria de melhorar? Se ainda não souber, vemos juntos.' },
+        unsure: 'Ainda não sei',
+        go: 'Continuar',
+        where: 'Onde fica — ou vai ficar?',
+        places: ['Lisboa', 'Porto', 'Algarve', 'Fora de Portugal'],
+        wherePh: 'Outro sítio…',
+        name: 'E como se chama?',
+        namePh: 'O seu nome',
+        send: 'Enviar',
+        done: function (n) { return 'Obrigado, ' + n + '. Envie-me isto e combinamos dia e hora — de preferência à mesa.'; },
+        viaWa: 'Enviar pelo WhatsApp', viaEmail: 'Enviar por email', orEmail: 'ou por email',
+        msg: {
+          intro: 'Olá Sakim! Vim pelo site e gostava de marcar uma consulta.',
+          need: 'Tenho em mãos', partes: 'Partes', melhorar: 'Quero melhorar', where: 'Onde', name: 'Nome',
+          subject: 'Consulta — Sakim Lab'
+        }
+      },
+      en: {
+        hello: 'Hello. Before we sit down, I only need to know three things.',
+        need: 'What do you have in mind?',
+        needs: {
+          tudo: 'A new place — I want everything, from zero to opening night',
+          partes: 'A project under way — I need some parts',
+          melhorar: 'An existing business — I want to improve something'
+        },
+        partsQ: { partes: 'Which parts? Pick as many as you like.', melhorar: 'What would you like to improve? If you are not sure yet, we will look at it together.' },
+        unsure: 'Not sure yet',
+        go: 'Continue',
+        where: 'Where is it — or where will it be?',
+        places: ['Lisbon', 'Porto', 'Algarve', 'Outside Portugal'],
+        wherePh: 'Somewhere else…',
+        name: 'And what is your name?',
+        namePh: 'Your name',
+        send: 'Send',
+        done: function (n) { return 'Thank you, ' + n + '. Send me this and we will find a day and time — ideally at a table.'; },
+        viaWa: 'Send on WhatsApp', viaEmail: 'Send by email', orEmail: 'or by email',
+        msg: {
+          intro: 'Hello Sakim! I found you through the website and would like to book a consultation.',
+          need: 'What I have in mind', partes: 'Parts', melhorar: 'I want to improve', where: 'Where', name: 'Name',
+          subject: 'Consultation — Sakim Lab'
+        }
+      }
+    };
+    var st, shown = 0, touched = false;
+    function reset() { st = { step: 'need', need: null, parts: [], unsure: false, where: '', name: '' }; shown = 0; }
+    reset();
+
+    function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+    function partNames() {
+      return st.parts.map(function (id) { return data.services.find(function (x) { return x.id === id; })[lang]; });
+    }
+    function partsAnswer() {
+      var names = partNames();
+      if (st.unsure) names.push(T[lang].unsure);
+      return names.join(', ');
+    }
+    function message() {
+      var m = T[lang].msg, lines = [m.intro, ''];
+      lines.push('• ' + m.need + ': ' + T[lang].needs[st.need]);
+      if (st.need !== 'tudo') lines.push('• ' + m[st.need] + ': ' + partsAnswer());
+      lines.push('• ' + m.where + ': ' + st.where);
+      lines.push('• ' + m.name + ': ' + st.name);
+      return lines.join('\n');
+    }
+    function conversation() {
+      var L = T[lang], c = [['bot', L.hello], ['bot', L.need]];
+      if (!st.need) return c;
+      c.push(['me', L.needs[st.need]]);
+      if (st.need !== 'tudo') {
+        c.push(['bot', L.partsQ[st.need]]);
+        if (st.step === 'parts') return c;
+        c.push(['me', partsAnswer()]);
+      }
+      c.push(['bot', L.where]);
+      if (!st.where) return c;
+      c.push(['me', st.where]);
+      c.push(['bot', L.name]);
+      if (!st.name) return c;
+      c.push(['me', st.name]);
+      c.push(['bot', L.done(st.name)]);
+      return c;
+    }
+    function go(next) { touched = true; st.step = next; render(); }
+    function textField(ph, onSend) {
+      var f = el('form', 'chat-field'), i = el('input'), b = el('button', null, T[lang].send);
+      i.type = 'text'; i.placeholder = ph; i.maxLength = 80; i.autocomplete = 'off'; i.setAttribute('aria-label', ph);
+      b.type = 'submit';
+      f.appendChild(i); f.appendChild(b);
+      f.addEventListener('submit', function (e) { e.preventDefault(); var v = i.value.trim(); if (v) onSend(v); });
+      if (touched) setTimeout(function () { i.focus({ preventScroll: true }); }, 400);
+      return f;
+    }
+    function controls() {
+      var L = T[lang], wrap = el('div', 'chat-controls');
+      if (st.step === 'need') {
+        ['tudo', 'partes', 'melhorar'].forEach(function (k) {
+          var b = el('button', 'chat-option', L.needs[k]); b.type = 'button';
+          b.addEventListener('click', function () { st.need = k; go(k === 'tudo' ? 'where' : 'parts'); });
+          wrap.appendChild(b);
+        });
+      } else if (st.step === 'parts') {
+        var chips = el('div', 'chat-chips');
+        var opts = data.services.map(function (x) { return { id: x.id, label: x[lang] }; });
+        if (st.need === 'melhorar') opts.push({ id: '?', label: L.unsure });
+        var next = el('button', 'chat-go', L.go + ' →'); next.type = 'button';
+        var sync = function () { next.disabled = !st.parts.length && !st.unsure; };
+        opts.forEach(function (o) {
+          var on = o.id === '?' ? st.unsure : st.parts.indexOf(o.id) > -1;
+          var b = el('button', 'chat-chip' + (on ? ' on' : ''), o.label); b.type = 'button'; b.setAttribute('aria-pressed', on);
+          b.addEventListener('click', function () {
+            if (o.id === '?') st.unsure = !st.unsure;
+            else { var i = st.parts.indexOf(o.id); if (i > -1) st.parts.splice(i, 1); else st.parts.push(o.id); }
+            var now = o.id === '?' ? st.unsure : st.parts.indexOf(o.id) > -1;
+            b.classList.toggle('on', now); b.setAttribute('aria-pressed', now); sync();
+          });
+          chips.appendChild(b);
+        });
+        next.addEventListener('click', function () { go('where'); });
+        sync();
+        wrap.appendChild(chips); wrap.appendChild(next);
+      } else if (st.step === 'where') {
+        var places = el('div', 'chat-chips');
+        L.places.forEach(function (p) {
+          var b = el('button', 'chat-chip', p); b.type = 'button';
+          b.addEventListener('click', function () { st.where = p; go('name'); });
+          places.appendChild(b);
+        });
+        wrap.appendChild(places);
+        wrap.appendChild(textField(L.wherePh, function (v) { st.where = v; go('name'); }));
+      } else if (st.step === 'name') {
+        wrap.appendChild(textField(L.namePh, function (v) { st.name = v; go('done'); }));
+      } else if (st.step === 'done') {
+        var text = message();
+        var main = el('a', 'chat-send'), alt = el('a', 'chat-alt mono');
+        var mail = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(text);
+        if (data.whatsapp) {
+          main.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
+          main.target = '_blank'; main.rel = 'noopener';
+          main.textContent = L.viaWa + ' →';
+          alt.href = mail; alt.textContent = L.orEmail;
+        } else {
+          main.href = mail; main.textContent = L.viaEmail + ' →';
+        }
+        wrap.appendChild(main);
+        if (data.whatsapp) wrap.appendChild(alt);
+      }
+      return wrap;
+    }
+    function render() {
+      var c = conversation();
+      log.innerHTML = '';
+      c.forEach(function (m, i) {
+        var b = el('p', 'chat-msg ' + m[0] + (i >= shown ? ' new' : ''), m[1]);
+        if (i >= shown) b.style.animationDelay = ((i - shown) * .35 + (m[0] === 'bot' ? .25 : 0)) + 's';
+        log.appendChild(b);
+      });
+      shown = c.length;
+      input.innerHTML = '';
+      input.appendChild(controls());
+      restart.hidden = st.step === 'need';
+      log.scrollTop = log.scrollHeight;
+      setTimeout(function () { log.scrollTop = log.scrollHeight; }, 800);
+    }
+    restart.addEventListener('click', function () { reset(); touched = true; render(); });
+    renderBooking = function () { shown = log.children.length; render(); };
+    render();
+  })();
 
   /* ---------- LISBON CLOCK ---------- */
   function tick() {
