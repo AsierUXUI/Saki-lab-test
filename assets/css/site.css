@@ -121,7 +121,7 @@ em { font-style: italic; }
 .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 35%, transparent 30%, rgba(11,9,8,.55) 90%), linear-gradient(to top, var(--ink) 2%, rgba(11,9,8,.35) 40%, rgba(11,9,8,0) 70%, rgba(11,9,8,.45)); }
 .hero-content { position: relative; z-index: 2; padding: 0 var(--gutter) clamp(24px, 5vh, 56px); }
 .hero-eyebrow { color: var(--amber); margin-bottom: clamp(16px, 3vh, 32px); display: flex; gap: 18px; flex-wrap: wrap; }
-.hero h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(54px, 11.5vw, 200px); line-height: .88; letter-spacing: -.025em; }
+.hero h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(50px, 9.6vw, 180px); line-height: .88; letter-spacing: -.025em; }
 .hero h1 em { color: var(--ember); }
 .hero-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; margin-top: clamp(24px, 4vh, 48px); padding-top: 20px; border-top: 1px solid var(--line); }
 .hero-sub { max-width: 460px; font-size: clamp(15px, 1.2vw, 18px); color: var(--mute); }

@@ -183,7 +183,7 @@ def build_home():
     <div class="hero-content">
       <div class="hero-eyebrow mono">{t("Lisboa — há mais de 30 anos", "Lisbon — for 30+ years")}<span>38°42′N 9°08′W</span></div>
       <h1>
-{hero_lines(("Não desenho bares.", "I don't design bars."), ("Desenho <em>noites.</em>", "I design <em>nights.</em>"))}
+{hero_lines(("Não desenho bares.", "I don't design bars."), ("Desenho <em>experiências.</em>", "I design <em>experiences.</em>"))}
       </h1>
       <div class="hero-foot">
         {t("Há mais de trinta anos que crio bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.",
