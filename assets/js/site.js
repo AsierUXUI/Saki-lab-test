@@ -41,7 +41,7 @@
   $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { setLang(b.dataset.lang); }); });
 
   /* ---------- BOOKING CONVERSATION ---------- */
-  /* A few questions, one at a time; the answers become a WhatsApp message (or an email). */
+  /* A few questions, one at a time; the answers become a WhatsApp message or an email. */
   var renderBooking = null;
   (function booking() {
     var box = $('#booking'), dataEl = $('#booking-data');
@@ -50,7 +50,7 @@
     var log = $('#chat-log'), input = $('#chat-input'), restart = $('.chat-restart', box);
     var T = {
       pt: {
-        hello: 'Olá. Antes de nos sentarmos, só preciso de saber quatro coisas.',
+        hello: 'Olá. Antes de nos sentarmos, só umas perguntas rápidas.',
         need: 'O que tem em mãos?',
         needs: {
           tudo: 'Um lugar novo — quero tudo, do zero à porta aberta',
@@ -63,25 +63,26 @@
         where: 'Onde fica — ou vai ficar?',
         places: ['Lisboa', 'Porto', 'Algarve', 'Fora de Portugal'],
         wherePh: 'Outro sítio…',
-        when: 'Quando nos sentamos?',
-        whenModes: { dia: 'Num dia e hora certos', intervalo: 'Entre duas datas', livre: 'Quando lhe der mais jeito' },
-        pick: { dia: 'Escolha o dia e a hora. Eu confirmo.', intervalo: 'Escolha o primeiro e o último dia — e, se quiser, a partir de que horas.' },
-        after: ['Qualquer hora', 'Depois das 10h', 'Depois das 15h', 'Depois das 18h'],
-        at: ', às ', between: function (a, b) { return 'Entre ' + a + ' e ' + b; }, from: function (a) { return 'A partir de ' + a; },
+        when: 'Tem alguma altura em mente para nos sentarmos? Se não, eu proponho.',
+        whenModes: { dia: 'Sim, um dia em concreto', altura: 'Mais ou menos — tenho uma altura em mente', livre: 'Prefiro que proponha' },
+        pick: { dia: 'Que dia lhe dá jeito? Se quiser, diga também a que parte do dia.', altura: 'Quando, mais ou menos? E a que parte do dia, se tiver preferência.' },
+        periods: ['Esta semana', 'Na próxima semana', 'Nas próximas duas semanas', 'Ainda este mês', 'No próximo mês'],
+        dayparts: ['De manhã', 'Ao almoço', 'À tarde', 'Ao fim do dia'], daypartLabel: 'Parte do dia (opcional)',
         week: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'], prev: 'Mês anterior', next: 'Mês seguinte',
-        name: 'E como se chama?',
-        namePh: 'O seu nome',
+        name: 'E como se chama? Se houver, diga-me também o nome da empresa ou do projecto.',
+        namePh: 'O seu nome', companyPh: 'Empresa ou projecto (opcional)',
         send: 'Enviar',
-        done: function (n) { return 'Obrigado, ' + n + '. Envie-me isto por WhatsApp ou por email, como preferir, e eu confirmo o dia — de preferência à mesa.'; },
-        viaWa: 'WhatsApp', viaEmail: 'Email',
+        done: function (n) { return 'Obrigado, ' + n + '. Como prefere continuar? Eu respondo e confirmamos o dia.'; },
+        viaWa: 'Continuamos no WhatsApp', viaEmail: 'Prefiro por email',
         msg: {
           intro: 'Olá Sakim! Vim pelo site e gostava de marcar uma consulta.',
-          need: 'Tenho em mãos', partes: 'Partes', melhorar: 'Quero melhorar', where: 'Onde', when: 'Quando', name: 'Nome',
+          need: 'Tenho em mãos', partes: 'Partes', melhorar: 'Quero melhorar', where: 'Onde', when: 'Quando',
+          whenever: 'sem preferência — proponha um dia', name: 'Nome', company: 'Empresa / projecto',
           subject: 'Consulta — Sakim Lab'
         }
       },
       en: {
-        hello: 'Hello. Before we sit down, I only need to know four things.',
+        hello: 'Hello. Before we sit down, just a few quick questions.',
         need: 'What do you have in mind?',
         needs: {
           tudo: 'A new place — I want everything, from zero to opening night',
@@ -94,63 +95,60 @@
         where: 'Where is it — or where will it be?',
         places: ['Lisbon', 'Porto', 'Algarve', 'Outside Portugal'],
         wherePh: 'Somewhere else…',
-        when: 'When shall we sit down?',
-        whenModes: { dia: 'On a set day and time', intervalo: 'Between two dates', livre: 'Whenever suits you' },
-        pick: { dia: 'Pick the day and time. I will confirm.', intervalo: 'Pick the first and last day — and, if you like, from what time.' },
-        after: ['Any time', 'After 10am', 'After 3pm', 'After 6pm'],
-        at: ', at ', between: function (a, b) { return 'Between ' + a + ' and ' + b; }, from: function (a) { return 'From ' + a; },
+        when: 'Do you have a time in mind for us to sit down? If not, I will suggest one.',
+        whenModes: { dia: 'Yes, a specific day', altura: 'Roughly — I have a time in mind', livre: 'You suggest one' },
+        pick: { dia: 'Which day suits you? If you like, tell me the part of the day too.', altura: 'Roughly when? And what part of the day, if you have a preference.' },
+        periods: ['This week', 'Next week', 'In the next couple of weeks', 'Later this month', 'Next month'],
+        dayparts: ['In the morning', 'Over lunch', 'In the afternoon', 'In the evening'], daypartLabel: 'Part of the day (optional)',
         week: ['M', 'T', 'W', 'T', 'F', 'S', 'S'], prev: 'Previous month', next: 'Next month',
-        name: 'And what is your name?',
-        namePh: 'Your name',
+        name: 'And your name? If there is one, the name of the company or project too.',
+        namePh: 'Your name', companyPh: 'Company or project (optional)',
         send: 'Send',
-        done: function (n) { return 'Thank you, ' + n + '. Send me this on WhatsApp or by email, whichever you prefer, and I will confirm the day — ideally at a table.'; },
-        viaWa: 'WhatsApp', viaEmail: 'Email',
+        done: function (n) { return 'Thank you, ' + n + '. How would you like to continue? I will reply and we will settle the day.'; },
+        viaWa: "Let's continue on WhatsApp", viaEmail: "I'd rather email",
         msg: {
           intro: 'Hello Sakim! I found you through the website and would like to book a consultation.',
-          need: 'What I have in mind', partes: 'Parts', melhorar: 'I want to improve', where: 'Where', when: 'When', name: 'Name',
+          need: 'What I have in mind', partes: 'Parts', melhorar: 'I want to improve', where: 'Where', when: 'When',
+          whenever: 'no preference — please suggest a day', name: 'Name', company: 'Company / project',
           subject: 'Consultation — Sakim Lab'
         }
       }
     };
-    var st, shown = 0, touched = false;
-    var HOURS = ['10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+
     var today = new Date(); today.setHours(0, 0, 0, 0);
     function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
     var minDay = addDays(today, 1), maxDay = addDays(today, 120), calMonth;
+    var st, shown = 0, touched = false, lastStep = null;
     function reset() {
-      st = { step: 'need', need: null, parts: [], unsure: false, where: '', name: '',
-             when: null, date: null, hour: '', start: null, end: null, after: 0, picked: false };
+      st = { step: 'need', need: null, parts: [], unsure: false, where: '', when: null, date: null, period: -1, daypart: -1, picked: false, name: '', company: '' };
       calMonth = new Date(minDay.getFullYear(), minDay.getMonth(), 1);
       shown = 0;
     }
     reset();
 
     function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
-    function partNames() {
-      return st.parts.map(function (id) { return data.services.find(function (x) { return x.id === id; })[lang]; });
-    }
+    function lower(s) { return s.charAt(0).toLowerCase() + s.slice(1); }
+    function fmt(d) { return new Intl.DateTimeFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' }).format(d); }
     function partsAnswer() {
-      var names = partNames();
+      var names = st.parts.map(function (id) { return data.services.find(function (x) { return x.id === id; })[lang]; });
       if (st.unsure) names.push(T[lang].unsure);
       return names.join(', ');
     }
-    function fmt(d, long) {
-      return new Intl.DateTimeFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', long ? { weekday: 'long', day: 'numeric', month: 'long' } : { day: 'numeric', month: 'long' }).format(d);
-    }
     function whenAnswer() {
       var L = T[lang];
-      if (st.when === 'livre') return L.whenModes.livre;
-      if (st.when === 'dia') return fmt(st.date, true) + L.at + st.hour;
-      var txt = st.end ? L.between(fmt(st.start), fmt(st.end)) : L.from(fmt(st.start));
-      return txt + (st.after ? ', ' + L.after[st.after].charAt(0).toLowerCase() + L.after[st.after].slice(1) : '');
+      var base = st.when === 'dia' ? fmt(st.date) : L.periods[st.period];
+      var answer = st.daypart > -1 ? base + ', ' + lower(L.dayparts[st.daypart]) : base;
+      return answer.charAt(0).toUpperCase() + answer.slice(1);
     }
+    function whoAnswer() { return st.company ? st.name + ' · ' + st.company : st.name; }
     function message() {
-      var m = T[lang].msg, lines = [m.intro, ''];
-      lines.push('• ' + m.need + ': ' + T[lang].needs[st.need]);
+      var L = T[lang], m = L.msg, lines = [m.intro, ''];
+      lines.push('• ' + m.need + ': ' + L.needs[st.need]);
       if (st.need !== 'tudo') lines.push('• ' + m[st.need] + ': ' + partsAnswer());
       lines.push('• ' + m.where + ': ' + st.where);
-      lines.push('• ' + m.when + ': ' + whenAnswer());
+      lines.push('• ' + m.when + ': ' + (st.when === 'livre' ? m.whenever : whenAnswer()));
       lines.push('• ' + m.name + ': ' + st.name);
+      if (st.company) lines.push('• ' + m.company + ': ' + st.company);
       return lines.join('\n');
     }
     function conversation() {
@@ -175,67 +173,86 @@
       }
       c.push(['bot', L.name]);
       if (!st.name) return c;
-      c.push(['me', st.name]);
+      c.push(['me', whoAnswer()]);
       c.push(['bot', L.done(st.name)]);
       return c;
     }
     function go(next) { touched = true; st.step = next; render(); }
+    function focusLater(i) { if (touched) setTimeout(function () { i.focus({ preventScroll: true }); }, 400); }
     function textField(ph, onSend) {
       var f = el('form', 'chat-field'), i = el('input'), b = el('button', null, T[lang].send);
       i.type = 'text'; i.placeholder = ph; i.maxLength = 80; i.autocomplete = 'off'; i.setAttribute('aria-label', ph);
       b.type = 'submit';
       f.appendChild(i); f.appendChild(b);
       f.addEventListener('submit', function (e) { e.preventDefault(); var v = i.value.trim(); if (v) onSend(v); });
-      if (touched) setTimeout(function () { i.focus({ preventScroll: true }); }, 400);
+      focusLater(i);
       return f;
     }
-    function calendar(single, onChange) {
-      var box = el('div', 'cal');
+    function chips(labels, isOn, onTap) {
+      var row = el('div', 'chat-chips');
+      labels.forEach(function (label, i) {
+        var on = isOn(i);
+        var b = el('button', 'chat-chip' + (on ? ' on' : ''), label); b.type = 'button'; b.setAttribute('aria-pressed', on);
+        b.addEventListener('click', function () {
+          onTap(i);
+          $$('.chat-chip', row).forEach(function (x, j) { var now = isOn(j); x.classList.toggle('on', now); x.setAttribute('aria-pressed', now); });
+        });
+        row.appendChild(b);
+      });
+      return row;
+    }
+    function calendar(onChange) {
+      var cal = el('div', 'cal');
       function draw() {
         var L = T[lang];
-        box.innerHTML = '';
+        cal.innerHTML = '';
         var head = el('div', 'cal-head');
         var prev = el('button', 'cal-nav', '‹'), next = el('button', 'cal-nav', '›');
         prev.type = next.type = 'button';
         prev.setAttribute('aria-label', L.prev); next.setAttribute('aria-label', L.next);
-        var first = new Date(minDay.getFullYear(), minDay.getMonth(), 1), last = new Date(maxDay.getFullYear(), maxDay.getMonth(), 1);
-        prev.disabled = calMonth <= first; next.disabled = calMonth >= last;
+        prev.disabled = calMonth <= new Date(minDay.getFullYear(), minDay.getMonth(), 1);
+        next.disabled = calMonth >= new Date(maxDay.getFullYear(), maxDay.getMonth(), 1);
         prev.addEventListener('click', function () { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); draw(); });
         next.addEventListener('click', function () { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); draw(); });
         var month = new Intl.DateTimeFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', { month: 'long', year: 'numeric' }).format(calMonth);
-        var title = el('span', 'cal-title', month.charAt(0).toUpperCase() + month.slice(1));
-        head.appendChild(prev); head.appendChild(title); head.appendChild(next);
-        box.appendChild(head);
+        head.appendChild(prev); head.appendChild(el('span', 'cal-title', month.charAt(0).toUpperCase() + month.slice(1))); head.appendChild(next);
+        cal.appendChild(head);
         var grid = el('div', 'cal-grid');
         L.week.forEach(function (w) { grid.appendChild(el('span', 'cal-wd', w)); });
-        var offset = (calMonth.getDay() + 6) % 7;
-        for (var i = 0; i < offset; i++) grid.appendChild(el('span'));
+        for (var i = 0; i < (calMonth.getDay() + 6) % 7; i++) grid.appendChild(el('span'));
         var days = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
         for (var d = 1; d <= days; d++) {
           (function (day) {
-            var t = day.getTime();
             var b = el('button', 'cal-day', String(day.getDate())); b.type = 'button';
-            b.setAttribute('aria-label', fmt(day, true));
+            var on = !!st.date && st.date.getTime() === day.getTime();
+            b.setAttribute('aria-label', fmt(day)); b.setAttribute('aria-pressed', on);
             b.disabled = day < minDay || day > maxDay;
-            var on = single ? st.date && st.date.getTime() === t : (st.start && st.start.getTime() === t) || (st.end && st.end.getTime() === t);
-            var inside = !single && st.start && st.end && day > st.start && day < st.end;
             if (on) b.classList.add('on');
-            if (inside) b.classList.add('in');
-            b.setAttribute('aria-pressed', !!on);
-            b.addEventListener('click', function () {
-              if (single) st.date = day;
-              else if (!st.start || st.end || day < st.start) { st.start = day; st.end = null; }
-              else if (day.getTime() === st.start.getTime()) st.end = null;
-              else st.end = day;
-              draw(); onChange();
-            });
+            b.addEventListener('click', function () { st.date = day; draw(); onChange(); });
             grid.appendChild(b);
           })(new Date(calMonth.getFullYear(), calMonth.getMonth(), d));
         }
-        box.appendChild(grid);
+        cal.appendChild(grid);
       }
       draw();
-      return box;
+      return cal;
+    }
+    function nameForm() {
+      var L = T[lang], f = el('form', 'chat-form');
+      var n = el('input'), c = el('input'), b = el('button', 'chat-go', L.send + ' →');
+      n.type = c.type = 'text'; n.maxLength = c.maxLength = 80; n.autocomplete = 'name'; c.autocomplete = 'organization';
+      n.placeholder = L.namePh; c.placeholder = L.companyPh;
+      n.setAttribute('aria-label', L.namePh); c.setAttribute('aria-label', L.companyPh);
+      n.required = true; b.type = 'submit';
+      [n, c].forEach(function (i) { var w = el('div', 'chat-field'); w.appendChild(i); f.appendChild(w); });
+      f.appendChild(b);
+      f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var v = n.value.trim(); if (!v) { n.focus(); return; }
+        st.name = v; st.company = c.value.trim(); go('done');
+      });
+      focusLater(n);
+      return f;
     }
     function controls() {
       var L = T[lang], wrap = el('div', 'chat-controls');
@@ -246,70 +263,53 @@
           wrap.appendChild(b);
         });
       } else if (st.step === 'parts') {
-        var chips = el('div', 'chat-chips');
-        var opts = data.services.map(function (x) { return { id: x.id, label: x[lang] }; });
-        if (st.need === 'melhorar') opts.push({ id: '?', label: L.unsure });
+        var ids = data.services.map(function (x) { return x.id; });
+        var labels = data.services.map(function (x) { return x[lang]; });
+        if (st.need === 'melhorar') { ids.push('?'); labels.push(L.unsure); }
         var next = el('button', 'chat-go', L.go + ' →'); next.type = 'button';
         var sync = function () { next.disabled = !st.parts.length && !st.unsure; };
-        opts.forEach(function (o) {
-          var on = o.id === '?' ? st.unsure : st.parts.indexOf(o.id) > -1;
-          var b = el('button', 'chat-chip' + (on ? ' on' : ''), o.label); b.type = 'button'; b.setAttribute('aria-pressed', on);
-          b.addEventListener('click', function () {
-            if (o.id === '?') st.unsure = !st.unsure;
-            else { var i = st.parts.indexOf(o.id); if (i > -1) st.parts.splice(i, 1); else st.parts.push(o.id); }
-            var now = o.id === '?' ? st.unsure : st.parts.indexOf(o.id) > -1;
-            b.classList.toggle('on', now); b.setAttribute('aria-pressed', now); sync();
-          });
-          chips.appendChild(b);
-        });
+        wrap.appendChild(chips(labels,
+          function (i) { return ids[i] === '?' ? st.unsure : st.parts.indexOf(ids[i]) > -1; },
+          function (i) {
+            if (ids[i] === '?') st.unsure = !st.unsure;
+            else { var k = st.parts.indexOf(ids[i]); if (k > -1) st.parts.splice(k, 1); else st.parts.push(ids[i]); }
+            sync();
+          }));
         next.addEventListener('click', function () { go('where'); });
         sync();
-        wrap.appendChild(chips); wrap.appendChild(next);
+        wrap.appendChild(next);
       } else if (st.step === 'where') {
-        var places = el('div', 'chat-chips');
-        L.places.forEach(function (p) {
-          var b = el('button', 'chat-chip', p); b.type = 'button';
-          b.addEventListener('click', function () { st.where = p; go('when'); });
-          places.appendChild(b);
-        });
-        wrap.appendChild(places);
+        wrap.appendChild(chips(L.places, function () { return false; }, function (i) { st.where = L.places[i]; go('when'); }));
         wrap.appendChild(textField(L.wherePh, function (v) { st.where = v; go('when'); }));
       } else if (st.step === 'when') {
-        ['dia', 'intervalo', 'livre'].forEach(function (k) {
+        ['dia', 'altura', 'livre'].forEach(function (k) {
           var b = el('button', 'chat-option', L.whenModes[k]); b.type = 'button';
           b.addEventListener('click', function () { st.when = k; go(k === 'livre' ? 'name' : 'pick'); });
           wrap.appendChild(b);
         });
       } else if (st.step === 'pick') {
-        var single = st.when === 'dia';
-        var next = el('button', 'chat-go', L.go + ' →'); next.type = 'button';
-        var sync = function () { next.disabled = single ? !(st.date && st.hour) : !st.start; };
-        wrap.appendChild(calendar(single, sync));
-        var row = el('div', 'chat-chips');
-        (single ? HOURS : L.after).forEach(function (label, i) {
-          var on = single ? st.hour === label : st.after === i;
-          var b = el('button', 'chat-chip' + (on ? ' on' : ''), label); b.type = 'button'; b.setAttribute('aria-pressed', on);
-          b.addEventListener('click', function () {
-            if (single) st.hour = label; else st.after = i;
-            $$('.chat-chip', row).forEach(function (x) { x.classList.remove('on'); x.setAttribute('aria-pressed', false); });
-            b.classList.add('on'); b.setAttribute('aria-pressed', true); sync();
-          });
-          row.appendChild(b);
-        });
-        wrap.appendChild(row);
-        next.addEventListener('click', function () { st.picked = true; go('name'); });
-        sync();
-        wrap.appendChild(next);
+        var day = st.when === 'dia';
+        var cont = el('button', 'chat-go', L.go + ' →'); cont.type = 'button';
+        var ready = function () { cont.disabled = day ? !st.date : st.period < 0; };
+        if (day) wrap.appendChild(calendar(ready));
+        else wrap.appendChild(chips(L.periods, function (i) { return st.period === i; }, function (i) { st.period = i; ready(); }));
+        wrap.appendChild(el('span', 'chat-hint mono', L.daypartLabel));
+        wrap.appendChild(chips(L.dayparts, function (i) { return st.daypart === i; }, function (i) { st.daypart = st.daypart === i ? -1 : i; }));
+        cont.addEventListener('click', function () { st.picked = true; go('name'); });
+        ready();
+        wrap.appendChild(cont);
       } else if (st.step === 'name') {
-        wrap.appendChild(textField(L.namePh, function (v) { st.name = v; go('done'); }));
+        wrap.appendChild(nameForm());
       } else if (st.step === 'done') {
         var text = message(), row = el('div', 'chat-sends');
-        var wa = el('a', 'chat-send', L.viaWa + ' →');
-        wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
-        wa.target = '_blank'; wa.rel = 'noopener';
-        var mail = el('a', 'chat-send', L.viaEmail + ' →');
+        if (data.whatsapp) {
+          var wa = el('a', 'chat-send', L.viaWa + ' →');
+          wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
+          wa.target = '_blank'; wa.rel = 'noopener';
+          row.appendChild(wa);
+        }
+        var mail = el('a', 'chat-send alt', L.viaEmail + ' →');
         mail.href = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(text);
-        if (data.whatsapp) row.appendChild(wa);
         row.appendChild(mail);
         wrap.appendChild(row);
       }
@@ -325,7 +325,10 @@
       });
       shown = c.length;
       input.innerHTML = '';
-      input.appendChild(controls());
+      var ctl = controls();
+      if (st.step === lastStep) ctl.classList.add('still');
+      lastStep = st.step;
+      input.appendChild(ctl);
       restart.hidden = st.step === 'need';
       log.scrollTop = log.scrollHeight;
       setTimeout(function () { log.scrollTop = log.scrollHeight; }, 800);

@@ -349,9 +349,9 @@ footer { padding: clamp(80px, 14vh, 140px) var(--gutter) 28px; overflow: hidden;
 .chat-go:hover, .chat-send:hover { background: var(--amber); }
 .chat-go:disabled { opacity: .3; cursor: default; }
 .chat-send { padding: 16px 26px; font-size: 16px; }
-.chat-sends { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.chat-sends { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .chat-sends .chat-send { text-align: center; }
-.chat-sends .chat-send:only-child { grid-column: 1 / -1; justify-self: start; }
+
 .chat-field { display: flex; gap: 8px; border-bottom: 1px solid var(--line); }
 .chat-field input { flex: 1; min-width: 0; background: none; border: 0; color: var(--cream); font: inherit; font-size: 17px; padding: 12px 2px; outline: none; }
 .chat-field input::placeholder { color: var(--mute); }
@@ -387,3 +387,10 @@ footer { padding: clamp(80px, 14vh, 140px) var(--gutter) 28px; overflow: hidden;
 .cal-day:disabled { opacity: .22; cursor: default; }
 .cal-day.in { background: rgba(232, 98, 26, .18); border-radius: 0; }
 .cal-day.on { background: var(--ember); color: var(--ink); font-weight: 500; }
+
+.chat-controls.still { animation: none; }
+.chat-form { display: grid; gap: 10px; }
+.chat-form .chat-go { margin-top: 6px; }
+.chat-send.alt { background: none; color: var(--cream); border: 1px solid var(--line); }
+.chat-send.alt:hover { background: rgba(239, 231, 218, .08); border-color: var(--cream); }
+.chat-hint { color: var(--mute); font-size: 10px; margin-top: 6px; }
