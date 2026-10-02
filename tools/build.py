@@ -128,6 +128,7 @@ def shell(page, root, title, desc, body):
 
 <main id="main">
 {body}
+{cta(root) if page != "contacto" else ""}
 </main>
 
 <footer>
@@ -140,6 +141,17 @@ def shell(page, root, title, desc, body):
 </body>
 </html>
 """
+
+
+def cta(root):
+    """Invitation to book, closing every page except the booking page itself."""
+    return f"""  <section class="cta">
+    <div>
+      {t("Pronto para construir <em>algo real?</em>", "Ready to build <em>something real?</em>", "h2")}
+      {t("Três perguntas, e o resto conversamos à mesa.", "Three questions, and we'll talk about the rest at the table.", "p")}
+    </div>
+    <a class="btn" href="{root}contacto.html">{t("Marcar consulta", "Book a consultation")} <span aria-hidden="true">→</span></a>
+  </section>"""
 
 
 def hero_lines(*pairs):
@@ -189,7 +201,10 @@ def build_home():
         {t("Há mais de trinta anos que crio bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.",
            "For more than thirty years I've been creating bars, restaurants and places in Lisbon — from the first sketch to the last round.",
            "p", 'class="hero-sub"')}
-        <div class="scroll-cue mono"><b></b>{t("A noite começa aqui", "The night starts here")}</div>
+        <div class="hero-actions">
+          <a class="btn" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <span aria-hidden="true">→</span></a>
+          <div class="scroll-cue mono"><b></b>{t("A noite começa aqui", "The night starts here")}</div>
+        </div>
       </div>
     </div>
   </section>
