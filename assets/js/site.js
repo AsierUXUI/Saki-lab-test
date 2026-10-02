@@ -76,10 +76,12 @@
         done: function (n) { return 'Prazer, ' + n + '. Já tenho tudo o que preciso. Por onde prefere que continuemos a conversa?'; },
         viaWa: 'Continuamos no WhatsApp', viaEmail: 'Prefiro por email',
         msg: {
+          header: 'SAKIM LAB · Pedido de conversa pelo site',
+          footer: 'Enviado a partir do site Sakim Lab.',
           intro: 'Olá Sakim! Vim pelo site e gostava que nos sentássemos a conversar.',
           need: 'O que tenho entre mãos', partes: 'Peças que faltam', melhorar: 'O que quero melhorar', where: 'Onde', when: 'Quando',
           whenever: 'quando lhe der jeito — proponha você', name: 'Nome', company: 'Projecto / casa',
-          subject: 'Consulta — Sakim Lab'
+          subject: 'Pedido de conversa pelo site — Sakim Lab'
         }
       },
       en: {
@@ -109,10 +111,12 @@
         done: function (n) { return 'Nice to meet you, ' + n + '. I have everything I need. Where would you like to carry on the conversation?'; },
         viaWa: "Let's continue on WhatsApp", viaEmail: "I'd rather email",
         msg: {
+          header: 'SAKIM LAB · Conversation request from the website',
+          footer: 'Sent from the Sakim Lab website.',
           intro: 'Hello Sakim! I found you through the website and would love to sit down and talk.',
           need: 'What I have', partes: 'Pieces missing', melhorar: 'What I want to improve', where: 'Where', when: 'When',
           whenever: 'whenever suits you — you suggest', name: 'Name', company: 'Project / place',
-          subject: 'Consultation — Sakim Lab'
+          subject: 'Conversation request from the website — Sakim Lab'
         }
       }
     };
@@ -143,14 +147,18 @@
       return answer.charAt(0).toUpperCase() + answer.slice(1);
     }
     function whoAnswer() { return st.company ? st.name + ' · ' + st.company : st.name; }
-    function message() {
-      var L = T[lang], m = L.msg, lines = [m.intro, ''];
-      lines.push('• ' + m.need + ': ' + L.needs[st.need]);
-      if (st.need !== 'tudo') lines.push('• ' + m[st.need] + ': ' + partsAnswer());
-      lines.push('• ' + m.where + ': ' + st.where);
-      lines.push('• ' + m.when + ': ' + (st.when === 'livre' ? m.whenever : whenAnswer()));
-      lines.push('• ' + m.name + ': ' + st.name);
-      if (st.company) lines.push('• ' + m.company + ': ' + st.company);
+    /* The same message for WhatsApp (with its *bold* and _italic_) and for email (plain text). */
+    function message(wa) {
+      var L = T[lang], m = L.msg, b = wa ? '*' : '', i = wa ? '_' : '', rule = '──────────────';
+      var row = function (label, value) { return b + label + ':' + b + ' ' + value; };
+      var lines = [b + m.header + b, rule, '', m.intro, ''];
+      lines.push(row(m.need, L.needs[st.need]));
+      if (st.need !== 'tudo') lines.push(row(m[st.need], partsAnswer()));
+      lines.push(row(m.where, st.where));
+      lines.push(row(m.when, st.when === 'livre' ? m.whenever : whenAnswer()));
+      lines.push(row(m.name, st.name));
+      if (st.company) lines.push(row(m.company, st.company));
+      lines.push('', rule, i + m.footer + i);
       return lines.join('\n');
     }
     function conversation() {
@@ -304,15 +312,15 @@
       } else if (st.step === 'name') {
         wrap.appendChild(nameForm());
       } else if (st.step === 'done') {
-        var text = message(), row = el('div', 'chat-sends');
+        var row = el('div', 'chat-sends');
         if (data.whatsapp) {
           var wa = el('a', 'chat-send', L.viaWa + ' →');
-          wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
+          wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(message(true));
           wa.target = '_blank'; wa.rel = 'noopener';
           row.appendChild(wa);
         }
         var mail = el('a', 'chat-send alt', L.viaEmail + ' →');
-        mail.href = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(text);
+        mail.href = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(message(false));
         row.appendChild(mail);
         wrap.appendChild(row);
       }
