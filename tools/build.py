@@ -17,7 +17,7 @@ EMAIL = "studio@sakinlab.com"
 INSTAGRAM = "sakinlab"
 # His WhatsApp number in international format, digits only (e.g. "351912345678").
 # Visitors can send their request on WhatsApp or by email; while this is empty only email is offered.
-WHATSAPP = ""
+WHATSAPP = "351913915323"
 
 # What he can take on. Shown on the method page and offered in the booking conversation.
 SERVICES = [
