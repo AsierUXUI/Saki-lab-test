@@ -4,6 +4,7 @@ Run from the repository root:  python3 tools/build.py
 It writes index.html, lugares.html, metodo.html, contacto.html and lugares/<slug>.html.
 """
 import html
+import json
 import os
 import sys
 
@@ -14,6 +15,31 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BY_SLUG = {p["slug"]: p for p in PLACES}
 EMAIL = "studio@sakinlab.com"
 INSTAGRAM = "sakinlab"
+# His WhatsApp number in international format, digits only (e.g. "351912345678").
+# While it is empty, meeting requests are sent by email instead.
+WHATSAPP = ""
+
+# What he can take on. Shown on the method page and offered in the booking conversation.
+SERVICES = [
+    ("conceito", ("Conceito & identidade", "Concept & identity"),
+     ("Nome, história, posicionamento, identidade visual.", "Name, story, positioning, visual identity.")),
+    ("espaco", ("Espaço & atmosfera", "Space & atmosphere"),
+     ("Decoração, luz, mobiliário, as zonas da casa.", "Décor, lighting, furniture, the zones of the house.")),
+    ("ritmo", ("O ritmo do dia", "The rhythm of the day"),
+     ("Horários, música, como o lugar muda da manhã à última ronda.", "Hours, music, how the place changes from morning to last round.")),
+    ("cartas", ("Cartas", "Menus"),
+     ("Cocktails, vinhos, petiscos, brunch, o prato do dia.", "Cocktails, wine, small plates, brunch, the dish of the day.")),
+    ("fornecedores", ("Fornecedores", "Suppliers"),
+     ("Produtores, vinhos, conservas, peças com história.", "Producers, wine, tinned fish, pieces with a past.")),
+    ("negocio", ("Plano de negócio", "Business plan"),
+     ("Investimento, custos e o que o lugar pode render.", "Investment, costs and what the place can earn.")),
+    ("digital", ("Digital & redes", "Digital & social"),
+     ("Instagram, Google, o calendário das primeiras semanas.", "Instagram, Google, the calendar for the first weeks.")),
+    ("equipa", ("Equipa & serviço", "Team & service"),
+     ("Manual de operação, formação, ritmo de serviço.", "Operations manual, training, the rhythm of service.")),
+    ("abertura", ("Abertura", "Opening"),
+     ("Soft opening, noite de inauguração, as primeiras semanas.", "Soft opening, opening night, the first weeks.")),
+]
 
 
 def esc(s):
@@ -41,7 +67,7 @@ def photo(slug, name):
 
 NAV = [("lugares", "lugares.html", "Lugares", "Places"),
        ("metodo", "metodo.html", "Método", "Method"),
-       ("contacto", "contacto.html", "Contacto", "Contact")]
+       ("contacto", "contacto.html", "Marcar consulta", "Book a consultation")]
 
 
 def shell(page, root, title, desc, body):
@@ -49,7 +75,8 @@ def shell(page, root, title, desc, body):
         out = []
         for key, href, pt, en in NAV:
             cur = ' aria-current="page"' if key == page else ""
-            out.append(t(pt, en, "a", f'href="{root}{href}"{cur}'))
+            cls = ' class="nav-cta"' if key == "contacto" else ""
+            out.append(t(pt, en, "a", f'href="{root}{href}"{cls}{cur}'))
         return "\n    ".join(out)
 
     return f"""<!doctype html>
@@ -192,6 +219,7 @@ def build_home():
            "Every place begins with a question — and only ends when someone <em>doesn't want to go home.</em>", "p")}
         <a class="link-arrow" href="lugares.html">{t("Os catorze lugares", "All fourteen places")} <b>→</b></a>
         <a class="link-arrow" href="metodo.html">{t("Como trabalho", "How I work")} <b>→</b></a>
+        <a class="link-arrow" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <b>→</b></a>
       </div>
     </div>
   </section>
@@ -325,6 +353,9 @@ def build_method():
         </div>
         <div class="act-img">{img(src, alt_pt, alt_en)}</div>
       </article>""")
+    services = "".join(f"""
+      <li data-reveal><span class="mono">{i + 1:02d}</span>{t(name[0], name[1], "h3")}{t(desc[0], desc[1], "p")}</li>"""
+                       for i, (_, name, desc) in enumerate(SERVICES))
     body = f"""
   <section class="acts">
     <div class="acts-glow" aria-hidden="true"></div>
@@ -349,37 +380,61 @@ def build_method():
     </div>
   </section>
 
+  <section class="services">
+    <div class="services-head">
+      {t("Do zero à porta aberta", "From zero to opening night", "div", 'class="label mono"')}
+      {t("A noite inteira — <em>ou só a parte que falta.</em>", "The whole night — <em>or just the part that's missing.</em>", "h2", 'class="page-title"')}
+      {t("Um lugar novo, de raiz. Algumas peças de um projecto que já anda. Ou um negócio que já existe e quer melhorar alguma coisa. Cada conversa começa no ponto em que está.",
+         "A new place, from scratch. A few pieces of a project already under way. Or an existing business that wants to improve something. Every conversation starts where you are.", "p")}
+    </div>
+    <ol class="services-list">{services}
+    </ol>
+  </section>
+
   <section class="quote">
     {t("“Um conceito sem estratégia é teatro. Estratégia sem conceito é <em>maquinaria.</em>”",
        "“A concept without strategy is theatre. Strategy without concept is <em>machinery.</em>”", "blockquote", "data-reveal")}
-    <a class="link-arrow" href="contacto.html">{t("Comece com uma conversa", "Start with a conversation")} <b>→</b></a>
+    <a class="link-arrow" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <b>→</b></a>
   </section>
 """
     return shell("metodo", "", "Método — Sakim Lab",
                  "Uma noite em cinco actos: a porta, a luz, o copo, as pessoas e a última ronda. É assim que Sakim cria lugares.", body)
 
 
-# ---------------------------------------------------------------- CONTACT
+# ---------------------------------------------------------------- BOOKING
 def build_contact():
+    data = {
+        "whatsapp": WHATSAPP,
+        "email": EMAIL,
+        "services": [{"id": k, "pt": n[0], "en": n[1]} for k, n, _ in SERVICES],
+    }
     body = f"""
-  <section class="contact">
-    <div>
-      {t("Contacto", "Contact", "div", 'class="label mono"')}
-      <h1><span class="line">{t("Tem um espaço, uma ideia,", "Got a space, an idea,")}</span><span class="line">{t("ou só uma vontade?", "or just a hunch?")}</span><span class="line">{t("<em>Puxe uma cadeira.</em>", "<em>Pull up a chair.</em>")}</span></h1>
-    </div>
-    <div class="contact-side" data-reveal>
-      <div class="contact-window"><img class="photo" src="{SITE_PHOTOS[3]}" alt="" loading="lazy"></div>
-      {t("Tudo começa com uma conversa — de preferência à mesa, com um copo à frente.",
-         "Everything starts with a conversation — ideally at a table, with a glass in front of us.", "p")}
+  <section class="booking">
+    <div class="booking-intro">
+      {t("Consulta", "Consultation", "div", 'class="label mono"')}
+      <h1><span class="line">{t("Pronto para construir", "Ready to build")}</span><span class="line">{t("algo real?", "something real?")}</span><span class="line">{t("<em>Marque a sua consulta.</em>", "<em>Book your consultation.</em>")}</span></h1>
+      {t("Três perguntas, nada mais. O resto conversamos à mesa — de preferência com um copo à frente.",
+         "Three questions, nothing more. We'll talk about the rest at the table — ideally with a glass in front of us.", "p", 'class="booking-sub"')}
       <div class="links">
         <a href="mailto:{EMAIL}" data-cursor="Email"><span class="mono">Email</span><span>{EMAIL}</span></a>
         <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener" data-cursor="Insta"><span class="mono">Instagram</span><span>@{INSTAGRAM}</span></a>
       </div>
     </div>
+    <div class="chat" id="booking" aria-live="polite">
+      <div class="chat-head">
+        <img src="{SITE_PHOTOS[2]}" alt="">
+        <div><strong>Sakim</strong>{t("Responde em pessoa", "Replies in person", "span", 'class="mono"')}</div>
+        {t("Recomeçar", "Start again", "button", 'type="button" class="chat-restart mono" hidden')}
+      </div>
+      <div class="chat-log" id="chat-log"></div>
+      <div class="chat-input" id="chat-input"></div>
+      <noscript><p class="chat-msg">{t("Escreva-me para", "Write to me at")} <a href="mailto:{EMAIL}">{EMAIL}</a>.</p></noscript>
+    </div>
   </section>
+  <script type="application/json" id="booking-data">{json.dumps(data, ensure_ascii=False)}</script>
 """
-    return shell("contacto", "", "Contacto — Sakim Lab",
-                 "Tem um espaço, uma ideia, ou só uma vontade? Tudo começa com uma conversa.", body)
+    return shell("contacto", "", "Marcar consulta — Sakim Lab",
+                 "Pronto para construir algo real? Marque a sua consulta: três perguntas e o resto conversamos à mesa.", body)
 
 
 def write(rel, content):
