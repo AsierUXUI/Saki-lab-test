@@ -50,66 +50,68 @@
     var log = $('#chat-log'), input = $('#chat-input'), restart = $('.chat-restart', box);
     var T = {
       pt: {
-        hello: 'Olá. Antes de nos sentarmos, só umas perguntas rápidas.',
-        need: 'O que tem em mãos?',
+        hello: ['Bom dia! Que bom ter passado por cá.', 'Boa tarde! Que bom ter passado por cá.', 'Boa noite! Que bom ter passado por cá.'],
+        intro: 'Antes de nos sentarmos à mesa, conte-me só um bocadinho.',
+        need: 'Então, o que é que tem entre mãos?',
         needs: {
-          tudo: 'Um lugar novo — quero tudo, do zero à porta aberta',
-          partes: 'Um projecto a andar — preciso de algumas partes',
-          melhorar: 'Um negócio que já existe — quero melhorar algo'
+          tudo: 'Um lugar que ainda não existe — quero começar do zero',
+          partes: 'Já está a andar — mas faltam algumas peças',
+          melhorar: 'A casa já está aberta — quero que fique melhor'
         },
-        partsQ: { partes: 'Que partes? Escolha as que quiser.', melhorar: 'O que gostaria de melhorar? Se ainda não souber, vemos juntos.' },
-        unsure: 'Ainda não sei',
+        partsQ: { partes: 'Boa. Que peças faltam? Pode escolher várias.', melhorar: 'Gosto disso. Onde sente que pode ficar melhor? Se não souber bem, descobrimos juntos.' },
+        unsure: 'Ainda não sei bem',
         go: 'Continuar',
-        where: 'Onde fica — ou vai ficar?',
+        where: 'E onde é que isto acontece — ou vai acontecer?',
         places: ['Lisboa', 'Porto', 'Algarve', 'Fora de Portugal'],
         wherePh: 'Outro sítio…',
-        when: 'Tem alguma altura em mente para nos sentarmos? Se não, eu proponho.',
-        whenModes: { dia: 'Sim, um dia em concreto', altura: 'Mais ou menos — tenho uma altura em mente', livre: 'Prefiro que proponha' },
-        pick: { dia: 'Que dia lhe dá jeito? Se quiser, diga também a que parte do dia.', altura: 'Quando, mais ou menos? E a que parte do dia, se tiver preferência.' },
+        when: 'Já tem uma altura em mente para nos sentarmos? Se não, não há pressa — eu proponho.',
+        whenModes: { dia: 'Sim, já sei o dia', altura: 'Mais ou menos', livre: 'Proponha você' },
+        pick: { dia: 'Óptimo. Que dia? E, se tiver preferência, a que parte do dia.', altura: 'Combinado. Mais ou menos quando?' },
         periods: ['Esta semana', 'Na próxima semana', 'Nas próximas duas semanas', 'Ainda este mês', 'No próximo mês'],
         dayparts: ['De manhã', 'Ao almoço', 'À tarde', 'Ao fim do dia'], daypartLabel: 'Parte do dia (opcional)',
         week: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'], prev: 'Mês anterior', next: 'Mês seguinte',
-        name: 'E como se chama? Se houver, diga-me também o nome da empresa ou do projecto.',
-        namePh: 'O seu nome', companyPh: 'Empresa ou projecto (opcional)',
+        name: 'Para terminar: como se chama? E, se já tiver nome, o projecto ou a casa.',
+        namePh: 'O seu nome', companyPh: 'Nome do projecto ou da casa (opcional)',
         send: 'Enviar',
-        done: function (n) { return 'Obrigado, ' + n + '. Como prefere continuar? Eu respondo e confirmamos o dia.'; },
+        done: function (n) { return 'Prazer, ' + n + '. Já tenho tudo o que preciso. Por onde prefere que continuemos a conversa?'; },
         viaWa: 'Continuamos no WhatsApp', viaEmail: 'Prefiro por email',
         msg: {
-          intro: 'Olá Sakim! Vim pelo site e gostava de marcar uma consulta.',
-          need: 'Tenho em mãos', partes: 'Partes', melhorar: 'Quero melhorar', where: 'Onde', when: 'Quando',
-          whenever: 'sem preferência — proponha um dia', name: 'Nome', company: 'Empresa / projecto',
+          intro: 'Olá Sakim! Vim pelo site e gostava que nos sentássemos a conversar.',
+          need: 'O que tenho entre mãos', partes: 'Peças que faltam', melhorar: 'O que quero melhorar', where: 'Onde', when: 'Quando',
+          whenever: 'quando lhe der jeito — proponha você', name: 'Nome', company: 'Projecto / casa',
           subject: 'Consulta — Sakim Lab'
         }
       },
       en: {
-        hello: 'Hello. Before we sit down, just a few quick questions.',
-        need: 'What do you have in mind?',
+        hello: ['Good morning! Glad you stopped by.', 'Good afternoon! Glad you stopped by.', 'Good evening! Glad you stopped by.'],
+        intro: 'Before we sit down at the table, tell me a little.',
+        need: 'So, what are you working on?',
         needs: {
-          tudo: 'A new place — I want everything, from zero to opening night',
-          partes: 'A project under way — I need some parts',
-          melhorar: 'An existing business — I want to improve something'
+          tudo: "A place that doesn't exist yet — I'd like to start from zero",
+          partes: "It's already under way — but some pieces are missing",
+          melhorar: 'My place is already open — I want it to be better'
         },
-        partsQ: { partes: 'Which parts? Pick as many as you like.', melhorar: 'What would you like to improve? If you are not sure yet, we will look at it together.' },
-        unsure: 'Not sure yet',
+        partsQ: { partes: 'Good. Which pieces are missing? Pick as many as you like.', melhorar: "I like that. Where do you feel it could be better? If you're not sure, we'll find out together." },
+        unsure: "I'm not quite sure",
         go: 'Continue',
-        where: 'Where is it — or where will it be?',
+        where: 'And where does this happen — or where will it?',
         places: ['Lisbon', 'Porto', 'Algarve', 'Outside Portugal'],
         wherePh: 'Somewhere else…',
-        when: 'Do you have a time in mind for us to sit down? If not, I will suggest one.',
-        whenModes: { dia: 'Yes, a specific day', altura: 'Roughly — I have a time in mind', livre: 'You suggest one' },
-        pick: { dia: 'Which day suits you? If you like, tell me the part of the day too.', altura: 'Roughly when? And what part of the day, if you have a preference.' },
+        when: "Do you already have a time in mind to sit down together? If not, no rush — I'll suggest one.",
+        whenModes: { dia: 'Yes, I know the day', altura: 'Roughly', livre: 'You tell me' },
+        pick: { dia: 'Great. Which day? And, if you have a preference, what part of the day.', altura: 'Fine by me. Roughly when?' },
         periods: ['This week', 'Next week', 'In the next couple of weeks', 'Later this month', 'Next month'],
         dayparts: ['In the morning', 'Over lunch', 'In the afternoon', 'In the evening'], daypartLabel: 'Part of the day (optional)',
         week: ['M', 'T', 'W', 'T', 'F', 'S', 'S'], prev: 'Previous month', next: 'Next month',
-        name: 'And your name? If there is one, the name of the company or project too.',
-        namePh: 'Your name', companyPh: 'Company or project (optional)',
+        name: "Last thing: what's your name? And the project or the place, if it already has one.",
+        namePh: 'Your name', companyPh: 'Project or place name (optional)',
         send: 'Send',
-        done: function (n) { return 'Thank you, ' + n + '. How would you like to continue? I will reply and we will settle the day.'; },
+        done: function (n) { return 'Nice to meet you, ' + n + '. I have everything I need. Where would you like to carry on the conversation?'; },
         viaWa: "Let's continue on WhatsApp", viaEmail: "I'd rather email",
         msg: {
-          intro: 'Hello Sakim! I found you through the website and would like to book a consultation.',
-          need: 'What I have in mind', partes: 'Parts', melhorar: 'I want to improve', where: 'Where', when: 'When',
-          whenever: 'no preference — please suggest a day', name: 'Name', company: 'Company / project',
+          intro: 'Hello Sakim! I found you through the website and would love to sit down and talk.',
+          need: 'What I have', partes: 'Pieces missing', melhorar: 'What I want to improve', where: 'Where', when: 'When',
+          whenever: 'whenever suits you — you suggest', name: 'Name', company: 'Project / place',
           subject: 'Consultation — Sakim Lab'
         }
       }
@@ -152,7 +154,8 @@
       return lines.join('\n');
     }
     function conversation() {
-      var L = T[lang], c = [['bot', L.hello], ['bot', L.need]];
+      var L = T[lang], h = new Date().getHours();
+      var c = [['bot', L.hello[h >= 5 && h < 13 ? 0 : h >= 13 && h < 20 ? 1 : 2]], ['bot', L.intro], ['bot', L.need]];
       if (!st.need) return c;
       c.push(['me', L.needs[st.need]]);
       if (st.need !== 'tudo') {
