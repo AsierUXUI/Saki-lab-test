@@ -50,7 +50,7 @@
     var log = $('#chat-log'), input = $('#chat-input'), restart = $('.chat-restart', box);
     var T = {
       pt: {
-        hello: 'Olá. Antes de nos sentarmos, só preciso de saber três coisas.',
+        hello: 'Olá. Antes de nos sentarmos, só preciso de saber quatro coisas.',
         need: 'O que tem em mãos?',
         needs: {
           tudo: 'Um lugar novo — quero tudo, do zero à porta aberta',
@@ -63,19 +63,25 @@
         where: 'Onde fica — ou vai ficar?',
         places: ['Lisboa', 'Porto', 'Algarve', 'Fora de Portugal'],
         wherePh: 'Outro sítio…',
+        when: 'Quando nos sentamos?',
+        whenModes: { dia: 'Num dia e hora certos', intervalo: 'Entre duas datas', livre: 'Quando lhe der mais jeito' },
+        pick: { dia: 'Escolha o dia e a hora. Eu confirmo.', intervalo: 'Escolha o primeiro e o último dia — e, se quiser, a partir de que horas.' },
+        after: ['Qualquer hora', 'Depois das 10h', 'Depois das 15h', 'Depois das 18h'],
+        at: ', às ', between: function (a, b) { return 'Entre ' + a + ' e ' + b; }, from: function (a) { return 'A partir de ' + a; },
+        week: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'], prev: 'Mês anterior', next: 'Mês seguinte',
         name: 'E como se chama?',
         namePh: 'O seu nome',
         send: 'Enviar',
-        done: function (n) { return 'Obrigado, ' + n + '. Envie-me isto por WhatsApp ou por email, como preferir, e combinamos dia e hora — de preferência à mesa.'; },
+        done: function (n) { return 'Obrigado, ' + n + '. Envie-me isto por WhatsApp ou por email, como preferir, e eu confirmo o dia — de preferência à mesa.'; },
         viaWa: 'WhatsApp', viaEmail: 'Email',
         msg: {
           intro: 'Olá Sakim! Vim pelo site e gostava de marcar uma consulta.',
-          need: 'Tenho em mãos', partes: 'Partes', melhorar: 'Quero melhorar', where: 'Onde', name: 'Nome',
+          need: 'Tenho em mãos', partes: 'Partes', melhorar: 'Quero melhorar', where: 'Onde', when: 'Quando', name: 'Nome',
           subject: 'Consulta — Sakim Lab'
         }
       },
       en: {
-        hello: 'Hello. Before we sit down, I only need to know three things.',
+        hello: 'Hello. Before we sit down, I only need to know four things.',
         need: 'What do you have in mind?',
         needs: {
           tudo: 'A new place — I want everything, from zero to opening night',
@@ -88,20 +94,35 @@
         where: 'Where is it — or where will it be?',
         places: ['Lisbon', 'Porto', 'Algarve', 'Outside Portugal'],
         wherePh: 'Somewhere else…',
+        when: 'When shall we sit down?',
+        whenModes: { dia: 'On a set day and time', intervalo: 'Between two dates', livre: 'Whenever suits you' },
+        pick: { dia: 'Pick the day and time. I will confirm.', intervalo: 'Pick the first and last day — and, if you like, from what time.' },
+        after: ['Any time', 'After 10am', 'After 3pm', 'After 6pm'],
+        at: ', at ', between: function (a, b) { return 'Between ' + a + ' and ' + b; }, from: function (a) { return 'From ' + a; },
+        week: ['M', 'T', 'W', 'T', 'F', 'S', 'S'], prev: 'Previous month', next: 'Next month',
         name: 'And what is your name?',
         namePh: 'Your name',
         send: 'Send',
-        done: function (n) { return 'Thank you, ' + n + '. Send me this on WhatsApp or by email, whichever you prefer, and we will find a day and time — ideally at a table.'; },
+        done: function (n) { return 'Thank you, ' + n + '. Send me this on WhatsApp or by email, whichever you prefer, and I will confirm the day — ideally at a table.'; },
         viaWa: 'WhatsApp', viaEmail: 'Email',
         msg: {
           intro: 'Hello Sakim! I found you through the website and would like to book a consultation.',
-          need: 'What I have in mind', partes: 'Parts', melhorar: 'I want to improve', where: 'Where', name: 'Name',
+          need: 'What I have in mind', partes: 'Parts', melhorar: 'I want to improve', where: 'Where', when: 'When', name: 'Name',
           subject: 'Consultation — Sakim Lab'
         }
       }
     };
     var st, shown = 0, touched = false;
-    function reset() { st = { step: 'need', need: null, parts: [], unsure: false, where: '', name: '' }; shown = 0; }
+    var HOURS = ['10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+    var minDay = addDays(today, 1), maxDay = addDays(today, 120), calMonth;
+    function reset() {
+      st = { step: 'need', need: null, parts: [], unsure: false, where: '', name: '',
+             when: null, date: null, hour: '', start: null, end: null, after: 0, picked: false };
+      calMonth = new Date(minDay.getFullYear(), minDay.getMonth(), 1);
+      shown = 0;
+    }
     reset();
 
     function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -113,11 +134,22 @@
       if (st.unsure) names.push(T[lang].unsure);
       return names.join(', ');
     }
+    function fmt(d, long) {
+      return new Intl.DateTimeFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', long ? { weekday: 'long', day: 'numeric', month: 'long' } : { day: 'numeric', month: 'long' }).format(d);
+    }
+    function whenAnswer() {
+      var L = T[lang];
+      if (st.when === 'livre') return L.whenModes.livre;
+      if (st.when === 'dia') return fmt(st.date, true) + L.at + st.hour;
+      var txt = st.end ? L.between(fmt(st.start), fmt(st.end)) : L.from(fmt(st.start));
+      return txt + (st.after ? ', ' + L.after[st.after].charAt(0).toLowerCase() + L.after[st.after].slice(1) : '');
+    }
     function message() {
       var m = T[lang].msg, lines = [m.intro, ''];
       lines.push('• ' + m.need + ': ' + T[lang].needs[st.need]);
       if (st.need !== 'tudo') lines.push('• ' + m[st.need] + ': ' + partsAnswer());
       lines.push('• ' + m.where + ': ' + st.where);
+      lines.push('• ' + m.when + ': ' + whenAnswer());
       lines.push('• ' + m.name + ': ' + st.name);
       return lines.join('\n');
     }
@@ -133,6 +165,14 @@
       c.push(['bot', L.where]);
       if (!st.where) return c;
       c.push(['me', st.where]);
+      c.push(['bot', L.when]);
+      if (!st.when) return c;
+      c.push(['me', L.whenModes[st.when]]);
+      if (st.when !== 'livre') {
+        c.push(['bot', L.pick[st.when]]);
+        if (!st.picked) return c;
+        c.push(['me', whenAnswer()]);
+      }
       c.push(['bot', L.name]);
       if (!st.name) return c;
       c.push(['me', st.name]);
@@ -148,6 +188,54 @@
       f.addEventListener('submit', function (e) { e.preventDefault(); var v = i.value.trim(); if (v) onSend(v); });
       if (touched) setTimeout(function () { i.focus({ preventScroll: true }); }, 400);
       return f;
+    }
+    function calendar(single, onChange) {
+      var box = el('div', 'cal');
+      function draw() {
+        var L = T[lang];
+        box.innerHTML = '';
+        var head = el('div', 'cal-head');
+        var prev = el('button', 'cal-nav', '‹'), next = el('button', 'cal-nav', '›');
+        prev.type = next.type = 'button';
+        prev.setAttribute('aria-label', L.prev); next.setAttribute('aria-label', L.next);
+        var first = new Date(minDay.getFullYear(), minDay.getMonth(), 1), last = new Date(maxDay.getFullYear(), maxDay.getMonth(), 1);
+        prev.disabled = calMonth <= first; next.disabled = calMonth >= last;
+        prev.addEventListener('click', function () { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); draw(); });
+        next.addEventListener('click', function () { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); draw(); });
+        var month = new Intl.DateTimeFormat(lang === 'pt' ? 'pt-PT' : 'en-GB', { month: 'long', year: 'numeric' }).format(calMonth);
+        var title = el('span', 'cal-title', month.charAt(0).toUpperCase() + month.slice(1));
+        head.appendChild(prev); head.appendChild(title); head.appendChild(next);
+        box.appendChild(head);
+        var grid = el('div', 'cal-grid');
+        L.week.forEach(function (w) { grid.appendChild(el('span', 'cal-wd', w)); });
+        var offset = (calMonth.getDay() + 6) % 7;
+        for (var i = 0; i < offset; i++) grid.appendChild(el('span'));
+        var days = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
+        for (var d = 1; d <= days; d++) {
+          (function (day) {
+            var t = day.getTime();
+            var b = el('button', 'cal-day', String(day.getDate())); b.type = 'button';
+            b.setAttribute('aria-label', fmt(day, true));
+            b.disabled = day < minDay || day > maxDay;
+            var on = single ? st.date && st.date.getTime() === t : (st.start && st.start.getTime() === t) || (st.end && st.end.getTime() === t);
+            var inside = !single && st.start && st.end && day > st.start && day < st.end;
+            if (on) b.classList.add('on');
+            if (inside) b.classList.add('in');
+            b.setAttribute('aria-pressed', !!on);
+            b.addEventListener('click', function () {
+              if (single) st.date = day;
+              else if (!st.start || st.end || day < st.start) { st.start = day; st.end = null; }
+              else if (day.getTime() === st.start.getTime()) st.end = null;
+              else st.end = day;
+              draw(); onChange();
+            });
+            grid.appendChild(b);
+          })(new Date(calMonth.getFullYear(), calMonth.getMonth(), d));
+        }
+        box.appendChild(grid);
+      }
+      draw();
+      return box;
     }
     function controls() {
       var L = T[lang], wrap = el('div', 'chat-controls');
@@ -181,11 +269,37 @@
         var places = el('div', 'chat-chips');
         L.places.forEach(function (p) {
           var b = el('button', 'chat-chip', p); b.type = 'button';
-          b.addEventListener('click', function () { st.where = p; go('name'); });
+          b.addEventListener('click', function () { st.where = p; go('when'); });
           places.appendChild(b);
         });
         wrap.appendChild(places);
-        wrap.appendChild(textField(L.wherePh, function (v) { st.where = v; go('name'); }));
+        wrap.appendChild(textField(L.wherePh, function (v) { st.where = v; go('when'); }));
+      } else if (st.step === 'when') {
+        ['dia', 'intervalo', 'livre'].forEach(function (k) {
+          var b = el('button', 'chat-option', L.whenModes[k]); b.type = 'button';
+          b.addEventListener('click', function () { st.when = k; go(k === 'livre' ? 'name' : 'pick'); });
+          wrap.appendChild(b);
+        });
+      } else if (st.step === 'pick') {
+        var single = st.when === 'dia';
+        var next = el('button', 'chat-go', L.go + ' →'); next.type = 'button';
+        var sync = function () { next.disabled = single ? !(st.date && st.hour) : !st.start; };
+        wrap.appendChild(calendar(single, sync));
+        var row = el('div', 'chat-chips');
+        (single ? HOURS : L.after).forEach(function (label, i) {
+          var on = single ? st.hour === label : st.after === i;
+          var b = el('button', 'chat-chip' + (on ? ' on' : ''), label); b.type = 'button'; b.setAttribute('aria-pressed', on);
+          b.addEventListener('click', function () {
+            if (single) st.hour = label; else st.after = i;
+            $$('.chat-chip', row).forEach(function (x) { x.classList.remove('on'); x.setAttribute('aria-pressed', false); });
+            b.classList.add('on'); b.setAttribute('aria-pressed', true); sync();
+          });
+          row.appendChild(b);
+        });
+        wrap.appendChild(row);
+        next.addEventListener('click', function () { st.picked = true; go('name'); });
+        sync();
+        wrap.appendChild(next);
       } else if (st.step === 'name') {
         wrap.appendChild(textField(L.namePh, function (v) { st.name = v; go('done'); }));
       } else if (st.step === 'done') {

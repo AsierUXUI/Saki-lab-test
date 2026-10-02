@@ -148,7 +148,7 @@ def cta(root):
     return f"""  <section class="cta">
     <div>
       {t("Pronto para construir <em>algo real?</em>", "Ready to build <em>something real?</em>", "h2")}
-      {t("Três perguntas, e o resto conversamos à mesa.", "Three questions, and we'll talk about the rest at the table.", "p")}
+      {t("Quatro perguntas, e o resto conversamos à mesa.", "Four questions, and we'll talk about the rest at the table.", "p")}
     </div>
     <a class="btn" href="{root}contacto.html">{t("Marcar consulta", "Book a consultation")} <span aria-hidden="true">→</span></a>
   </section>"""
@@ -428,8 +428,8 @@ def build_contact():
     <div class="booking-intro">
       {t("Consulta", "Consultation", "div", 'class="label mono"')}
       <h1><span class="line">{t("Pronto para construir", "Ready to build")}</span><span class="line">{t("algo real?", "something real?")}</span><span class="line">{t("<em>Marque a sua consulta.</em>", "<em>Book your consultation.</em>")}</span></h1>
-      {t("Três perguntas, nada mais. O resto conversamos à mesa — de preferência com um copo à frente.",
-         "Three questions, nothing more. We'll talk about the rest at the table — ideally with a glass in front of us.", "p", 'class="booking-sub"')}
+      {t("Quatro perguntas, nada mais. O resto conversamos à mesa — de preferência com um copo à frente.",
+         "Four questions, nothing more. We'll talk about the rest at the table — ideally with a glass in front of us.", "p", 'class="booking-sub"')}
       <div class="links">
         <a href="mailto:{EMAIL}" data-cursor="Email"><span class="mono">Email</span><span>{EMAIL}</span></a>
         <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener" data-cursor="Insta"><span class="mono">Instagram</span><span>@{INSTAGRAM}</span></a>

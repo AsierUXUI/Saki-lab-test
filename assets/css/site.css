@@ -372,3 +372,18 @@ footer { padding: clamp(80px, 14vh, 140px) var(--gutter) 28px; overflow: hidden;
 .cta p { color: var(--mute); margin-top: 16px; max-width: 420px; }
 .next + .cta { margin-top: 0; border-top: 0; }
 @media (max-width: 760px) { .cta { grid-template-columns: 1fr; } }
+
+/* BOOKING CALENDAR */
+.cal { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px 12px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.cal-title { font-family: var(--serif); font-size: 20px; }
+.cal-nav { width: 32px; height: 32px; border-radius: 50%; font-size: 20px; line-height: 1; color: var(--cream); transition: background .3s; }
+.cal-nav:hover:not(:disabled) { background: rgba(239, 231, 218, .08); }
+.cal-nav:disabled { opacity: .2; cursor: default; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+.cal-wd { font-family: var(--mono); font-size: 10px; color: var(--mute); padding: 4px 0; }
+.cal-day { height: 34px; border-radius: 999px; font-size: 14px; font-variant-numeric: tabular-nums; transition: background .2s, color .2s; }
+.cal-day:hover:not(:disabled) { background: rgba(239, 231, 218, .1); }
+.cal-day:disabled { opacity: .22; cursor: default; }
+.cal-day.in { background: rgba(232, 98, 26, .18); border-radius: 0; }
+.cal-day.on { background: var(--ember); color: var(--ink); font-weight: 500; }
