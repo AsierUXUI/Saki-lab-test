@@ -480,3 +480,11 @@ footer { padding: clamp(80px, 14vh, 140px) var(--gutter) 28px; overflow: hidden;
   .map-far { position: absolute; left: auto; right: 10px; top: 10px; bottom: auto; padding: 0; border: 0; justify-items: end; }
 }
 .pin-left .pin-label { left: auto; right: 22px; }
+
+/* HOME: hero content sits in the middle, the map follows */
+.hero-home { justify-content: center; }
+.hero-home .hero-content { padding-top: 72px; padding-bottom: 0; }
+.places-intro { padding: clamp(90px, 14vh, 150px) var(--gutter) 28px; display: grid; grid-template-columns: 1fr minmax(260px, 460px); gap: 12px 48px; align-items: end; }
+.places-intro .label { margin-bottom: 0; }
+.places-intro p { color: var(--mute); font-size: clamp(16px, 1.3vw, 19px); }
+@media (max-width: 760px) { .places-intro { grid-template-columns: 1fr; } }
