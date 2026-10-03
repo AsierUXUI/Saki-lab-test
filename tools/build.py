@@ -104,7 +104,7 @@ def shell(page, root, title, desc, body, head=""):
 <link rel="icon" href="{root}{SITE_PHOTOS[2]}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..700&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{root}{v("assets/css/site.css")}">
 <script src="{root}{v("assets/js/gsap.min.js")}" defer></script>
 <script src="{root}{v("assets/js/ScrollTrigger.min.js")}" defer></script>
@@ -120,7 +120,7 @@ def shell(page, root, title, desc, body, head=""):
   {t("Anos de noites em Lisboa", "Years of nights in Lisbon", "div", 'class="veil-cap mono"')}
 </div>
 
-<header class="nav">
+{place_bar(root) if page == "lugar" else ""}<header class="nav"{' hidden' if page == "lugar" else ''}>
   <a href="{root}index.html" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
   <nav class="nav-links" aria-label="Menu">
     {links()}
@@ -139,13 +139,14 @@ def shell(page, root, title, desc, body, head=""):
   {links()}
 </div>
 
-{booking_drawer(root) if page != "contacto" else ""}
+{booking_drawer(root) if page not in ("contacto", "lugar") else ""}
+{place_sheet() if page not in ("lugar",) else ""}
 <main id="main">
 {body}
-{cta(root) if page != "contacto" else ""}
+{cta(root) if page not in ("contacto", "lugar") else ""}
 </main>
 
-<footer>
+<footer{' hidden' if page == "lugar" else ''}>
   {t("Até <em>já.</em>", "See you <em>soon.</em>", "a", f'class="bye" href="{root}contacto.html"')}
   <div class="foot mono">
     <span><span class="js-greet">Boa noite</span> — {t("em Lisboa são", "in Lisbon it's")} <span class="js-clock">--:--</span></span>
@@ -154,6 +155,30 @@ def shell(page, root, title, desc, body, head=""):
 </footer>
 </body>
 </html>
+"""
+
+
+def back_label():
+    return t("← Voltar", "← Back")
+
+
+def place_bar(root):
+    """The only navigation on a place page: back to the map, and the language."""
+    return f"""<div class="place-bar">
+  <a class="back" href="{root}index.html#lugares">{back_label()}</a>
+  <div class="lang" role="group" aria-label="Idioma / Language">
+    <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
+  </div>
+</div>
+"""
+
+
+def place_sheet():
+    """Places open over the page in this sheet, with only a way back."""
+    return f"""<div class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="sheet-bar"><button type="button" class="back">{back_label()}</button></div>
+  <div class="sheet-body" data-lenis-prevent></div>
+</div>
 """
 
 
@@ -298,7 +323,7 @@ def map_svg(placed):
         dots.append(f'<a class="dot" href="lugares/{p["slug"]}.html" data-i="{i}" data-year="{MAP[p["slug"]]["year"] or ""}" data-cursor="Entrar" aria-label="{esc(p["name"])}">'
                     f'<circle class="dot-hit" cx="{x}" cy="{y}" r="18"/><circle class="dot-ring" cx="{x}" cy="{y}" r="7"/>'
                     f'<circle class="dot-core" cx="{x}" cy="{y}" r="5"/>{label}{esc(p["name"])}</text></a>')
-    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="205 -330 555 1180" data-hero-box="-292 -40 1150 719" role="img" aria-label="Lisboa">'
+    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="190 110 570 700" data-hero-box="-292 -40 1150 719" role="img" aria-label="Lisboa">'
             f'<defs><linearGradient id="river" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0a35e" stop-opacity=".16"/>'
             f'<stop offset="1" stop-color="#f0a35e" stop-opacity=".02"/></linearGradient></defs>'
             f'<path class="river" d="{river}"/>'
@@ -328,10 +353,6 @@ def places_section():
 
     body = f"""
   <section class="map-hero" id="lugares">
-    <div class="map-wrap">
-      <div class="map-gl" id="map-gl" aria-label="Mapa de Lisboa"></div>
-      {map_svg(placed)}
-      <div class="map-shade" aria-hidden="true"></div>
       <div class="map-hero-text">
         <div class="hero-eyebrow mono">{t("Lisboa — há mais de 30 anos", "Lisbon — for 30+ years")}</div>
         <h1>
@@ -341,6 +362,10 @@ def places_section():
            "Thirty years of open doors, almost all of them in Lisbon. Watch them light up, one by one.", "p", 'class="hero-sub"')}
         <a class="btn" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <span aria-hidden="true">→</span></a>
       </div>
+    <div class="map-wrap">
+      <div class="map-gl" id="map-gl" aria-label="Mapa de Lisboa"></div>
+      {map_svg(placed)}
+      <div class="map-shade" aria-hidden="true"></div>
       <div class="map-far">{far_links}</div>
       <div class="map-card" hidden></div>
       <div class="map-time">
@@ -394,7 +419,6 @@ LAYOUT = ["f-full", "f-narrow-l", "f-narrow-r", "f-center", "f-left", "f-right",
 
 def build_place(i):
     p = PLACES[i]
-    nxt = PLACES[(i + 1) % len(PLACES)]
     root = "../"
     logo = f'<img class="logo-mark" src="{root}assets/img/lugares/{p["slug"]}/logo.jpg" alt="">' if "logo" in p else ""
 
@@ -409,6 +433,7 @@ def build_place(i):
     </figure>""")
 
     body = f"""
+  <div class="place-content" data-place="{p["slug"]}">
   <section class="hero place-hero">
     <div class="hero-media" aria-hidden="true"><img class="photo" src="{root}{cover_path(p)}" alt=""></div>
     <div class="hero-content">
@@ -436,14 +461,8 @@ def build_place(i):
 
   <section class="frames" aria-label="Fotografias">{"".join(frames)}
   </section>
+  </div>
 
-  <a class="next" href="{nxt["slug"]}.html" data-cursor="Entrar">
-    <img class="photo" src="{root}{cover_path(nxt)}" alt="" loading="lazy">
-    <div class="next-body">
-      {t("Próximo lugar", "Next place", "span", 'class="mono"')}
-      <span class="next-name">{nxt["name"]}</span>
-    </div>
-  </a>
 """
     return shell("lugar", root, f"{p['name']} — Sakim Lab", p["line"]["pt"], body)
 

@@ -43,6 +43,7 @@
   /* ---------- BOOKING CONVERSATION ---------- */
   /* A few questions, one at a time; the answers become a WhatsApp message or an email. */
   var renderBooking = null;
+  var openPlace = null;   /* set by the place sheet below */
   (function booking() {
     var box = $('#booking'), dataEl = $('#booking-data');
     if (!box || !dataEl) return;
@@ -393,7 +394,12 @@
       /* on touch screens the first tap shows the card, the second goes in */
       var wasOpen = false;
       el.addEventListener('pointerdown', function () { wasOpen = !!current && current.i === i; });
-      el.addEventListener('click', function (e) { if (!finePointer && !wasOpen) { e.preventDefault(); open(anchor(), i); } wasOpen = false; });
+      el.addEventListener('click', function (e) {
+        if (finePointer) return;
+        e.preventDefault();
+        if (!wasOpen) open(anchor(), i); else if (openPlace) openPlace(cards[i].href); else location.href = cards[i].href;
+        wasOpen = false;
+      });
     }
     if (finePointer) wrap.addEventListener('mouseleave', close);
     document.addEventListener('click', function (e) { if (current && !e.target.closest('.dot, .pin, .map-card')) close(); });
@@ -534,13 +540,16 @@
       try {
         map = new maplibregl.Map({
           container: 'map-gl', style: style, bounds: bounds,
-          fitBoundsOptions: { padding: mq.matches ? { top: 300, bottom: 140, left: 40, right: 40 }
-                                              : { top: 140, bottom: 150, left: Math.round(wrap.clientWidth * .45), right: 90 } },
-          maxZoom: 18, minZoom: 11, dragRotate: false, pitchWithRotate: false, touchPitch: false,
-          cooperativeGestures: true, attributionControl: { compact: true }
+          fitBoundsOptions: { maxZoom: 15.2, padding: mq.matches ? { top: 40, bottom: 110, left: 40, right: 40 }
+                                              : { top: 120, bottom: 140, left: Math.round(wrap.clientWidth * .45), right: 90 } },
+          /* only Lisbon, and the page keeps scrolling with the wheel; drag to move, buttons to zoom */
+          maxBounds: [[-9.30, 38.66], [-9.02, 38.82]], minZoom: 12.5, maxZoom: 18,
+          dragRotate: false, pitchWithRotate: false, touchPitch: false, scrollZoom: false,
+          attributionControl: { compact: true }
         });
       } catch (e) { return; }
       map.touchZoomRotate.disableRotation();
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
       placed.forEach(function (i) {
         var el = document.createElement('a');
         el.className = 'pin' + (cards[i].left ? ' pin-left' : ''); el.href = cards[i].href; el.setAttribute('aria-label', cards[i].name); el.dataset.cursor = 'Entrar';
@@ -598,6 +607,70 @@
       if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
       else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
     });
+  })();
+
+  /* ---------- PLACE SHEET: a place opens over the page, with only a way back ---------- */
+  (function sheet() {
+    var sh = $('#sheet');
+    if (!sh) return;
+    var body = $('.sheet-body', sh), back = $('.back', sh), lastFocus = null;
+    var placeLink = /(^|\/)lugares\/([a-z0-9-]+)\.html$/;
+
+    function translate(root) {
+      $$('[data-' + lang + ']', root).forEach(function (el) { el.innerHTML = el.getAttribute('data-' + lang); });
+      $$('[data-alt-' + lang + ']', root).forEach(function (el) { el.alt = el.getAttribute('data-alt-' + lang); });
+    }
+    function show(url, remember) {
+      var abs = new URL(url, location.href);
+      fetch(abs.href).then(function (r) { if (!r.ok) throw r; return r.text(); }).then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var content = doc.querySelector('.place-content');
+        if (!content) throw new Error('no content');
+        /* paths in the place page are relative to lugares/ */
+        $$('[src]', content).forEach(function (el) { el.setAttribute('src', new URL(el.getAttribute('src'), abs).href); });
+        $$('[data-reveal]', content).forEach(function (el) { el.removeAttribute('data-reveal'); });
+        body.innerHTML = '';
+        body.appendChild(document.importNode(content, true));
+        translate(body);
+        body.scrollTop = 0;
+        lastFocus = document.activeElement;
+        sh.classList.add('open'); sh.setAttribute('aria-hidden', 'false');
+        document.documentElement.style.overflow = 'hidden';
+        if (lenis) lenis.stop();
+        if (remember) history.pushState({ place: abs.pathname }, '', '#/' + content.dataset.place);
+        setTimeout(function () { back.focus({ preventScroll: true }); }, 300);
+      }).catch(function () { location.href = abs.href; });
+    }
+    function hide(fromHistory) {
+      if (!sh.classList.contains('open')) return;
+      sh.classList.remove('open'); sh.setAttribute('aria-hidden', 'true');
+      document.documentElement.style.overflow = '';
+      if (lenis) lenis.start();
+      if (!fromHistory && history.state && history.state.place) history.back();
+      if (lastFocus) lastFocus.focus({ preventScroll: true });
+    }
+    openPlace = function (url) { show(url, true); };
+
+    /* captured before the page transitions: place links open here instead of leaving the page */
+    document.addEventListener('click', function (e) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      var a = e.target.closest('a[href]');
+      if (!a || !placeLink.test(a.getAttribute('href'))) return;
+      if (!finePointer && e.target.closest('.dot, .pin')) return;   /* the map handles its own taps */
+      e.preventDefault(); e.stopPropagation();
+      show(a.getAttribute('href'), true);
+    }, true);
+    back.addEventListener('click', function () { hide(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hide(false); });
+    window.addEventListener('popstate', function () { if (!(history.state && history.state.place)) hide(true); });
+    $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { translate(body); }); });
+    /* a shared link like index.html#/so-what opens that place straight away */
+    function fromHash() {
+      var m = /^#\/([a-z0-9-]+)$/.exec(location.hash);
+      if (m && !sh.classList.contains('open')) show('lugares/' + m[1] + '.html', false);
+    }
+    fromHash();
+    window.addEventListener('hashchange', fromHash);
   })();
 
   /* ---------- LISBON CLOCK ---------- */

@@ -11,12 +11,12 @@
 <link rel="icon" href="../assets/img/marca/sakim-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=336099a7">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..700&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/site.css?v=61a0b348">
 <script src="../assets/js/gsap.min.js?v=5e6e6cba" defer></script>
 <script src="../assets/js/ScrollTrigger.min.js?v=00a3e5c7" defer></script>
 <script src="../assets/js/lenis.min.js?v=81fb34b5" defer></script>
-<script src="../assets/js/site.js?v=42db4472" defer></script>
+<script src="../assets/js/site.js?v=87e8ae91" defer></script>
 </head>
 <body class="no-js" data-page="lugar">
 <a class="skip" href="#main" data-pt="Saltar para o conteúdo" data-en="Skip to content">Saltar para o conteúdo</a>
@@ -27,7 +27,13 @@
   <div class="veil-cap mono" data-pt="Anos de noites em Lisboa" data-en="Years of nights in Lisbon">Anos de noites em Lisboa</div>
 </div>
 
-<header class="nav">
+<div class="place-bar">
+  <a class="back" href="../index.html#lugares"><span data-pt="← Voltar" data-en="← Back">← Voltar</span></a>
+  <div class="lang" role="group" aria-label="Idioma / Language">
+    <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
+  </div>
+</div>
+<header class="nav" hidden>
   <a href="../index.html" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
   <nav class="nav-links" aria-label="Menu">
     <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
@@ -53,29 +59,10 @@
 </div>
 
 
-<div class="drawer" id="drawer" aria-hidden="true">
-  <div class="drawer-scrim" data-close></div>
-  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
-    <div class="drawer-top">
-      <div><span class="mono" data-pt="Consulta" data-en="Consultation">Consulta</span>
-      <h2 id="drawer-title" data-pt="Pronto para construir &lt;em&gt;algo real?&lt;/em&gt;" data-en="Ready to build &lt;em&gt;something real?&lt;/em&gt;">Pronto para construir <em>algo real?</em></h2></div>
-      <button type="button" class="drawer-close" data-close aria-label="Fechar / Close">×</button>
-    </div>
-    <div class="chat" id="booking" aria-live="polite">
-      <div class="chat-head">
-        <img src="../assets/img/marca/sakim-logo.jpg" alt="">
-        <div><strong>Sakim</strong><span class="mono" data-pt="Responde em pessoa" data-en="Replies in person">Responde em pessoa</span></div>
-        <button type="button" class="chat-restart mono" hidden data-pt="Recomeçar" data-en="Start again">Recomeçar</button>
-      </div>
-      <div class="chat-log" id="chat-log"></div>
-      <div class="chat-input" id="chat-input"></div>
-      <noscript><p class="chat-msg"><span data-pt="Escreva-me para" data-en="Write to me at">Escreva-me para</span> <a href="mailto:studio@sakinlab.com">studio@sakinlab.com</a>.</p></noscript>
-    </div>
-  <script type="application/json" id="booking-data">{"whatsapp": "351913915323", "email": "studio@sakinlab.com", "services": [{"id": "conceito", "pt": "Conceito & identidade", "en": "Concept & identity"}, {"id": "espaco", "pt": "Espaço & atmosfera", "en": "Space & atmosphere"}, {"id": "ritmo", "pt": "O ritmo do dia", "en": "The rhythm of the day"}, {"id": "cartas", "pt": "Cartas", "en": "Menus"}, {"id": "fornecedores", "pt": "Fornecedores", "en": "Suppliers"}, {"id": "negocio", "pt": "Plano de negócio", "en": "Business plan"}, {"id": "digital", "pt": "Digital & redes", "en": "Digital & social"}, {"id": "equipa", "pt": "Equipa & serviço", "en": "Team & service"}, {"id": "abertura", "pt": "Abertura", "en": "Opening"}]}</script>
-  </aside>
-</div>
+
 <main id="main">
 
+  <div class="place-content" data-place="o-larguinho">
   <section class="hero place-hero">
     <div class="hero-media" aria-hidden="true"><img class="photo" src="../assets/img/lugares/o-larguinho/largo-ao-anoitecer.jpg" alt=""></div>
     <div class="hero-content">
@@ -135,25 +122,13 @@
       <figcaption>08 — <span data-pt="A esplanada cheia à noite" data-en="The terrace full at night">A esplanada cheia à noite</span></figcaption>
     </figure>
   </section>
+  </div>
 
-  <a class="next" href="bica-me.html" data-cursor="Entrar">
-    <img class="photo" src="../assets/img/lugares/bica-me/velas.jpg" alt="" loading="lazy">
-    <div class="next-body">
-      <span class="mono" data-pt="Próximo lugar" data-en="Next place">Próximo lugar</span>
-      <span class="next-name">Bica-me</span>
-    </div>
-  </a>
 
-  <section class="cta">
-    <div>
-      <h2 data-pt="Pronto para construir &lt;em&gt;algo real?&lt;/em&gt;" data-en="Ready to build &lt;em&gt;something real?&lt;/em&gt;">Pronto para construir <em>algo real?</em></h2>
-      <p data-pt="Umas perguntas rápidas, e o resto conversamos à mesa." data-en="A few quick questions, and we&#x27;ll talk about the rest at the table.">Umas perguntas rápidas, e o resto conversamos à mesa.</p>
-    </div>
-    <a class="btn" href="../contacto.html"><span data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</span> <span aria-hidden="true">→</span></a>
-  </section>
+
 </main>
 
-<footer>
+<footer hidden>
   <a class="bye" href="../contacto.html" data-pt="Até &lt;em&gt;já.&lt;/em&gt;" data-en="See you &lt;em&gt;soon.&lt;/em&gt;">Até <em>já.</em></a>
   <div class="foot mono">
     <span><span class="js-greet">Boa noite</span> — <span data-pt="em Lisboa são" data-en="in Lisbon it&#x27;s">em Lisboa são</span> <span class="js-clock">--:--</span></span>
