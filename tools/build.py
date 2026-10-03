@@ -130,6 +130,7 @@ def shell(page, root, title, desc, body, head=""):
     <div class="lang" role="group" aria-label="Idioma / Language">
       <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
     </div>
+    {t("Consulta", "Book", "a", f'class="nav-book" href="{root}contacto.html"')}
     {t("Menu", "Menu", "button", 'type="button" class="menu-btn" aria-expanded="false" aria-controls="menu"')}
   </div>
 </header>
@@ -138,6 +139,7 @@ def shell(page, root, title, desc, body, head=""):
   {links()}
 </div>
 
+{booking_drawer(root) if page != "contacto" else ""}
 <main id="main">
 {body}
 {cta(root) if page != "contacto" else ""}
@@ -534,12 +536,42 @@ def build_method():
 
 
 # ---------------------------------------------------------------- BOOKING
-def build_contact():
+def booking_chat(root=""):
+    """The conversation: on the booking page, and in the side panel on every other page."""
     data = {
         "whatsapp": WHATSAPP,
         "email": EMAIL,
         "services": [{"id": k, "pt": n[0], "en": n[1]} for k, n, _ in SERVICES],
     }
+    return f"""<div class="chat" id="booking" aria-live="polite">
+      <div class="chat-head">
+        <img src="{root}{SITE_PHOTOS[2]}" alt="">
+        <div><strong>Sakim</strong>{t("Responde em pessoa", "Replies in person", "span", 'class="mono"')}</div>
+        {t("Recomeçar", "Start again", "button", 'type="button" class="chat-restart mono" hidden')}
+      </div>
+      <div class="chat-log" id="chat-log"></div>
+      <div class="chat-input" id="chat-input"></div>
+      <noscript><p class="chat-msg">{t("Escreva-me para", "Write to me at")} <a href="mailto:{EMAIL}">{EMAIL}</a>.</p></noscript>
+    </div>
+  <script type="application/json" id="booking-data">{json.dumps(data, ensure_ascii=False)}</script>"""
+
+
+def booking_drawer(root):
+    return f"""
+<div class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-scrim" data-close></div>
+  <aside class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+    <div class="drawer-top">
+      <div>{t("Consulta", "Consultation", "span", 'class="mono"')}
+      {t("Pronto para construir <em>algo real?</em>", "Ready to build <em>something real?</em>", "h2", 'id="drawer-title"')}</div>
+      <button type="button" class="drawer-close" data-close aria-label="Fechar / Close">×</button>
+    </div>
+    {booking_chat(root)}
+  </aside>
+</div>"""
+
+
+def build_contact():
     body = f"""
   <section class="booking">
     <div class="booking-intro">
@@ -552,18 +584,8 @@ def build_contact():
         <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener" data-cursor="Insta"><span class="mono">Instagram</span><span>@{INSTAGRAM}</span></a>
       </div>
     </div>
-    <div class="chat" id="booking" aria-live="polite">
-      <div class="chat-head">
-        <img src="{SITE_PHOTOS[2]}" alt="">
-        <div><strong>Sakim</strong>{t("Responde em pessoa", "Replies in person", "span", 'class="mono"')}</div>
-        {t("Recomeçar", "Start again", "button", 'type="button" class="chat-restart mono" hidden')}
-      </div>
-      <div class="chat-log" id="chat-log"></div>
-      <div class="chat-input" id="chat-input"></div>
-      <noscript><p class="chat-msg">{t("Escreva-me para", "Write to me at")} <a href="mailto:{EMAIL}">{EMAIL}</a>.</p></noscript>
-    </div>
+    {booking_chat()}
   </section>
-  <script type="application/json" id="booking-data">{json.dumps(data, ensure_ascii=False)}</script>
 """
     return shell("contacto", "", "Marcar consulta — Sakim Lab",
                  "Pronto para construir algo real? Marque a sua consulta: três perguntas e o resto conversamos à mesa.", body)

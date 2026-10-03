@@ -562,6 +562,44 @@
     document.addEventListener('DOMContentLoaded', streetMap);
   })();
 
+  /* ---------- BOOKING SIDE PANEL: every "Marcar consulta" opens it instead of leaving the page ---------- */
+  (function drawer() {
+    var d = $('#drawer');
+    if (!d) return;
+    var lastFocus = null;
+    function open() {
+      lastFocus = document.activeElement;
+      d.classList.add('open'); d.setAttribute('aria-hidden', 'false');
+      document.documentElement.style.overflow = 'hidden';
+      if (lenis) lenis.stop();
+      if (menu) { menu.classList.remove('open'); if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false'); }
+      setTimeout(function () { var f = $('.chat-option, .chat-field input, .drawer-close', d); if (f) f.focus({ preventScroll: true }); }, 450);
+    }
+    function close() {
+      d.classList.remove('open'); d.setAttribute('aria-hidden', 'true');
+      document.documentElement.style.overflow = '';
+      if (lenis) lenis.start();
+      if (lastFocus) lastFocus.focus({ preventScroll: true });
+    }
+    /* captured before the page-transition handler, so the link never navigates */
+    document.addEventListener('click', function (e) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      var a = e.target.closest('a[href$="contacto.html"]');
+      if (!a) return;
+      e.preventDefault(); e.stopPropagation(); open();
+    }, true);
+    $$('[data-close]', d).forEach(function (x) { x.addEventListener('click', close); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && d.classList.contains('open')) close(); });
+    /* keep Tab inside the panel while it is open */
+    d.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab') return;
+      var f = $$('button:not([hidden]):not([disabled]), a[href], input', d).filter(function (x) { return x.offsetParent !== null; });
+      if (!f.length) return;
+      if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+    });
+  })();
+
   /* ---------- LISBON CLOCK ---------- */
   function tick() {
     var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Lisbon', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());
