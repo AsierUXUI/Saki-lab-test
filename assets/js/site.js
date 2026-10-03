@@ -401,7 +401,12 @@
 
     /* ----- the drawn map (shown until the street map has loaded, and if it never does) ----- */
     var svg = $('.map-svg'), full = svg.getAttribute('viewBox'), mq = matchMedia('(max-width: 760px)');
-    function fit() { svg.setAttribute('viewBox', mq.matches ? svg.dataset.mobileBox : full); close(); }
+    function fit() {
+      var hero = !!wrap.closest('.map-hero');
+      svg.setAttribute('viewBox', mq.matches ? svg.dataset.mobileBox : hero ? svg.dataset.heroBox : full);
+      svg.setAttribute('preserveAspectRatio', hero && !mq.matches ? 'xMidYMid slice' : 'xMidYMid meet');
+      close();
+    }
     fit();
     if (mq.addEventListener) mq.addEventListener('change', fit);
     $$('.dot').forEach(function (a) {
@@ -470,7 +475,13 @@
     /* time starts running the first time the map comes into view */
     if (!reduce && 'IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) { io.disconnect(); setTimeout(run, 500); }
+        if (!entries[0].isIntersecting) return;
+        io.disconnect();
+        /* wait for the opening curtain to lift, so the years start where people can see them */
+        (function whenUncovered() {
+          var v = $('.veil');
+          if (!v || getComputedStyle(v).display === 'none') setTimeout(run, 400); else setTimeout(whenUncovered, 100);
+        })();
       }, { threshold: .35 });
       io.observe(wrap);
     }
@@ -523,7 +534,8 @@
       try {
         map = new maplibregl.Map({
           container: 'map-gl', style: style, bounds: bounds,
-          fitBoundsOptions: { padding: mq.matches ? 50 : { top: 140, bottom: 120, left: 120, right: 260 } },
+          fitBoundsOptions: { padding: mq.matches ? { top: 300, bottom: 140, left: 40, right: 40 }
+                                              : { top: 140, bottom: 150, left: Math.round(wrap.clientWidth * .45), right: 90 } },
           maxZoom: 18, minZoom: 11, dragRotate: false, pitchWithRotate: false, touchPitch: false,
           cooperativeGestures: true, attributionControl: { compact: true }
         });
@@ -543,7 +555,7 @@
       map.on('idle', function () {
         if (wrap.classList.contains('has-streets')) return;
         try {
-          if (map.querySourceFeatures(src, { sourceLayer: 'transportation' }).length) wrap.classList.add('has-streets');
+          if (map.getCanvas().clientHeight > 0 && map.querySourceFeatures(src, { sourceLayer: 'transportation' }).length) wrap.classList.add('has-streets');
         } catch (e) {}
       });
     }
@@ -687,8 +699,8 @@
     }
 
     /* entrance: a count to 30 on the first visit, otherwise the veil just lifts */
-    var heroLines = $$('.hero h1 .line > span');
-    var heroRest = $$('.hero-eyebrow, .hero-foot');
+    var heroLines = $$('.hero h1 .line > span, .map-hero h1 .line > span');
+    var heroRest = $$('.hero-eyebrow, .hero-foot, .map-hero-text .hero-sub, .map-hero-text .btn');
     gsap.set(heroLines, { yPercent: 110 });
     gsap.set(heroRest, { opacity: 0, y: 20 });
     var intro = gsap.timeline();

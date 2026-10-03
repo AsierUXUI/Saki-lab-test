@@ -44,6 +44,13 @@ SERVICES = [
 ]
 
 
+def v(rel):
+    """Version tag for a CSS/JS file, so browsers fetch it again whenever it changes."""
+    import hashlib
+    with open(os.path.join(ROOT, rel), "rb") as f:
+        return f"{rel}?v={hashlib.md5(f.read()).hexdigest()[:8]}"
+
+
 def esc(s):
     return html.escape(s, quote=True)
 
@@ -98,11 +105,11 @@ def shell(page, root, title, desc, body, head=""):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{root}assets/css/site.css">
-<script src="{root}assets/js/gsap.min.js" defer></script>
-<script src="{root}assets/js/ScrollTrigger.min.js" defer></script>
-<script src="{root}assets/js/lenis.min.js" defer></script>
-<script src="{root}assets/js/site.js" defer></script>
+<link rel="stylesheet" href="{root}{v("assets/css/site.css")}">
+<script src="{root}{v("assets/js/gsap.min.js")}" defer></script>
+<script src="{root}{v("assets/js/ScrollTrigger.min.js")}" defer></script>
+<script src="{root}{v("assets/js/lenis.min.js")}" defer></script>
+<script src="{root}{v("assets/js/site.js")}" defer></script>
 {head}</head>
 <body class="no-js" data-page="{page}">
 {t("Saltar para o conteúdo", "Skip to content", "a", 'class="skip" href="#main"')}
@@ -175,38 +182,8 @@ MANIFESTO = {
 
 # ---------------------------------------------------------------- HOME
 def build_home():
-    root = ""
-    slides = [cover_path(BY_SLUG[s]) for s in ("a-tabacaria", "so-what", "social-b", "sakim")]
-    slide_html = "\n      ".join(
-        f'<img class="photo on" src="{s}" alt="">' if i == 0 else f'<img class="photo" src="{s}" alt="" loading="lazy">'
-        for i, s in enumerate(slides))
-
-    places, head = places_section()
-    body = f"""
-  <section class="hero hero-home">
-    <div class="hero-media slides" aria-hidden="true">
-      {slide_html}
-    </div>
-    <div class="hero-content">
-      <div class="hero-eyebrow mono">{t("Lisboa — há mais de 30 anos", "Lisbon — for 30+ years")}<span>38°42′N 9°08′W</span></div>
-      <h1>
-{hero_lines(("Não desenho bares.", "I don't design bars."), ("Desenho <em>experiências.</em>", "I design <em>experiences.</em>"))}
-      </h1>
-      <div class="hero-foot">
-        {t("Há mais de trinta anos que crio bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.",
-           "For more than thirty years I've been creating bars, restaurants and places in Lisbon — from the first sketch to the last round.",
-           "p", 'class="hero-sub"')}
-        <div class="hero-actions">
-          <a class="btn" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <span aria-hidden="true">→</span></a>
-          <div class="scroll-cue mono"><b></b>{t("A noite começa aqui", "The night starts here")}</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-{places}
-"""
-    return shell("home", root, "Sakim Lab — Lugares para a noite, Lisboa",
+    body, head = places_section()
+    return shell("home", "", "Sakim Lab — Lugares para a noite, Lisboa",
                  "Há mais de trinta anos a criar bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.", body, head)
 
 
@@ -227,7 +204,28 @@ def build_about():
   </a>""")
     manifesto_pt = MANIFESTO["pt"]
     manifesto_en = MANIFESTO["en"]
+    slides = [cover_path(BY_SLUG[s]) for s in ("a-tabacaria", "so-what", "social-b", "sakim")]
+    slide_html = "\n      ".join(
+        f'<img class="photo on" src="{s}" alt="">' if i == 0 else f'<img class="photo" src="{s}" alt="" loading="lazy">'
+        for i, s in enumerate(slides))
     body = f"""
+  <section class="hero hero-about">
+    <div class="hero-media slides" aria-hidden="true">
+      {slide_html}
+    </div>
+    <div class="hero-content">
+      <div class="hero-eyebrow mono">{t("Sobre", "About")}<span>38°42′N 9°08′W</span></div>
+      <h1>
+{hero_lines(("Trinta anos", "Thirty years"), ("de <em>noites.</em>", "of <em>nights.</em>"))}
+      </h1>
+      <div class="hero-foot">
+        {t("Há mais de trinta anos que crio bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.",
+           "For more than thirty years I've been creating bars, restaurants and places in Lisbon — from the first sketch to the last round.",
+           "p", 'class="hero-sub"')}
+        <div class="scroll-cue mono"><b></b>{t("Continue", "Keep going")}</div>
+      </div>
+    </div>
+  </section>
   <section class="manifesto">
     {t("Sobre", "About", "div", 'class="label mono"')}
     <p class="manifesto-text" id="manifesto-text" data-pt="{esc(manifesto_pt)}" data-en="{esc(manifesto_en)}">{manifesto_pt}</p>
@@ -298,7 +296,7 @@ def map_svg(placed):
         dots.append(f'<a class="dot" href="lugares/{p["slug"]}.html" data-i="{i}" data-year="{MAP[p["slug"]]["year"] or ""}" data-cursor="Entrar" aria-label="{esc(p["name"])}">'
                     f'<circle class="dot-hit" cx="{x}" cy="{y}" r="18"/><circle class="dot-ring" cx="{x}" cy="{y}" r="7"/>'
                     f'<circle class="dot-core" cx="{x}" cy="{y}" r="5"/>{label}{esc(p["name"])}</text></a>')
-    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="235 185 540 340" role="img" aria-label="Lisboa">'
+    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="205 -330 555 1180" data-hero-box="-292 -40 1150 719" role="img" aria-label="Lisboa">'
             f'<defs><linearGradient id="river" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0a35e" stop-opacity=".16"/>'
             f'<stop offset="1" stop-color="#f0a35e" stop-opacity=".02"/></linearGradient></defs>'
             f'<path class="river" d="{river}"/>'
@@ -327,16 +325,20 @@ def places_section():
     tick_marks = "".join(f'<span style="--at:{y}" title="{y}"></span>' for y in ticks)
 
     body = f"""
-  <section class="places-intro" id="lugares">
-    {t("Lugares", "Places", "div", 'class="label mono"')}
-    {t("Trinta anos de portas abertas, quase todas em Lisboa. Deixe o tempo correr — ou volte atrás e ande pelas ruas.",
-       "Thirty years of open doors, almost all of them in Lisbon. Let time run — or go back and wander the streets.", "p")}
-  </section>
-
-  <section class="view-map">
+  <section class="map-hero" id="lugares">
     <div class="map-wrap">
       <div class="map-gl" id="map-gl" aria-label="Mapa de Lisboa"></div>
       {map_svg(placed)}
+      <div class="map-shade" aria-hidden="true"></div>
+      <div class="map-hero-text">
+        <div class="hero-eyebrow mono">{t("Lisboa — há mais de 30 anos", "Lisbon — for 30+ years")}</div>
+        <h1>
+{hero_lines(("Não desenho bares.", "I don't design bars."), ("Desenho <em>experiências.</em>", "I design <em>experiences.</em>"))}
+        </h1>
+        {t("Trinta anos de portas abertas, quase todas em Lisboa. Veja-as acender, uma a uma.",
+           "Thirty years of open doors, almost all of them in Lisbon. Watch them light up, one by one.", "p", 'class="hero-sub"')}
+        <a class="btn" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <span aria-hidden="true">→</span></a>
+      </div>
       <div class="map-far">{far_links}</div>
       <div class="map-card" hidden></div>
       <div class="map-time">
@@ -352,6 +354,8 @@ def places_section():
         </div>
       </div>
     </div>
+  </section>
+  <section class="map-after">
     <div class="map-gaps">
       {t("Ainda sem lugar no mapa", "Not on the map yet", "span", 'class="mono"')}
       <div>{gaps}</div>
@@ -360,8 +364,8 @@ def places_section():
   </section>
   <script type="application/json" id="places-data">{json.dumps({"first": first_year, "last": datetime.date.today().year, "places": cards}, ensure_ascii=False)}</script>
 """
-    head = ('<link rel="stylesheet" href="assets/css/maplibre-gl.css">\n'
-            '<script src="assets/js/maplibre-gl.js" defer></script>\n')
+    head = (f'<link rel="stylesheet" href="{v("assets/css/maplibre-gl.css")}">\n'
+            f'<script src="{v("assets/js/maplibre-gl.js")}" defer></script>\n')
     return body, head
 
 

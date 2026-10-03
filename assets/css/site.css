@@ -506,3 +506,31 @@ footer { padding: clamp(80px, 14vh, 140px) var(--gutter) 28px; overflow: hidden;
 #years-range::-webkit-slider-thumb { -webkit-appearance: none; border-radius: 50%; background: var(--cream); border: 0; }
 #years-range::-moz-range-thumb { border-radius: 50%; background: var(--cream); border: 0; }
 #years-range:focus-visible { outline: 1px solid var(--amber); outline-offset: 4px; }
+
+/* MAP AS THE HERO */
+.map-wrap .map-gl { position: absolute; inset: 0; width: 100%; height: 100%; }   /* MapLibre's own CSS would make it 0px high */
+.map-hero { position: relative; height: 100svh; min-height: 600px; }
+.map-hero .map-wrap { height: 100%; min-height: 0; border: 0; border-radius: 0; }
+.map-shade { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(14, 11, 10, .92) 0%, rgba(14, 11, 10, .6) 32%, rgba(14, 11, 10, 0) 58%),
+              linear-gradient(to bottom, rgba(14, 11, 10, .7), rgba(14, 11, 10, 0) 22%); }
+.map-hero-text { position: absolute; z-index: 2; left: var(--gutter); top: 50%; transform: translateY(-58%); max-width: min(640px, 46vw); display: grid; gap: 20px; justify-items: start; pointer-events: none; }
+.map-hero-text a { pointer-events: auto; }
+.map-hero-text .hero-eyebrow { margin: 0; }
+.map-hero-text h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(40px, 5vw, 92px); line-height: .9; letter-spacing: -.025em; text-shadow: 0 2px 40px #0e0b0a; }
+.map-hero-text h1 em { color: var(--ember); }
+.map-hero-text .hero-sub { color: rgba(239, 231, 218, .82); max-width: 420px; }
+.map-hero .map-time { z-index: 3; }
+.map-hero .map-far { z-index: 2; }
+.map-hero .map-card { z-index: 4; }
+.map-after { padding: 26px var(--gutter) 0; }
+@media (max-width: 760px) {
+  .map-hero { min-height: 640px; }
+  .map-shade { background: linear-gradient(to bottom, rgba(14, 11, 10, .95) 0%, rgba(14, 11, 10, .75) 30%, rgba(14, 11, 10, 0) 48%); }
+  .map-hero-text { top: 92px; transform: none; max-width: none; right: var(--gutter); gap: 14px; }
+  .map-hero-text h1 { font-size: clamp(36px, 10vw, 52px); }
+  .map-hero-text .hero-sub { font-size: 15px; }
+  .map-hero .map-far { top: auto; bottom: 74px; right: 10px; }
+  .map-hero .far { padding: 6px 12px; font-size: 13px; }
+  .map-hero .far b { font-size: 16px; }
+}
