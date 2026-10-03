@@ -3,71 +3,67 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Marcar consulta — Sakim Lab</title>
-<meta name="description" content="Pronto para construir algo real? Marque a sua consulta: três perguntas e o resto conversamos à mesa.">
+<title>Iniciar Projecto — Sakim Lab</title>
+<meta name="description" content="Recebemos um número limitado de projetos por ano. O primeiro passo é sempre uma breve conversa.">
 <meta name="theme-color" content="#0b0908">
-<meta property="og:title" content="Marcar consulta — Sakim Lab">
-<meta property="og:description" content="Pronto para construir algo real? Marque a sua consulta: três perguntas e o resto conversamos à mesa.">
+<meta property="og:title" content="Iniciar Projecto — Sakim Lab">
+<meta property="og:description" content="Recebemos um número limitado de projetos por ano. O primeiro passo é sempre uma breve conversa.">
 <link rel="icon" href="assets/img/marca/sakim-logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/site.css?v=5a9808ec">
+<link rel="stylesheet" href="assets/css/site.css?v=5efdca90">
 <script src="assets/js/gsap.min.js?v=5e6e6cba" defer></script>
 <script src="assets/js/ScrollTrigger.min.js?v=00a3e5c7" defer></script>
 <script src="assets/js/lenis.min.js?v=81fb34b5" defer></script>
-<script src="assets/js/site.js?v=6c8b17e9" defer></script>
+<script src="assets/js/site.js?v=7497d6ad" defer></script>
 </head>
 <body class="no-js" data-page="contacto">
 <a class="skip" href="#main" data-pt="Saltar para o conteúdo" data-en="Skip to content">Saltar para o conteúdo</a>
 <div class="grain" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"><span></span></div>
-<div class="veil" aria-hidden="true">
-  <div class="veil-num"><span>0</span><sup>+</sup></div>
-  <div class="veil-cap mono" data-pt="Anos de noites em Lisboa" data-en="Years of nights in Lisbon">Anos de noites em Lisboa</div>
-</div>
-
 <header class="nav">
-  <a href="index.html" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
+  <a href="index.html#top" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
   <nav class="nav-links" aria-label="Menu">
-    <a href="lugares.html" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="contacto.html" class="nav-cta" aria-current="page" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
+    <a href="index.html#estudio" data-pt="Estúdio" data-en="Studio">Estúdio</a>
+    <a href="index.html#servicos" data-pt="Serviços" data-en="Services">Serviços</a>
+    <a href="index.html#projectos" data-pt="Projectos" data-en="Projects">Projectos</a>
+    <a href="index.html#processo" data-pt="Processo" data-en="Process">Processo</a>
+    <a href="index.html#sobre" data-pt="Sobre" data-en="About">Sobre</a>
+    <a href="index.html#contacto" data-pt="Contacto" data-en="Contact">Contacto</a>
   </nav>
   <div class="nav-right">
-    <span class="clock-nav mono"><span data-pt="Lisboa" data-en="Lisbon">Lisboa</span> <span class="js-clock">--:--</span></span>
     <div class="lang" role="group" aria-label="Idioma / Language">
       <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
     </div>
-    <a class="nav-book" href="contacto.html" data-pt="Consulta" data-en="Book">Consulta</a>
+    <a class="nav-cta magnetic" href="contacto.html" data-pt="Iniciar Projecto" data-en="Start Your Project">Iniciar Projecto</a>
     <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu" data-pt="Menu" data-en="Menu">Menu</button>
   </div>
 </header>
-<div class="menu" id="menu">
-  <a href="index.html" data-pt="Início" data-en="Home">Início</a>
-  <a href="lugares.html" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="contacto.html" class="nav-cta" aria-current="page" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-</div>
-
-
-<div class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="sheet-bar"><button type="button" class="back"><span data-pt="← Voltar" data-en="← Back">← Voltar</span></button></div>
-  <div class="sheet-body" data-lenis-prevent></div>
-</div>
+<aside class="menu" id="menu" aria-hidden="true">
+  <div class="menu-scrim" data-close-menu></div>
+  <div class="menu-panel">
+    <button type="button" class="menu-close mono" data-close-menu data-pt="Fechar" data-en="Close">Fechar</button>
+    <nav><a href="index.html#estudio" data-pt="Estúdio" data-en="Studio">Estúdio</a>
+    <a href="index.html#servicos" data-pt="Serviços" data-en="Services">Serviços</a>
+    <a href="index.html#projectos" data-pt="Projectos" data-en="Projects">Projectos</a>
+    <a href="index.html#processo" data-pt="Processo" data-en="Process">Processo</a>
+    <a href="index.html#sobre" data-pt="Sobre" data-en="About">Sobre</a>
+    <a href="index.html#contacto" data-pt="Contacto" data-en="Contact">Contacto</a></nav>
+    <a class="btn" href="contacto.html" data-pt="Iniciar Projecto" data-en="Start Your Project">Iniciar Projecto</a>
+  </div>
+</aside>
 
 <main id="main">
 
   <section class="booking">
     <div class="booking-intro">
-      <div class="label mono" data-pt="Consulta" data-en="Consultation">Consulta</div>
-      <h1><span class="line"><span data-pt="Pronto para construir" data-en="Ready to build">Pronto para construir</span></span><span class="line"><span data-pt="algo real?" data-en="something real?">algo real?</span></span><span class="line"><span data-pt="&lt;em&gt;Marque a sua consulta.&lt;/em&gt;" data-en="&lt;em&gt;Book your consultation.&lt;/em&gt;"><em>Marque a sua consulta.</em></span></span></h1>
-      <p class="booking-sub" data-pt="Umas perguntas rápidas, nada mais. O resto conversamos à mesa — de preferência com um copo à frente." data-en="A few quick questions, nothing more. We&#x27;ll talk about the rest at the table — ideally with a glass in front of us.">Umas perguntas rápidas, nada mais. O resto conversamos à mesa — de preferência com um copo à frente.</p>
-      <div class="links">
-        <a href="mailto:studio@sakinlab.com" data-cursor="Email"><span class="mono">Email</span><span>studio@sakinlab.com</span></a>
-        <a href="https://instagram.com/sakinlab" target="_blank" rel="noopener" data-cursor="Insta"><span class="mono">Instagram</span><span>@sakinlab</span></a>
+      <p class="label mono" data-pt="Contacto" data-en="Contact">Contacto</p>
+      <h1 data-pt="Pronto para Construir &lt;em&gt;Algo Real?&lt;/em&gt;" data-en="Ready to Build &lt;em&gt;Something Real?&lt;/em&gt;">Pronto para Construir <em>Algo Real?</em></h1>
+      <p class="sec-body" data-pt="Recebemos um número limitado de projetos por ano. O primeiro passo é sempre uma breve conversa." data-en="We take on a limited number of projects each year. The first step is always a short conversation.">Recebemos um número limitado de projetos por ano. O primeiro passo é sempre uma breve conversa.</p>
+      <div class="contact-links">
+        <a href="mailto:studio@sakinlab.com"><span class="mono">Email</span><span>studio@sakinlab.com</span></a>
+        <a href="https://instagram.com/sakinlab" target="_blank" rel="noopener"><span class="mono">Instagram</span><span>@sakinlab</span></a>
       </div>
     </div>
     <div class="chat" id="booking" aria-live="polite">
@@ -78,20 +74,16 @@
       </div>
       <div class="chat-log" id="chat-log"></div>
       <div class="chat-input" id="chat-input"></div>
-      <noscript><p class="chat-msg"><span data-pt="Escreva-me para" data-en="Write to me at">Escreva-me para</span> <a href="mailto:studio@sakinlab.com">studio@sakinlab.com</a>.</p></noscript>
+      <noscript><p class="chat-msg"><span data-pt="Escreva-nos para" data-en="Write to us at">Escreva-nos para</span> <a href="mailto:studio@sakinlab.com">studio@sakinlab.com</a>.</p></noscript>
     </div>
-  <script type="application/json" id="booking-data">{"whatsapp": "351913915323", "email": "studio@sakinlab.com", "services": [{"id": "conceito", "pt": "Conceito & identidade", "en": "Concept & identity"}, {"id": "espaco", "pt": "Espaço & atmosfera", "en": "Space & atmosphere"}, {"id": "ritmo", "pt": "O ritmo do dia", "en": "The rhythm of the day"}, {"id": "cartas", "pt": "Cartas", "en": "Menus"}, {"id": "fornecedores", "pt": "Fornecedores", "en": "Suppliers"}, {"id": "negocio", "pt": "Plano de negócio", "en": "Business plan"}, {"id": "digital", "pt": "Digital & redes", "en": "Digital & social"}, {"id": "equipa", "pt": "Equipa & serviço", "en": "Team & service"}, {"id": "abertura", "pt": "Abertura", "en": "Opening"}]}</script>
+  <script type="application/json" id="booking-data">{"whatsapp": "351913915323", "email": "studio@sakinlab.com", "services": [{"id": "A", "pt": "Conceito & Posicionamento", "en": "Concept & Positioning"}, {"id": "B", "pt": "Comida, Bebida & Experiência", "en": "Food, Beverage & Experience"}, {"id": "C", "pt": "Espaço, Configuração & Operações", "en": "Space, Setup & Operations"}, {"id": "D", "pt": "Equipa, Lançamento & Consultoria", "en": "Team, Launch & Advisory"}]}</script>
   </section>
-
 
 </main>
 
-<footer>
-  <a class="bye" href="contacto.html" data-pt="Até &lt;em&gt;já.&lt;/em&gt;" data-en="See you &lt;em&gt;soon.&lt;/em&gt;">Até <em>já.</em></a>
-  <div class="foot mono">
-    <span><span class="js-greet">Boa noite</span> — <span data-pt="em Lisboa são" data-en="in Lisbon it&#x27;s">em Lisboa são</span> <span class="js-clock">--:--</span></span>
-    <span class="foot-links"><a href="mailto:studio@sakinlab.com">Email</a><a href="https://instagram.com/sakinlab" target="_blank" rel="noopener">Instagram</a><span>© <span class="js-year">2026</span> Sakim Lab</span></span>
-  </div>
+<footer class="foot mono">
+  <span>© 2026 Sakim Lab. <span data-pt="Todos os direitos reservados." data-en="All rights reserved.">Todos os direitos reservados.</span></span>
+  <span><a href="mailto:studio@sakinlab.com">Email</a> · <a href="https://instagram.com/sakinlab" target="_blank" rel="noopener">Instagram</a></span>
 </footer>
 </body>
 </html>
