@@ -44,6 +44,13 @@ SERVICES = [
 ]
 
 
+def v(rel):
+    """Version tag for a CSS/JS file, so browsers fetch it again whenever it changes."""
+    import hashlib
+    with open(os.path.join(ROOT, rel), "rb") as f:
+        return f"{rel}?v={hashlib.md5(f.read()).hexdigest()[:8]}"
+
+
 def esc(s):
     return html.escape(s, quote=True)
 
@@ -98,11 +105,11 @@ def shell(page, root, title, desc, body, head=""):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{root}assets/css/site.css">
-<script src="{root}assets/js/gsap.min.js" defer></script>
-<script src="{root}assets/js/ScrollTrigger.min.js" defer></script>
-<script src="{root}assets/js/lenis.min.js" defer></script>
-<script src="{root}assets/js/site.js" defer></script>
+<link rel="stylesheet" href="{root}{v("assets/css/site.css")}">
+<script src="{root}{v("assets/js/gsap.min.js")}" defer></script>
+<script src="{root}{v("assets/js/ScrollTrigger.min.js")}" defer></script>
+<script src="{root}{v("assets/js/lenis.min.js")}" defer></script>
+<script src="{root}{v("assets/js/site.js")}" defer></script>
 {head}</head>
 <body class="no-js" data-page="{page}">
 {t("Saltar para o conteúdo", "Skip to content", "a", 'class="skip" href="#main"')}
@@ -357,8 +364,8 @@ def places_section():
   </section>
   <script type="application/json" id="places-data">{json.dumps({"first": first_year, "last": datetime.date.today().year, "places": cards}, ensure_ascii=False)}</script>
 """
-    head = ('<link rel="stylesheet" href="assets/css/maplibre-gl.css">\n'
-            '<script src="assets/js/maplibre-gl.js" defer></script>\n')
+    head = (f'<link rel="stylesheet" href="{v("assets/css/maplibre-gl.css")}">\n'
+            f'<script src="{v("assets/js/maplibre-gl.js")}" defer></script>\n')
     return body, head
 
 
