@@ -3,6 +3,7 @@
 Run from the repository root:  python3 tools/build.py
 It writes index.html, lugares.html, metodo.html, contacto.html and lugares/<slug>.html.
 """
+import datetime
 import html
 import json
 import os
@@ -70,7 +71,7 @@ NAV = [("lugares", "lugares.html", "Lugares", "Places"),
        ("contacto", "contacto.html", "Marcar consulta", "Book a consultation")]
 
 
-def shell(page, root, title, desc, body):
+def shell(page, root, title, desc, body, head=""):
     def links():
         out = []
         for key, href, pt, en in NAV:
@@ -98,7 +99,7 @@ def shell(page, root, title, desc, body):
 <script src="{root}assets/js/ScrollTrigger.min.js" defer></script>
 <script src="{root}assets/js/lenis.min.js" defer></script>
 <script src="{root}assets/js/site.js" defer></script>
-</head>
+{head}</head>
 <body class="no-js" data-page="{page}">
 {t("Saltar para o conteúdo", "Skip to content", "a", 'class="skip" href="#main"')}
 <div class="grain" aria-hidden="true"></div>
@@ -274,12 +275,12 @@ def map_svg(placed):
     dots = []
     for i, p in placed:
         x, y = project(*MAP[p["slug"]]["geo"])
-        label = (f'<text class="dot-label" x="{x - 12}" y="{y + 4}" text-anchor="end">' if x > 650
+        label = (f'<text class="dot-label" x="{x - 12}" y="{y + 4}" text-anchor="end">' if x > 650 or MAP[p["slug"]].get("label") == "left"
                  else f'<text class="dot-label" x="{x + 12}" y="{y + 4}">')
-        dots.append(f'<a class="dot" href="lugares/{p["slug"]}.html" data-i="{i}" data-cursor="Entrar" aria-label="{esc(p["name"])}">'
+        dots.append(f'<a class="dot" href="lugares/{p["slug"]}.html" data-i="{i}" data-year="{MAP[p["slug"]]["year"] or ""}" data-cursor="Entrar" aria-label="{esc(p["name"])}">'
                     f'<circle class="dot-hit" cx="{x}" cy="{y}" r="18"/><circle class="dot-ring" cx="{x}" cy="{y}" r="7"/>'
                     f'<circle class="dot-core" cx="{x}" cy="{y}" r="5"/>{label}{esc(p["name"])}</text></a>')
-    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="345 195 420 310" role="img" aria-label="Lisboa">'
+    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="235 185 540 340" role="img" aria-label="Lisboa">'
             f'<defs><linearGradient id="river" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0a35e" stop-opacity=".16"/>'
             f'<stop offset="1" stop-color="#f0a35e" stop-opacity=".02"/></linearGradient></defs>'
             f'<path class="river" d="{river}"/>'
@@ -292,62 +293,61 @@ def build_index():
     far = [(i, p) for i, p in enumerate(PLACES) if MAP[p["slug"]].get("far")]
     unplaced = [(i, p) for i, p in enumerate(PLACES) if not MAP[p["slug"]].get("geo") and not MAP[p["slug"]].get("far")]
 
-    cards = {i: {"name": p["name"], "href": f"lugares/{p['slug']}.html", "cover": cover_path(p),
-                 "where": p["where"], "line": p["line"]} for i, p in enumerate(PLACES)}
+    cards = {}
+    for i, p in enumerate(PLACES):
+        m = MAP[p["slug"]]
+        cards[i] = {"name": p["name"], "href": f"lugares/{p['slug']}.html", "cover": cover_path(p),
+                    "where": p["where"], "line": p["line"], "addr": m.get("addr", ""),
+                    "geo": m.get("geo"), "year": m.get("year"), "left": m.get("label") == "left"}
 
     far_links = "".join(
         '<a class="far" href="lugares/' + p["slug"] + '.html" data-cursor="Entrar"><span aria-hidden="true">↓</span> '
         + t(p["where"]["pt"], p["where"]["en"], "span", 'class="mono"') + " <b>" + p["name"] + "</b></a>" for i, p in far)
     gaps = "".join(f'<a href="lugares/{p["slug"]}.html">{p["name"]}</a>' for i, p in unplaced)
-
-    order = sorted(range(len(PLACES)), key=lambda i: (MAP[PLACES[i]["slug"]]["year"] or 9999, i))
-    stops = []
-    for i in order:
-        p = PLACES[i]
-        year = MAP[p["slug"]]["year"]
-        when = (f'<span class="t-year">{year}</span>' if year else
-                '<span class="t-year t-unknown">—</span>' + t("ano a confirmar", "year to confirm", "span", 'class="t-note mono"'))
-        stops.append(f"""
-      <li class="t-stop"><a href="lugares/{p["slug"]}.html" data-cursor="Entrar">
-        <div class="t-when">{when}</div>
-        <div class="t-img"><img class="photo" src="{cover_path(p)}" alt="" loading="lazy"></div>
-        <span class="t-name">{p["name"]}</span>
-        {t(p["where"]["pt"], p["where"]["en"], "span", 'class="t-where mono"')}
-      </a></li>""")
+    first_year = 2000
+    ticks = sorted({MAP[p["slug"]]["year"] for p in PLACES if MAP[p["slug"]]["year"]})
+    tick_marks = "".join(f'<span style="--at:{y}" title="{y}"></span>' for y in ticks)
 
     body = f"""
   <section class="page-head">
     <div>{t("Lugares", "Places", "div", 'class="label mono"')}
     {t("Catorze <em>noites.</em>", "Fourteen <em>nights.</em>", "h1", 'class="page-title"')}</div>
-    {t("Trinta anos de portas abertas, quase todas em Lisboa. Escolha por onde quer andar: pelo mapa, ou pelo tempo.",
-       "Thirty years of open doors, almost all of them in Lisbon. Choose how to wander: by the map, or through time.", "p")}
+    {t("Trinta anos de portas abertas, quase todas em Lisboa. Deixe o tempo correr — ou volte atrás e ande pelas ruas.",
+       "Thirty years of open doors, almost all of them in Lisbon. Let time run — or go back and wander the streets.", "p")}
   </section>
 
-  <div class="views" role="tablist" aria-label="Vista">
-    {t("Mapa", "Map", "button", 'type="button" role="tab" class="view-btn on" data-view="map" aria-selected="true"')}
-    {t("Ao longo dos anos", "Over the years", "button", 'type="button" role="tab" class="view-btn" data-view="time" aria-selected="false"')}
-  </div>
-
-  <section class="view view-map" data-view-panel="map">
+  <section class="view-map">
     <div class="map-wrap">
+      <div class="map-gl" id="map-gl" aria-label="Mapa de Lisboa"></div>
       {map_svg(placed)}
+      <div class="map-year serif" aria-live="polite"><span id="map-year">{first_year}</span><small class="mono" id="map-opened"></small></div>
       <div class="map-far">{far_links}</div>
       <div class="map-card" hidden></div>
+    </div>
+    <div class="years">
+      <button type="button" class="years-play" aria-label="Play">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+      </button>
+      <div class="years-track" style="--from:{first_year};--to:{datetime.date.today().year}">
+        <div class="years-ticks" aria-hidden="true">{tick_marks}</div>
+        <input type="range" id="years-range" min="{first_year}" max="{datetime.date.today().year}" step="1" value="{first_year}"
+               aria-label="Ano">
+        <div class="years-ends mono" aria-hidden="true"><span>{first_year}</span><span>{datetime.date.today().year}</span></div>
+      </div>
     </div>
     <div class="map-gaps">
       {t("Ainda sem lugar no mapa", "Not on the map yet", "span", 'class="mono"')}
       <div>{gaps}</div>
     </div>
+    {t("Os pontos vazios ainda não têm ano — ficam sempre à vista.", "Hollow dots don't have a year yet — they are always shown.", "p", 'class="map-note mono"')}
   </section>
-
-  <section class="view view-time" data-view-panel="time" hidden>
-    <ol class="timeline" data-lenis-prevent>{"".join(stops)}
-    </ol>
-  </section>
-  <script type="application/json" id="places-data">{json.dumps(cards, ensure_ascii=False)}</script>
+  <script type="application/json" id="places-data">{json.dumps({"first": first_year, "last": datetime.date.today().year, "places": cards}, ensure_ascii=False)}</script>
 """
+    head = ('<link rel="stylesheet" href="assets/css/maplibre-gl.css">\n'
+            '<script src="assets/js/maplibre-gl.js" defer></script>\n')
     return shell("lugares", "", "Lugares — Sakim Lab",
-                 "Bares, restaurantes e lugares criados em Lisboa e além: A Tabacaria, So What, Social B, O Bar da Velha Senhora e outros.", body)
+                 "Trinta anos de bares, restaurantes e lugares em Lisboa e além: A Tabacaria, So What, Social B, O Bar da Velha Senhora e outros.",
+                 body, head)
 
 
 # ---------------------------------------------------------------- PLACE PAGE
