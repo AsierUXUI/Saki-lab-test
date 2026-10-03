@@ -62,6 +62,8 @@
         partsQ: { partes: 'Boa. Que peças faltam? Pode escolher várias.', melhorar: 'Gosto disso. Onde sente que pode ficar melhor? Se não souber bem, descobrimos juntos.' },
         unsure: 'Ainda não sei bem',
         go: 'Continuar',
+        story: 'Conte-me um pouco do projecto — o que imagina, o que já existe, o que o preocupa. Pode ser curto.',
+        storyPh: 'Escreva à vontade…', storySkip: 'Prefiro contar à mesa',
         where: 'E onde é que isto acontece — ou vai acontecer?',
         places: ['Lisboa', 'Porto', 'Algarve', 'Fora de Portugal'],
         wherePh: 'Outro sítio…',
@@ -80,7 +82,7 @@
           header: 'SAKIM LAB · Pedido de conversa pelo site',
           footer: 'Enviado a partir do site Sakim Lab.',
           intro: 'Olá Sakim! Vim pelo site e gostava que nos sentássemos a conversar.',
-          need: 'O que tenho entre mãos', partes: 'Peças que faltam', melhorar: 'O que quero melhorar', where: 'Onde', when: 'Quando',
+          need: 'O que tenho entre mãos', partes: 'Peças que faltam', melhorar: 'O que quero melhorar', story: 'Sobre o projecto', where: 'Onde', when: 'Quando',
           whenever: 'quando lhe der jeito — proponha você', name: 'Nome', company: 'Projecto / casa',
           subject: 'Pedido de conversa pelo site — Sakim Lab'
         }
@@ -97,6 +99,8 @@
         partsQ: { partes: 'Good. Which pieces are missing? Pick as many as you like.', melhorar: "I like that. Where do you feel it could be better? If you're not sure, we'll find out together." },
         unsure: "I'm not quite sure",
         go: 'Continue',
+        story: 'Tell me a little about the project — what you imagine, what already exists, what worries you. Short is fine.',
+        storyPh: 'Write freely…', storySkip: "I'd rather tell you at the table",
         where: 'And where does this happen — or where will it?',
         places: ['Lisbon', 'Porto', 'Algarve', 'Outside Portugal'],
         wherePh: 'Somewhere else…',
@@ -115,7 +119,7 @@
           header: 'SAKIM LAB · Conversation request from the website',
           footer: 'Sent from the Sakim Lab website.',
           intro: 'Hello Sakim! I found you through the website and would love to sit down and talk.',
-          need: 'What I have', partes: 'Pieces missing', melhorar: 'What I want to improve', where: 'Where', when: 'When',
+          need: 'What I have', partes: 'Pieces missing', melhorar: 'What I want to improve', story: 'About the project', where: 'Where', when: 'When',
           whenever: 'whenever suits you — you suggest', name: 'Name', company: 'Project / place',
           subject: 'Conversation request from the website — Sakim Lab'
         }
@@ -127,7 +131,7 @@
     var minDay = addDays(today, 1), maxDay = addDays(today, 120), calMonth;
     var st, shown = 0, touched = false, lastStep = null;
     function reset() {
-      st = { step: 'need', need: null, parts: [], unsure: false, where: '', when: null, date: null, period: -1, daypart: -1, picked: false, name: '', company: '' };
+      st = { step: 'need', need: null, parts: [], unsure: false, story: null, where: '', when: null, date: null, period: -1, daypart: -1, picked: false, name: '', company: '' };
       calMonth = new Date(minDay.getFullYear(), minDay.getMonth(), 1);
       shown = 0;
     }
@@ -155,6 +159,7 @@
       var lines = [b + m.header + b, rule, '', m.intro, ''];
       lines.push(row(m.need, L.needs[st.need]));
       if (st.need !== 'tudo') lines.push(row(m[st.need], partsAnswer()));
+      if (st.story) lines.push(row(m.story, st.story));
       lines.push(row(m.where, st.where));
       lines.push(row(m.when, st.when === 'livre' ? m.whenever : whenAnswer()));
       lines.push(row(m.name, st.name));
@@ -172,6 +177,9 @@
         if (st.step === 'parts') return c;
         c.push(['me', partsAnswer()]);
       }
+      c.push(['bot', L.story]);
+      if (st.story === null) return c;
+      c.push(['me', st.story || L.storySkip]);
       c.push(['bot', L.where]);
       if (!st.where) return c;
       c.push(['me', st.where]);
@@ -271,7 +279,7 @@
       if (st.step === 'need') {
         ['tudo', 'partes', 'melhorar'].forEach(function (k) {
           var b = el('button', 'chat-option', L.needs[k]); b.type = 'button';
-          b.addEventListener('click', function () { st.need = k; go(k === 'tudo' ? 'where' : 'parts'); });
+          b.addEventListener('click', function () { st.need = k; go(k === 'tudo' ? 'story' : 'parts'); });
           wrap.appendChild(b);
         });
       } else if (st.step === 'parts') {
@@ -287,9 +295,21 @@
             else { var k = st.parts.indexOf(ids[i]); if (k > -1) st.parts.splice(k, 1); else st.parts.push(ids[i]); }
             sync();
           }));
-        next.addEventListener('click', function () { go('where'); });
+        next.addEventListener('click', function () { go('story'); });
         sync();
         wrap.appendChild(next);
+      } else if (st.step === 'story') {
+        var f = el('form', 'chat-form'), ta = el('textarea'), row = el('div', 'chat-row');
+        var send = el('button', 'chat-go', L.go + ' →'), skip = el('button', 'chat-skip', L.storySkip);
+        ta.rows = 4; ta.maxLength = 800; ta.placeholder = L.storyPh; ta.setAttribute('aria-label', L.story);
+        send.type = 'submit'; skip.type = 'button'; send.disabled = true;
+        ta.addEventListener('input', function () { send.disabled = !ta.value.trim(); });
+        f.addEventListener('submit', function (e) { e.preventDefault(); if (ta.value.trim()) { st.story = ta.value.trim(); go('where'); } });
+        skip.addEventListener('click', function () { st.story = ''; go('where'); });
+        var box = el('div', 'chat-field chat-area'); box.appendChild(ta);
+        f.appendChild(box); row.appendChild(send); row.appendChild(skip); f.appendChild(row);
+        focusLater(ta);
+        wrap.appendChild(f);
       } else if (st.step === 'where') {
         wrap.appendChild(chips(L.places, function () { return false; }, function (i) { st.where = L.places[i]; go('when'); }));
         wrap.appendChild(textField(L.wherePh, function (v) { st.where = v; go('when'); }));

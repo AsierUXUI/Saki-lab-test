@@ -1,8 +1,7 @@
 """Builds every page of the site from tools/places.py.
 
 Run from the repository root:  python3 tools/build.py
-It writes index.html (home: hero and the map), sobre.html, metodo.html, contacto.html, lugares/<slug>.html,
-and lugares.html, which now only forwards to the map on the home page.
+It writes index.html, lugares.html (the map), sobre.html, metodo.html, contacto.html and lugares/<slug>.html.
 """
 import datetime
 import html
@@ -74,7 +73,7 @@ def photo(slug, name):
     raise KeyError((slug, name))
 
 
-NAV = [("lugares", "index.html#lugares", "Lugares", "Places"),
+NAV = [("lugares", "lugares.html", "Lugares", "Places"),
        ("sobre", "sobre.html", "Sobre", "About"),
        ("metodo", "metodo.html", "Método", "Method"),
        ("contacto", "contacto.html", "Marcar consulta", "Book a consultation")]
@@ -84,9 +83,7 @@ def shell(page, root, title, desc, body, head=""):
     def links():
         out = []
         for key, href, pt, en in NAV:
-            cur = ' aria-current="page"' if key == page or (key == "lugares" and page == "home") else ""
-            if key == "lugares" and page == "home":
-                href = "#lugares"
+            cur = ' aria-current="page"' if key == page else ""
             cls = ' class="nav-cta"' if key == "contacto" else ""
             out.append(t(pt, en, "a", f'href="{"" if href.startswith("#") else root}{href}"{cls}{cur}'))
         return "\n    ".join(out)
@@ -165,7 +162,7 @@ def back_label():
 def place_bar(root):
     """The only navigation on a place page: back to the map, and the language."""
     return f"""<div class="place-bar">
-  <a class="back" href="{root}index.html#lugares">{back_label()}</a>
+  <a class="back" href="{root}lugares.html">{back_label()}</a>
   <div class="lang" role="group" aria-label="Idioma / Language">
     <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
   </div>
@@ -209,16 +206,12 @@ MANIFESTO = {
 
 # ---------------------------------------------------------------- HOME
 def build_home():
-    body, head = places_section()
-    return shell("home", "", "Sakim Lab — Lugares para a noite, Lisboa",
-                 "Há mais de trinta anos a criar bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.", body, head)
-
-
-# ---------------------------------------------------------------- ABOUT
-def build_about():
-    featured = ["sakim", "so-what", "a-tabacaria"]
+    slides = [cover_path(BY_SLUG[s]) for s in ("a-tabacaria", "so-what", "social-b", "sakim")]
+    slide_html = "\n      ".join(
+        f'<img class="photo on" src="{s}" alt="">' if i == 0 else f'<img class="photo" src="{s}" alt="" loading="lazy">'
+        for i, s in enumerate(slides))
     nights = []
-    for slug in featured:
+    for slug in ["sakim", "so-what", "a-tabacaria"]:
         p = BY_SLUG[slug]
         nights.append(f"""
   <a class="night" href="lugares/{slug}.html" data-cursor="Entrar">
@@ -229,6 +222,49 @@ def build_about():
         <span class="link-arrow">{t("Entrar", "Step inside")} <b>→</b></span></div>
     </div>
   </a>""")
+    body = f"""
+  <section class="hero hero-home">
+    <div class="hero-media slides" aria-hidden="true">
+      {slide_html}
+    </div>
+    <div class="hero-content">
+      <h1>
+{hero_lines(("Não desenho bares.", "I don't design bars."), ("Desenho <em>experiências.</em>", "I design <em>experiences.</em>"))}
+      </h1>
+      <div class="hero-foot">
+        {t("Há mais de trinta anos que crio bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.",
+           "For more than thirty years I've been creating bars, restaurants and places in Lisbon — from the first sketch to the last round.",
+           "p", 'class="hero-sub"')}
+        <div class="hero-actions">
+          <a class="btn" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <span aria-hidden="true">→</span></a>
+          <div class="scroll-cue mono"><b></b>{t("A noite começa aqui", "The night starts here")}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="nights" aria-label="Três noites">
+    <div class="nights-head">
+      <div>{t("Três noites", "Three nights", "div", 'class="label mono"')}
+      {t("Cada lugar,<br>uma <em>pergunta.</em>", "Every place,<br>a <em>question.</em>", "h2")}</div>
+      <a class="link-arrow" href="lugares.html">{t("Ver todos no mapa", "See them all on the map")} <b>→</b></a>
+    </div>
+    {"".join(nights)}
+  </section>
+"""
+    return shell("home", "", "Sakim Lab — Lugares para a noite, Lisboa",
+                 "Há mais de trinta anos a criar bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.", body)
+
+
+# ---------------------------------------------------------------- PLACES
+def build_places():
+    body, head = places_section()
+    return shell("lugares", "", "Lugares — Sakim Lab",
+                 "Trinta anos de bares, restaurantes e lugares em Lisboa e além, num mapa que acende ano a ano.", body, head)
+
+
+# ---------------------------------------------------------------- ABOUT
+def build_about():
     manifesto_pt = MANIFESTO["pt"]
     manifesto_en = MANIFESTO["en"]
     slides = [cover_path(BY_SLUG[s]) for s in ("a-tabacaria", "so-what", "social-b", "sakim")]
@@ -262,21 +298,13 @@ def build_about():
     </div>
   </section>
 
-  <section class="nights" aria-label="Três noites">
-    <div class="nights-head">
-      <div>{t("Três noites", "Three nights", "div", 'class="label mono"')}
-      {t("Cada lugar,<br>uma <em>pergunta.</em>", "Every place,<br>a <em>question.</em>", "h2")}</div>
-    </div>
-    {"".join(nights)}
-  </section>
-
   <section class="window">
     <div class="window-sticky">
       <div class="window-img"><img class="photo" src="{SITE_PHOTOS[3]}" alt="" loading="lazy"></div>
       <div class="window-text">
         {t("Cada lugar começa com uma pergunta — e só acaba quando alguém <em>não quer ir para casa.</em>",
            "Every place begins with a question — and only ends when someone <em>doesn't want to go home.</em>", "p")}
-        <a class="link-arrow" href="index.html#lugares">{t("Todos os lugares", "All the places")} <b>→</b></a>
+        <a class="link-arrow" href="lugares.html">{t("Todos os lugares", "All the places")} <b>→</b></a>
         <a class="link-arrow" href="metodo.html">{t("Como trabalho", "How I work")} <b>→</b></a>
         <a class="link-arrow" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <b>→</b></a>
       </div>
@@ -355,10 +383,10 @@ def places_section():
   <section class="map-hero" id="lugares">
       <div class="map-hero-text">
         <h1>
-{hero_lines(("Não desenho bares.", "I don't design bars."), ("Desenho <em>experiências.</em>", "I design <em>experiences.</em>"))}
+{hero_lines(("Trinta anos de", "Thirty years of"), ("<em>portas abertas.</em>", "<em>open doors.</em>"))}
         </h1>
-        {t("Trinta anos de portas abertas, quase todas em Lisboa. Veja-as acender, uma a uma.",
-           "Thirty years of open doors, almost all of them in Lisbon. Watch them light up, one by one.", "p", 'class="hero-sub"')}
+        {t("Quase todas em Lisboa. Veja-as acender, uma a uma.",
+           "Almost all of them in Lisbon. Watch them light up, one by one.", "p", 'class="hero-sub"')}
         <a class="btn" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <span aria-hidden="true">→</span></a>
       </div>
     <div class="map-wrap">
@@ -392,23 +420,6 @@ def places_section():
     head = (f'<link rel="stylesheet" href="{v("assets/css/maplibre-gl.css")}">\n'
             f'<script src="{v("assets/js/maplibre-gl.js")}" defer></script>\n')
     return body, head
-
-
-def build_places_redirect():
-    """The places now live on the home page; keep the old address working."""
-    return """<!doctype html>
-<html lang="pt">
-<head>
-<meta charset="utf-8">
-<title>Lugares — Sakim Lab</title>
-<meta http-equiv="refresh" content="0; url=index.html#lugares">
-<link rel="canonical" href="index.html#lugares">
-</head>
-<body style="background:#0b0908;color:#efe7da;font-family:system-ui,sans-serif;padding:24px">
-<a href="index.html#lugares" style="color:#e8621a">Lugares →</a>
-</body>
-</html>
-"""
 
 
 # ---------------------------------------------------------------- PLACE PAGE
@@ -622,7 +633,7 @@ def main():
         if cover_path(p):
             assert os.path.exists(os.path.join(ROOT, cover_path(p))), cover_path(p)
     write("index.html", build_home())
-    write("lugares.html", build_places_redirect())
+    write("lugares.html", build_places())
     write("sobre.html", build_about())
     write("metodo.html", build_method())
     write("contacto.html", build_contact())

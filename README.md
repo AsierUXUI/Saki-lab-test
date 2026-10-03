@@ -6,12 +6,12 @@ Website for Sakim Lab: bars, restaurants and places created in Lisbon over 30+ y
 
 | File | Page |
 |---|---|
-| `index.html` | Home: the hero, then the map of Lisbon with the years |
-| `sobre.html` | About: the manifesto and three featured places |
-| `lugares/<place>.html` | One page per place |
+| `index.html` | Home: the photo hero and three featured places |
+| `lugares.html` | Places: the map of Lisbon, lighting up year by year |
+| `sobre.html` | About: the manifesto |
+| `lugares/<place>.html` | One page per place (opens over the page from the map) |
 | `metodo.html` | How he works: a night in five acts |
-| `contacto.html` | Book a conversation |
-| `lugares.html` | Old address; forwards to the map on the home page |
+| `contacto.html` | Book a conversation (it also opens as a side panel from every page) |
 
 Where each place is on the map and the year it opened live in `MAP` at the end of `tools/places.py`.
 

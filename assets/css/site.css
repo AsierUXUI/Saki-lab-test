@@ -613,3 +613,13 @@ footer { padding: clamp(80px, 14vh, 140px) var(--gutter) 28px; overflow: hidden;
 .place-hero.no-photo { background: radial-gradient(ellipse at 30% 70%, rgba(232, 98, 26, .18), transparent 60%), var(--ink); }
 .place-hero.no-photo::after { display: none; }
 .no-photos { color: var(--mute); padding: 0 var(--gutter) 120px; }
+
+/* booking: the free answer */
+.chat-area { border: 1px solid var(--line); border-radius: 14px; padding: 4px 12px; }
+.chat-area textarea { width: 100%; background: none; border: 0; color: var(--cream); font: inherit; font-size: 16px; line-height: 1.5; padding: 8px 0; resize: vertical; min-height: 96px; outline: none; }
+.chat-area textarea::placeholder { color: var(--mute); }
+.chat-area:focus-within { border-color: var(--ember); }
+.chat-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.chat-skip { color: var(--mute); font-size: 14px; border-bottom: 1px solid var(--line); padding: 2px 0; }
+.chat-skip:hover { color: var(--cream); border-color: var(--cream); }
+.chat-msg.me { white-space: pre-line; }
