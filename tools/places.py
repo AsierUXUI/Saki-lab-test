@@ -44,7 +44,7 @@ PLACES = [
     {
         "slug": "so-what",
         "name": "So What",
-        "where": {"pt": "Lisboa", "en": "Lisbon"},
+        "where": {"pt": "Santos", "en": "Santos"},
         "kind": {"pt": "Clube de jazz & restaurante", "en": "Jazz club & restaurant"},
         "range": (458, 505),
         "logo": 458,
@@ -81,7 +81,7 @@ PLACES = [
     {
         "slug": "social-b",
         "name": "Social B",
-        "where": {"pt": "Lisboa", "en": "Lisbon"},
+        "where": {"pt": "Cais do Sodré", "en": "Cais do Sodré"},
         "kind": {"pt": "Bar & clube", "en": "Bar & club"},
         "range": (131, 174),
         "extra": [1],
@@ -118,7 +118,7 @@ PLACES = [
     {
         "slug": "a-tabacaria",
         "name": "A Tabacaria",
-        "where": {"pt": "Lisboa", "en": "Lisbon"},
+        "where": {"pt": "Cais do Sodré", "en": "Cais do Sodré"},
         "kind": {"pt": "Bar de rum", "en": "Rum bar"},
         "range": (4, 81),
         "cover": "balcao",
@@ -402,7 +402,7 @@ PLACES = [
     {
         "slug": "house-4",
         "name": "House 4",
-        "where": {"pt": "Lisboa", "en": "Lisbon"},
+        "where": {"pt": "Bairro Alto", "en": "Bairro Alto"},
         "kind": {"pt": "Alojamento local", "en": "Guesthouse"},
         "range": (202, 260),
         "logo": 202,
@@ -475,24 +475,26 @@ def cover_path(place):
     return f"assets/img/lugares/{place['slug']}/{place['cover']}.jpg"
 
 
-# Where and when each place happened, for the map and the timeline on the Places page.
-# geo:  (latitude, longitude). Neighbourhood centres for now; replace with the street when known.
-#       None while the location is unknown: the place is listed as not yet on the map.
-# far:  outside Lisbon; shown as an arrow at the edge of the map instead of a dot.
-# year: the year it opened, or None while unknown ("year to confirm" on the timeline).
+# Where and when each place happened, for the map and the year slider on the Places page.
+# geo:   (latitude, longitude). None while the location is unknown: listed as "not on the map yet".
+# addr:  street address shown on the map card, when known.
+# far:   outside Lisbon; shown as an arrow at the edge of the map instead of a dot.
+# year:  the year it opened (or he took it over); None while unknown ("year to confirm").
+# label: "left" puts the name on the left of the dot, where places sit close together.
+# Sources found online (Time Out Lisboa, Observador, The Infatuation, hotel listings), October 2026.
 MAP = {
     "sakim":             {"geo": None, "year": None},
-    "so-what":           {"geo": None, "year": None},
-    "social-b":          {"geo": None, "year": None},
-    "a-tabacaria":       {"geo": None, "year": None},
-    "velha-senhora":     {"geo": (38.7070, -9.1440), "year": None},   # Cais do Sodré, Rua Nova do Carvalho
-    "clube-ferroviario": {"geo": (38.7140, -9.1230), "year": None},   # Santa Apolónia
+    "so-what":           {"geo": (38.7076, -9.1552), "addr": "Santos — onde era o Porão de Santos", "label": "left", "year": 2024},  # street to confirm
+    "social-b":          {"geo": (38.7084, -9.1497), "addr": "Rua da Boavista, 116", "label": "left", "year": 2018},
+    "a-tabacaria":       {"geo": (38.7078, -9.1468), "addr": "Rua de São Paulo, 75", "year": 2015},
+    "velha-senhora":     {"geo": (38.7069, -9.1440), "addr": "Rua Nova do Carvalho, 40", "year": None},
+    "clube-ferroviario": {"geo": (38.7140, -9.1228), "addr": "Rua de Santa Apolónia, 59", "year": 2010},
     "o-terraco":         {"geo": None, "year": None},
-    "o-larguinho":       {"geo": (38.7115, -9.1305), "year": None},   # Alfama
-    "bica-me":           {"geo": (38.7104, -9.1468), "year": None},   # Bica
-    "bicaense":          {"geo": (38.7112, -9.1457), "year": None},   # Bica
-    "ricucu":            {"far": True, "year": None},                  # Praia Verde, Algarve
-    "monte-da-lua":      {"far": True, "year": None},                  # Mozambique
-    "house-4":           {"geo": None, "year": None},
+    "o-larguinho":       {"geo": (38.7115, -9.1305), "addr": "Alfama", "year": None},              # neighbourhood only
+    "bica-me":           {"geo": (38.7103, -9.1472), "addr": "Bica", "label": "left", "year": None},                # neighbourhood only
+    "bicaense":          {"geo": (38.7097, -9.1465), "addr": "Rua da Bica de Duarte Belo", "year": 2002},
+    "ricucu":            {"far": True, "year": None},                                               # Praia Verde, Algarve
+    "monte-da-lua":      {"far": True, "year": None},                                               # Mozambique
+    "house-4":           {"geo": (38.7146, -9.1449), "addr": "Travessa de São Pedro, 9", "year": None},
     "afro-taska":        {"geo": None, "year": None},
 }

@@ -349,42 +349,30 @@
     render();
   })();
 
-  /* ---------- PLACES: map, timeline and the switch between them ---------- */
+  /* ---------- PLACES: the map of Lisbon and the years ---------- */
   (function places() {
     var dataEl = $('#places-data');
     if (!dataEl) return;
-    var cards = JSON.parse(dataEl.textContent);
-
-    var btns = $$('.view-btn'), panels = $$('[data-view-panel]');
-    function show(v) {
-      btns.forEach(function (b) { var on = b.dataset.view === v; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
-      panels.forEach(function (p) { p.hidden = p.dataset.viewPanel !== v; });
-      try { history.replaceState(null, '', v === 'time' ? '#anos' : location.pathname); } catch (e) {}
-      if (window.ScrollTrigger) ScrollTrigger.refresh();
-    }
-    btns.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.view); close(); }); });
-    if (location.hash === '#anos') show('time');
-
-    /* on phones the map zooms in on the centre, where the dots are */
-    var svg = $('.map-svg'), full = svg.getAttribute('viewBox'), mq = matchMedia('(max-width: 760px)');
-    function fit() { svg.setAttribute('viewBox', mq.matches ? svg.dataset.mobileBox : full); close(); }
-    fit();
-    if (mq.addEventListener) mq.addEventListener('change', fit);
-
+    var data = JSON.parse(dataEl.textContent), cards = data.places;
     var wrap = $('.map-wrap'), card = $('.map-card'), current = null;
-    function open(a) {
-      var c = cards[a.dataset.i];
+    var range = $('#years-range'), yearEl = $('#map-year'), openedEl = $('#map-opened'), play = $('.years-play');
+    var markers = [];   /* { i, el, year } for both the SVG dots and the street-map markers */
+
+    /* ----- the card ----- */
+    function open(anchor, i) {
+      var c = cards[i];
       card.innerHTML = '';
       var img = new Image(); img.className = 'photo'; img.src = c.cover; img.alt = '';
       var body = document.createElement('div');
-      var where = document.createElement('span'); where.className = 'mono'; where.textContent = c.where[lang];
+      var where = document.createElement('span'); where.className = 'mono';
+      where.textContent = (c.addr || c.where[lang]) + (c.year ? ' · ' + c.year : '');
       var name = document.createElement('strong'); name.textContent = c.name;
       var line = document.createElement('p'); line.textContent = c.line[lang];
       var go = document.createElement('a'); go.className = 'link-arrow'; go.href = c.href;
       go.innerHTML = (lang === 'pt' ? 'Entrar' : 'Step inside') + ' <b>→</b>';
       [where, name, line, go].forEach(function (x) { body.appendChild(x); });
       card.appendChild(img); card.appendChild(body);
-      var w = wrap.getBoundingClientRect(), r = $('.dot-core', a).getBoundingClientRect();
+      var w = wrap.getBoundingClientRect(), r = anchor.getBoundingClientRect();
       var half = Math.min(190, w.width / 2 - 8);
       var x = Math.max(half + 8, Math.min(w.width - half - 8, r.left + r.width / 2 - w.left));
       var below = r.top - w.top < 190;
@@ -392,40 +380,133 @@
       card.style.left = x + 'px';
       card.style.top = (below ? r.bottom - w.top : r.top - w.top) + 'px';
       card.hidden = false;
-      $$('.dot').forEach(function (d) { d.classList.toggle('on', d === a); });
-      current = a;
+      markers.forEach(function (m) { m.el.classList.toggle('on', m.i === i && m.el === anchor.closest('.dot, .pin')); });
+      current = { anchor: anchor, i: i };
     }
     function close() {
-      if (!card) return;
       card.hidden = true; current = null;
-      $$('.dot').forEach(function (d) { d.classList.remove('on'); });
+      markers.forEach(function (m) { m.el.classList.remove('on'); });
     }
-    $$('.dot').forEach(function (a) {
-      if (finePointer) a.addEventListener('mouseenter', function () { open(a); });
-      a.addEventListener('focus', function () { open(a); });
+    function bind(el, anchor, i) {
+      if (finePointer) el.addEventListener('mouseenter', function () { open(anchor(), i); });
+      el.addEventListener('focus', function () { open(anchor(), i); });
       /* on touch screens the first tap shows the card, the second goes in */
       var wasOpen = false;
-      a.addEventListener('pointerdown', function () { wasOpen = current === a; });
-      a.addEventListener('click', function (e) { if (!finePointer && !wasOpen) { e.preventDefault(); open(a); } wasOpen = false; });
-    });
+      el.addEventListener('pointerdown', function () { wasOpen = !!current && current.i === i; });
+      el.addEventListener('click', function (e) { if (!finePointer && !wasOpen) { e.preventDefault(); open(anchor(), i); } wasOpen = false; });
+    }
     if (finePointer) wrap.addEventListener('mouseleave', close);
-    document.addEventListener('click', function (e) { if (current && !e.target.closest('.dot, .map-card')) close(); });
-    $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { if (current) open(current); }); });
+    document.addEventListener('click', function (e) { if (current && !e.target.closest('.dot, .pin, .map-card')) close(); });
+    $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { setYear(year); if (current) open(current.anchor, current.i); }); });
 
-    /* the timeline scrolls sideways with the wheel and can be dragged */
-    var tl = $('.timeline');
-    tl.addEventListener('wheel', function (e) {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        var max = tl.scrollWidth - tl.clientWidth;
-        if ((e.deltaY > 0 && tl.scrollLeft < max) || (e.deltaY < 0 && tl.scrollLeft > 0)) { tl.scrollLeft += e.deltaY; e.preventDefault(); }
-      }
-    }, { passive: false });
-    var down = false, x0 = 0, s0 = 0, moved = false;
-    tl.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') return; down = true; moved = false; x0 = e.clientX; s0 = tl.scrollLeft; });
-    window.addEventListener('pointermove', function (e) { if (!down) return; if (Math.abs(e.clientX - x0) > 5) moved = true; tl.scrollLeft = s0 - (e.clientX - x0); });
-    window.addEventListener('pointerup', function () { down = false; });
-    tl.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
-    $$('img', tl).forEach(function (i) { i.draggable = false; });
+    /* ----- the drawn map (shown until the street map has loaded, and if it never does) ----- */
+    var svg = $('.map-svg'), full = svg.getAttribute('viewBox'), mq = matchMedia('(max-width: 760px)');
+    function fit() { svg.setAttribute('viewBox', mq.matches ? svg.dataset.mobileBox : full); close(); }
+    fit();
+    if (mq.addEventListener) mq.addEventListener('change', fit);
+    $$('.dot').forEach(function (a) {
+      var i = a.dataset.i;
+      markers.push({ i: i, el: a, year: cards[i].year });
+      bind(a, function () { return $('.dot-core', a); }, i);
+    });
+
+    /* ----- the years ----- */
+    var year = data.first, timer = null;
+    function setYear(y) {
+      year = y;
+      range.value = y;
+      yearEl.textContent = y;
+      range.style.setProperty('--p', (y - data.first) / (data.last - data.first));
+      markers.forEach(function (m) {
+        m.el.classList.toggle('undated', !m.year);
+        m.el.classList.toggle('later', !!m.year && m.year > y);
+      });
+      var opened = Object.keys(cards).filter(function (i) { return cards[i].year === y; }).map(function (i) { return cards[i].name; });
+      openedEl.textContent = opened.length ? (lang === 'pt' ? 'Abre ' : 'Opens ') + opened.join(', ') : '';
+      if (current && cards[current.i].year > y) close();
+    }
+    function stop() { clearInterval(timer); timer = null; play.classList.remove('playing'); play.setAttribute('aria-label', 'Play'); }
+    function run() {
+      if (year >= data.last) setYear(data.first);
+      play.classList.add('playing'); play.setAttribute('aria-label', 'Pause');
+      timer = setInterval(function () { if (year >= data.last) stop(); else setYear(year + 1); }, 380);
+    }
+    play.addEventListener('click', function () { if (timer) stop(); else run(); });
+    range.addEventListener('input', function () { stop(); setYear(+range.value); });
+    setYear(reduce ? data.last : data.first);
+    /* time starts running the first time the map comes into view */
+    if (!reduce && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) { io.disconnect(); setTimeout(run, 600); }
+      }, { threshold: .4 });
+      io.observe(wrap);
+    } else setYear(data.last);
+
+    /* ----- the street map: OpenStreetMap data from OpenFreeMap, styled for the night ----- */
+    function streetMap() {
+      if (!window.maplibregl) return;
+      var cream = 'rgba(239,231,218,', src = 'openmaptiles';
+      var style = {
+        version: 8,
+        glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+        sources: { openmaptiles: { type: 'vector', url: 'https://tiles.openfreemap.org/planet' } },
+        layers: [
+          { id: 'bg', type: 'background', paint: { 'background-color': '#0e0b0a' } },
+          { id: 'park', type: 'fill', source: src, 'source-layer': 'park', paint: { 'fill-color': cream + '.035)' } },
+          { id: 'green', type: 'fill', source: src, 'source-layer': 'landcover', filter: ['in', 'class', 'grass', 'wood'], paint: { 'fill-color': cream + '.03)' } },
+          { id: 'water', type: 'fill', source: src, 'source-layer': 'water', paint: { 'fill-color': '#2a170c' } },
+          { id: 'water-edge', type: 'line', source: src, 'source-layer': 'water', paint: { 'line-color': 'rgba(240,163,94,.35)', 'line-width': 1 } },
+          { id: 'buildings', type: 'fill', source: src, 'source-layer': 'building', minzoom: 14, paint: { 'fill-color': cream + '.045)' } },
+          { id: 'rail', type: 'line', source: src, 'source-layer': 'transportation', filter: ['==', 'class', 'rail'],
+            paint: { 'line-color': cream + '.12)', 'line-width': 1, 'line-dasharray': [2, 2] } },
+          { id: 'streets-minor', type: 'line', source: src, 'source-layer': 'transportation',
+            filter: ['in', 'class', 'minor', 'service', 'path', 'pedestrian', 'track'],
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': cream + '.13)', 'line-width': ['interpolate', ['linear'], ['zoom'], 13, .4, 17, 3] } },
+          { id: 'streets', type: 'line', source: src, 'source-layer': 'transportation',
+            filter: ['in', 'class', 'tertiary', 'secondary', 'primary', 'trunk', 'motorway'],
+            layout: { 'line-cap': 'round', 'line-join': 'round' },
+            paint: { 'line-color': cream + '.26)', 'line-width': ['interpolate', ['linear'], ['zoom'], 12, .6, 17, 6] } },
+          { id: 'street-names', type: 'symbol', source: src, 'source-layer': 'transportation_name', minzoom: 15,
+            layout: { 'symbol-placement': 'line', 'text-field': ['get', 'name'], 'text-font': ['Noto Sans Regular'], 'text-size': 10 },
+            paint: { 'text-color': cream + '.42)', 'text-halo-color': '#0e0b0a', 'text-halo-width': 1.4 } },
+          { id: 'river-name', type: 'symbol', source: src, 'source-layer': 'water_name',
+            layout: { 'text-field': ['get', 'name'], 'text-font': ['Noto Sans Italic'], 'text-size': 18, 'text-letter-spacing': .1 },
+            paint: { 'text-color': 'rgba(240,163,94,.45)' } },
+          { id: 'hoods', type: 'symbol', source: src, 'source-layer': 'place', filter: ['in', 'class', 'neighbourhood', 'suburb', 'quarter'],
+            layout: { 'text-field': ['upcase', ['get', 'name']], 'text-font': ['Noto Sans Regular'], 'text-size': 10, 'text-letter-spacing': .25 },
+            paint: { 'text-color': 'rgba(240,163,94,.5)', 'text-halo-color': '#0e0b0a', 'text-halo-width': 1.2 } }
+        ]
+      };
+      var placed = Object.keys(cards).filter(function (i) { return cards[i].geo; });
+      var bounds = new maplibregl.LngLatBounds();
+      placed.forEach(function (i) { bounds.extend([cards[i].geo[1], cards[i].geo[0]]); });
+      var map;
+      try {
+        map = new maplibregl.Map({
+          container: 'map-gl', style: style, bounds: bounds,
+          fitBoundsOptions: { padding: mq.matches ? 50 : { top: 140, bottom: 120, left: 120, right: 260 } },
+          maxZoom: 18, minZoom: 11, dragRotate: false, pitchWithRotate: false, touchPitch: false,
+          cooperativeGestures: true, attributionControl: { compact: true }
+        });
+      } catch (e) { return; }
+      map.touchZoomRotate.disableRotation();
+      placed.forEach(function (i) {
+        var el = document.createElement('a');
+        el.className = 'pin' + (cards[i].left ? ' pin-left' : ''); el.href = cards[i].href; el.setAttribute('aria-label', cards[i].name); el.dataset.cursor = 'Entrar';
+        el.innerHTML = '<span class="pin-ring"></span><span class="pin-core"></span><span class="pin-label">' + cards[i].name.replace(/</g, '&lt;') + '</span>';
+        new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([cards[i].geo[1], cards[i].geo[0]]).addTo(map);
+        markers.push({ i: i, el: el, year: cards[i].year });
+        bind(el, function () { return $('.pin-core', el); }, i);
+      });
+      setYear(year);
+      map.on('movestart', close);
+      /* swap the drawn map for the street map once its streets have actually arrived */
+      map.on('sourcedata', function (e) {
+        if (e.sourceId === src && e.isSourceLoaded && !wrap.classList.contains('has-streets')) wrap.classList.add('has-streets');
+      });
+    }
+    document.addEventListener('DOMContentLoaded', streetMap);
   })();
 
   /* ---------- LISBON CLOCK ---------- */
