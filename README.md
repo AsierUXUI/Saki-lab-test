@@ -4,16 +4,19 @@ Website for Sakim Lab: bars, restaurants and places created in Lisbon over 30+ y
 
 ## Pages
 
-The site is one long page, `index.html`, built around lights that follow the mouse:
+The site is one long page, `index.html`: light paper, huge condensed type with photos set inside the lines, and a black pill bar on top.
 
 | Section | What happens |
 |---|---|
-| Hero | A dark screen; the cursor is a light that shows a different bar as it moves (on phones it drifts or follows the finger) |
-| Studio | The quote: a lens under the cursor shows a photo and the words in colour |
-| Services | Four areas open on click; a photo floats beside the cursor |
-| Projects | Each name leaves a trail of its photos; clicking opens the project over the page, with only a way back |
-| Process | Steps light up as you scroll past them |
-| About, Contact | The three values reveal a photo under the cursor |
+| Hero | The headline fills the screen; the photo inside it changes as the mouse moves (on a phone, on its own) |
+| Studio | An editorial page between two rules: the quote, the numbers, two columns of text |
+| Services | Four big lines that open on click; a round photo and a round colour follow the mouse |
+| Projects | A dark room with one big screen; the names below change it, moving across it runs through the photos; it opens the project over the page |
+| Process | Steps light up as you scroll, the photo beside them changes with each step |
+| About | Each value is a round photo with a round colour that slides out on hover |
+| Contact | The big lines again, then the ways to reach him |
+
+A card at the bottom of the screen opens the booking conversation from anywhere.
 
 Other files:
 
@@ -34,6 +37,7 @@ python3 tools/build.py
 ```
 assets/
   css/site.css             styles for every page
+  fonts/                   Anton, Newsreader and Roboto Mono (open licences), served from the site
   js/site.js               the light effects, language switch, booking conversation
   js/*.min.js              GSAP, ScrollTrigger and Lenis
   img/

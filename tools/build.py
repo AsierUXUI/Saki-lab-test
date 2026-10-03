@@ -10,6 +10,7 @@ import hashlib
 import html
 import json
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
@@ -26,7 +27,7 @@ INSTAGRAM = "sakinlab"
 WHATSAPP = "351913915323"
 WHATSAPP_SHOWN = "+351 913 915 323"
 
-# Photos the torch reveals in the hero, in order
+# Photos that appear inside the headline, in order
 TORCH = [("a-tabacaria", "balcao"), ("so-what", "abobada-acesa"), ("social-b", "bar-violeta"),
          ("o-terraco", "lanternas"), ("velha-senhora", "candeeiros"), ("sakim", "sala-comprida"),
          ("clube-ferroviario", "anoitecer"), ("bicaense", "jardim-de-luz"), ("ricucu", "porta-roxa"),
@@ -67,49 +68,61 @@ def img(src, alt_pt, alt_en, cls="photo", extra=""):
 
 
 # ---------------------------------------------------------------- SHELL
+def plain(s):
+    """Text without tags, for the big condensed lines."""
+    return re.sub(r"<[^>]+>", "", s)
+
+
+def lang_pill():
+    return """<div class="pill pill-lang lang" role="group" aria-label="Idioma / Language">
+    <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
+  </div>"""
+
+
 def shell(page, root, title, desc, body, head=""):
     home = page == "home"
-    links = "\n    ".join(tp(name, "a", f'href="{"" if home else root + "index.html"}#{key}"') for key, name in NAV)
-    start = tp(START, "a", f'class="nav-cta magnetic" href="{root}contacto.html"')
+    links = "\n      ".join(tp(name, "a", f'href="{"" if home else root + "index.html"}#{key}" data-sec="{key}"')
+                           for key, name in NAV if key != "contacto")
+    menu_links = "\n      ".join(tp(name, "a", f'href="{"" if home else root + "index.html"}#{key}"') for key, name in NAV)
     if page == "lugar":
-        top = f"""<div class="place-bar">
-  {t("← Voltar", "← Back", "a", f'class="back" href="{root}index.html#projectos"')}
-  <div class="lang" role="group" aria-label="Idioma / Language">
-    <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
-  </div>
-</div>"""
+        top = f"""<header class="bar">
+  {t("← Voltar", "← Back", "a", f'class="pill pill-back" href="{root}index.html#projectos"')}
+  {lang_pill()}
+</header>"""
     else:
-        top = f"""<header class="nav">
-  <a href="{root}index.html#top" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
-  <nav class="nav-links" aria-label="Menu">
-    {links}
+        top = f"""<header class="bar">
+  <a href="{root}index.html#top" class="pill pill-logo" aria-label="Sakim Lab"><span class="pill-icon"><img src="{root}{SITE_PHOTOS[2]}" alt=""></span><span>Sakim Lab</span></a>
+  <nav class="pill pill-links" aria-label="Menu">
+      {links}
   </nav>
-  <div class="nav-right">
-    <div class="lang" role="group" aria-label="Idioma / Language">
-      <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
-    </div>
-    {start}
-    {t("Menu", "Menu", "button", 'type="button" class="menu-btn" aria-expanded="false" aria-controls="menu"')}
-  </div>
+  {lang_pill()}
+  <button type="button" class="pill-round menu-btn" aria-expanded="false" aria-controls="menu" aria-label="Menu"><i></i></button>
 </header>
 <aside class="menu" id="menu" aria-hidden="true">
   <div class="menu-scrim" data-close-menu></div>
   <div class="menu-panel">
-    {t("Fechar", "Close", "button", 'type="button" class="menu-close mono" data-close-menu')}
-    <nav>{links}</nav>
+    {t("Fechar ✕", "Close ✕", "button", 'type="button" class="menu-close mono" data-close-menu')}
+    <nav>
+      {menu_links}
+    </nav>
     {tp(START, "a", f'class="btn" href="{root}contacto.html"')}
   </div>
 </aside>"""
     overlays = ""
     if page not in ("contacto", "lugar"):
         overlays += booking_drawer(root)
+        overlays += f"""
+<a class="dock" href="{root}contacto.html">
+  <img src="{root}{photo('a-tabacaria', 'balcao')[0]}" alt="">
+  <span>{tp(START, "b")}{t("[Uma conversa à mesa]", "[A conversation at the table]", "small")}</span>
+</a>"""
     if page == "home":
         overlays += place_sheet()
     year = datetime.date.today().year
     footer = "" if page == "lugar" else f"""
 <footer class="foot mono">
-  <span>© {year} Sakim Lab. {tp(CONTACT["rights"])}</span>
-  <span><a href="mailto:{EMAIL}">Email</a> · <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener">Instagram</a></span>
+  <span>© {year} Sakim Lab · {tp(CONTACT["rights"])}</span>
+  <span><a href="mailto:{EMAIL}">Email</a> · <a href="https://wa.me/{WHATSAPP}" target="_blank" rel="noopener">WhatsApp</a> · <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener">Instagram</a></span>
 </footer>"""
     return f"""<!doctype html>
 <html lang="pt">
@@ -118,13 +131,12 @@ def shell(page, root, title, desc, body, head=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
-<meta name="theme-color" content="#0b0908">
+<meta name="theme-color" content="#e9e6e0">
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <link rel="icon" href="{root}{SITE_PHOTOS[2]}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link rel="preload" href="{root}assets/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{root}assets/fonts/newsreader-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="{root}{v("assets/css/site.css")}">
 <script src="{root}{v("assets/js/gsap.min.js")}" defer></script>
 <script src="{root}{v("assets/js/ScrollTrigger.min.js")}" defer></script>
@@ -133,7 +145,6 @@ def shell(page, root, title, desc, body, head=""):
 {head}</head>
 <body class="no-js" data-page="{page}">
 {t("Saltar para o conteúdo", "Skip to content", "a", 'class="skip" href="#main"')}
-<div class="grain" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"><span></span></div>
 {top}
 {overlays}
@@ -184,65 +195,68 @@ def booking_drawer(root):
 def place_sheet():
     return f"""
 <div class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="sheet-bar">{t("← Voltar", "← Back", "button", 'type="button" class="back"')}</div>
+  <div class="sheet-bar">{t("← Voltar", "← Back", "button", 'type="button" class="pill pill-back back"')}</div>
   <div class="sheet-body" data-lenis-prevent></div>
 </div>"""
 
 
 # ---------------------------------------------------------------- HOME: one long page
-def section_head(label, title, body=None, cls=""):
-    return f"""<div class="sec-head {cls}">
-      {tp(label, "p", 'class="label mono"')}
-      {tp(title, "h2", 'class="sec-title"')}
-      {tp(body, "p", 'class="sec-body"') if body else ""}
-    </div>"""
+def mega(pair, pic_row=None, pics=None, cls="", tag="h1"):
+    """Big condensed lines. A strip of photos can sit at the end of one line."""
+    pt_rows, en_rows = [plain(x) for x in pair[0].split("<br>")], [plain(x) for x in pair[1].split("<br>")]
+    rows = []
+    for i, (rp, re_) in enumerate(zip(pt_rows, en_rows)):
+        pic = ""
+        if i == pic_row and pics:
+            imgs = "".join(f'<img class="photo{" on" if j == 0 else ""}" src="{src}" alt="" data-name="{esc(name)}"'
+                           f'{"" if j < 2 else " loading=" + chr(34) + "lazy" + chr(34)}>' for j, (src, name) in enumerate(pics))
+            pic = f' <span class="pic" aria-hidden="true">{imgs}</span>'
+        rows.append(f'<span class="row">{t(rp, re_)}{pic}</span>')
+    label = esc(plain(pair[0].replace("<br>", " ")))
+    return f'<{tag} class="mega {cls}" aria-label="{label}" data-label-pt="{label}" data-label-en="{esc(plain(pair[1].replace("<br>", " ")))}">{"".join(rows)}</{tag}>'
+
+
+def label(pair, attrs=""):
+    return tp((f"[ {pair[0]} ]", f"[ {pair[1]} ]"), "p", f'class="tag mono"{(" " + attrs) if attrs else ""}')
+
+
+HERO_PICS = TORCH
+PROCESS_PICS = [("o-larguinho", "electrico"), ("a-tabacaria", "fachada"), ("velha-senhora", "mesas-em-obra"),
+                ("a-tabacaria", "torneiras"), ("so-what", "fila-a-porta")]
+CONTACT_PICS = [("sakim", "mesa-longa"), ("so-what", "mesa-posta"), ("a-tabacaria", "espuma"), ("o-terraco", "hora-azul")]
+
+
+def pics_of(lst):
+    return [(photo(s, n)[0], PROJECT_TEXT[s]["name"]) for s, n in lst]
 
 
 def build_home():
-    # HERO: a torch in the dark
-    torch = []
-    for i, (slug, name) in enumerate(TORCH):
-        src, _, _ = photo(slug, name)
-        tx = PROJECT_TEXT[slug]
-        lazy = "" if i < 2 else ' loading="lazy"'
-        torch.append(f'<img class="photo{" on" if i == 0 else ""}" src="{src}" alt="" data-name="{esc(tx["name"])}" '
-                     f'data-meta-pt="{esc(tx["meta"][0])}" data-meta-en="{esc(tx["meta"][1])}"{lazy}>')
+    # HERO: the headline set huge, a photo inside the second line that changes as the mouse moves
     hero = f"""
-  <section class="torch" id="top">
-    <div class="torch-under" aria-hidden="true">{"".join(torch)}</div>
-    <div class="torch-dark" aria-hidden="true"></div>
-    <div class="torch-caption mono" aria-hidden="true"><b></b><span></span></div>
-    <div class="torch-content">
-      {tp(HERO["title"], "h1", 'class="torch-title"')}
-      <div class="torch-foot">
-        {tp(HERO["sub"], "p", 'class="torch-sub"')}
-        <div class="actions">
-          {tp(START, "a", 'class="btn magnetic" href="contacto.html"')}
-          {t(HERO["services"][0] + " ↓", HERO["services"][1] + " ↓", "a", 'class="link magnetic" href="#servicos"')}
-        </div>
+  <section class="hero" id="top">
+    {mega(HERO["title"], 1, pics_of(HERO_PICS), "hero-mega")}
+    <div class="hero-foot">
+      <p class="tag mono pic-name" aria-hidden="true">[ <span>{PROJECT_TEXT[HERO_PICS[0][0]]["name"]}</span> ]</p>
+      {tp(HERO["sub"], "p", 'class="hero-sub"')}
+    </div>
+  </section>"""
+
+    # STUDIO: an editorial page between two rules
+    stats = "".join(f'<span><b>{n}</b> {tp(lbl)}</span>' for n, lbl in STUDIO["stats"])
+    studio = f"""
+  <section class="editorial" id="estudio">
+    <div class="ed-page">
+      {mega((plain(STUDIO["label"][0]), plain(STUDIO["label"][1])), cls="mega-s", tag="h2")}
+      {tp(STUDIO["quote"], "blockquote", 'class="ed-title"')}
+      <div class="ed-meta mono">{stats}</div>
+      <div class="ed-cols">
+        {tp(STUDIO["body"], "p")}
+        {tp(ABOUT["paras"][0], "p")}
       </div>
     </div>
-    {t("Mova a luz", "Move the light", "p", 'class="torch-hint mono" aria-hidden="true"')}
   </section>"""
 
-    # STUDIO: the quote under a lens
-    lens_photo, _, _ = photo("social-b", "bar-violeta")
-    stats = "".join(f'<div class="stat"><strong>{n}</strong>{tp(lbl, "span", "class=" + chr(34) + "mono" + chr(34))}</div>'
-                    for n, lbl in STUDIO["stats"])
-    studio = f"""
-  <section class="studio" id="estudio">
-    {tp(STUDIO["label"], "p", 'class="label mono"')}
-    <div class="lens lens-quote" data-lens>
-      <div class="lens-top">{tp(STUDIO["quote"], "blockquote")}</div>
-      <div class="lens-under" aria-hidden="true" style="background-image:url('{lens_photo}')">{tp(STUDIO["quote"], "blockquote")}</div>
-    </div>
-    <div class="studio-foot">
-      {tp(STUDIO["body"], "p", 'class="sec-body"')}
-      <div class="stats">{stats}</div>
-    </div>
-  </section>"""
-
-    # SERVICES: four areas that open under the cursor
+    # SERVICES: four big lines; a round photo and a round colour follow the mouse
     areas = []
     for a in SERVICES["areas"]:
         src, _, _ = photo(*a["photo"])
@@ -250,96 +264,111 @@ def build_home():
         areas.append(f"""
       <li class="area" data-photo="{src}">
         <button type="button" class="area-head" aria-expanded="false">
-          <span class="area-letter">{a["letter"]}</span>
+          <span class="area-letter mono">[ {a["letter"]} ]</span>
           {tp(a["name"], "span", 'class="area-name"')}
           {tp(a["summary"], "span", 'class="area-sum"')}
-          <span class="area-plus" aria-hidden="true">+</span>
+          <span class="area-plus mono" aria-hidden="true">+</span>
         </button>
         <div class="area-body"><ul>{items}</ul></div>
       </li>""")
     services = f"""
   <section class="services" id="servicos">
-    {section_head(SERVICES["label"], SERVICES["title"], SERVICES["body"])}
+    <div class="sec-head">
+      {label(SERVICES["label"])}
+      {tp(SERVICES["title"], "h2", 'class="sec-title"')}
+      {tp(SERVICES["body"], "p", 'class="sec-body"')}
+    </div>
     <ol class="areas">{"".join(areas)}
     </ol>
-    <div class="float-photo" aria-hidden="true"><img alt=""></div>
+    <div class="follow" aria-hidden="true"><span class="follow-dot"></span><span class="follow-pic"><img alt=""></span></div>
     <div class="inline-cta">
       {tp(SERVICES["cta"], "p")}
       {t("Agendar uma Consulta", "Schedule a Consultation", "a", 'class="btn magnetic" href="contacto.html"')}
     </div>
   </section>"""
 
-    # PROJECTS: names that leave a trail of their photos
-    rows = []
+    # PROJECTS: a dark room with one big screen; the names below change it, the mouse scrubs through its photos
+    shots, names = [], []
     for n, slug in enumerate(PROJECT_ORDER):
         p, tx = BY_SLUG[slug], PROJECT_TEXT[slug]
-        trail = esc(json.dumps([photo_path(p, i) for i in range(min(8, len(p["photos"])))]))
-        rows.append(f"""
-      <li class="proj"><a href="lugares/{slug}.html" data-trail="{trail}" data-cursor="{PROJECTS["open"][0]}" data-cursor-en="{PROJECTS["open"][1]}">
-        <span class="proj-n mono">{n + 1:02d}</span>
-        <img class="proj-thumb photo" src="{cover_path(p)}" alt="" loading="lazy">
-        <span class="proj-name">{esc(tx["name"])}</span>
-        {tp(tx["meta"], "span", 'class="proj-meta mono"')}
-      </a></li>""")
+        gallery = [photo_path(p, i) for i in range(min(10, len(p["photos"])))]
+        shots.append(f'<figure class="shot{" on" if n == 0 else ""}" data-gallery="{esc(json.dumps(gallery))}" '
+                     f'data-meta-pt="{esc(tx["meta"][0])}" data-meta-en="{esc(tx["meta"][1])}">'
+                     f'<img class="photo" src="{cover_path(p)}" alt=""{"" if n < 2 else " loading=" + chr(34) + "lazy" + chr(34)}></figure>')
+        names.append(f"""
+      <li><a href="lugares/{slug}.html" data-i="{n}" data-cursor="{PROJECTS["open"][0]}" data-cursor-en="{PROJECTS["open"][1]}"><sup class="mono">{n + 1:02d}</sup>{esc(tx["name"])}</a></li>""")
+    first = PROJECT_TEXT[PROJECT_ORDER[0]]
     projects = f"""
   <section class="projects" id="projectos">
-    {section_head(PROJECTS["label"], PROJECTS["title"], PROJECTS["body"])}
-    <ol class="proj-list">{"".join(rows)}
+    <div class="sec-head">
+      {label(PROJECTS["label"])}
+      {tp(PROJECTS["title"], "h2", 'class="sec-title"')}
+    </div>
+    <div class="screen">
+      {"".join(shots)}
+      <p class="screen-cap mono"><span class="screen-n">01 / {len(PROJECT_ORDER)}</span> <b>{esc(first["name"])}</b> {tp(first["meta"], "span", 'class="screen-meta"')}</p>
+      <a class="btn btn-play screen-open" href="lugares/{PROJECT_ORDER[0]}.html">{t("Ver projecto", "View project")}<i aria-hidden="true"></i></a>
+      <span class="scrub mono" aria-hidden="true"></span>
+    </div>
+    <ol class="reel">{"".join(names)}
     </ol>
-    <div class="trail" aria-hidden="true"></div>
+    {tp(PROJECTS["body"], "p", 'class="sec-body reel-note"')}
   </section>"""
 
-    # PROCESS: five steps that light up in turn
-    steps = "".join(f"""
-      <li class="step"><span class="step-n">{i + 1:02d}</span><div>{tp(n, "h3")}{tp(d, "p")}</div></li>"""
-                    for i, (n, d) in enumerate(PROCESS["steps"]))
+    # PROCESS: steps on the left, a tall photo on the right that changes with each step
+    steps, frames = [], []
+    for i, ((n, d), (slug, ph)) in enumerate(zip(PROCESS["steps"], PROCESS_PICS)):
+        steps.append(f"""
+      <li class="step" data-i="{i}"><span class="mono">[ {i + 1:02d} ]</span>{tp(n, "h3")}{tp(d, "p")}</li>""")
+        frames.append(f'<img class="photo{" on" if i == 0 else ""}" src="{photo(slug, ph)[0]}" alt="" loading="lazy">')
     process = f"""
   <section class="process" id="processo">
-    {section_head(PROCESS["label"], PROCESS["title"], PROCESS["body"])}
-    <ol class="steps">{steps}
-    </ol>
+    <div class="process-text">
+      {label(PROCESS["label"])}
+      {mega((plain(PROCESS["title"][0]), plain(PROCESS["title"][1])), cls="mega-s", tag="h2")}
+      {tp(PROCESS["body"], "p", 'class="sec-body"')}
+      <ol class="steps">{"".join(steps)}
+      </ol>
+    </div>
+    <div class="process-pic" aria-hidden="true"><div class="process-frame">{"".join(frames)}</div></div>
   </section>"""
 
-    # ABOUT: words, and three values with a photo under each
+    # ABOUT: an editorial page; each value is a round photo with a round colour behind it
     values = []
     for name, desc, (slug, ph) in ABOUT["values"]:
-        src, _, _ = photo(slug, ph)
         values.append(f"""
-      <li class="value lens" data-lens>
-        <div class="lens-top">{tp(name, "h4")}{tp(desc, "p")}</div>
-        <div class="lens-under" aria-hidden="true" style="background-image:url('{src}')">{tp(name, "h4")}{tp(desc, "p")}</div>
-      </li>""")
-    paras = "".join(tp(p, "p") for p in ABOUT["paras"])
+      <li class="value"><span class="circles" aria-hidden="true"><img class="photo" src="{photo(slug, ph)[0]}" alt="" loading="lazy"><i></i></span>
+        <div>{tp(name, "h4")}{tp(desc, "p")}</div></li>""")
     about = f"""
-  <section class="about" id="sobre">
-    {tp(ABOUT["label"], "p", 'class="label mono"')}
-    {tp(ABOUT["title"], "h2", 'class="about-title"')}
-    <div class="about-grid">
-      {tp(ABOUT["side"], "p", 'class="about-side mono"')}
-      <div class="about-body">
-        {tp(ABOUT["lead"], "h3")}
-        {paras}
+  <section class="editorial about" id="sobre">
+    <div class="ed-page">
+      {label(ABOUT["label"])}
+      {tp(ABOUT["title"], "h2", 'class="ed-title"')}
+      <div class="ed-meta mono"><span>{tp(ABOUT["lead"])}</span><span>{tp(CONTACT["city"])}</span></div>
+      <div class="ed-cols">
+        {tp(ABOUT["paras"][1], "p")}
+        {tp(ABOUT["paras"][2], "p")}
       </div>
+      <ul class="values">{"".join(values)}
+      </ul>
     </div>
-    <ul class="values">{"".join(values)}
-    </ul>
   </section>"""
 
-    # CONTACT
+    # CONTACT: the big lines again, with the table photos inside
     contact = f"""
   <section class="contact" id="contacto">
-    {tp(CONTACT["label"], "p", 'class="label mono"')}
-    {tp(CONTACT["title"], "h2", 'class="contact-title"')}
+    {label(CONTACT["label"])}
+    {mega(CONTACT["title"], 1, pics_of(CONTACT_PICS), "contact-mega", "h2")}
     <div class="contact-grid">
       <div>
-        {tp(CONTACT["body"], "p", 'class="sec-body"')}
-        {tp(START, "a", 'class="btn btn-big magnetic" href="contacto.html"')}
+        {tp(CONTACT["body"], "p", 'class="contact-body"')}
+        {tp(START, "a", 'class="btn btn-play btn-big magnetic" href="contacto.html"')}
       </div>
-      <div class="contact-links">
-        <a href="mailto:{EMAIL}"><span class="mono">Email</span><span>{EMAIL}</span></a>
-        <a href="https://wa.me/{WHATSAPP}" target="_blank" rel="noopener"><span class="mono">WhatsApp</span><span>{WHATSAPP_SHOWN}</span></a>
-        <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener"><span class="mono">Instagram</span><span>@{INSTAGRAM}</span></a>
-        <div>{tp(CONTACT["based"], "span", 'class="mono"')}{tp(CONTACT["city"])}</div>
+      <div class="contact-links mono">
+        <a href="mailto:{EMAIL}"><span>Email</span><span>{EMAIL}</span></a>
+        <a href="https://wa.me/{WHATSAPP}" target="_blank" rel="noopener"><span>WhatsApp</span><span>{WHATSAPP_SHOWN}</span></a>
+        <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener"><span>Instagram</span><span>@{INSTAGRAM}</span></a>
+        <div>{tp(CONTACT["based"])}{tp(CONTACT["city"])}</div>
       </div>
     </div>
   </section>"""
@@ -363,13 +392,11 @@ def build_place(slug, n):
     <figure class="frame {cls}">{img(root + photo_path(p, j), alt_pt, alt_en)}</figure>""")
     body = f"""
   <div class="place-content" data-place="{slug}">
-    <section class="place-hero">
-      <img class="photo" src="{root}{cover_path(p)}" alt="">
-      <div class="place-hero-text">
-        <span class="mono">{n:02d} / {len(PROJECT_ORDER)} · {tp(tx["meta"])}</span>
-        <h1>{esc(tx["name"])}</h1>
-      </div>
-    </section>
+    <header class="place-head">
+      <p class="tag mono">[ {n:02d} / {len(PROJECT_ORDER)} ] · {tp(tx["meta"])}</p>
+      <h1 class="mega place-mega"><span class="row">{esc(tx["name"])}</span></h1>
+    </header>
+    <figure class="place-cover"><img class="photo" src="{root}{cover_path(p)}" alt=""></figure>
     {tp(tx["desc"], "p", 'class="place-desc"')}
     <section class="frames" aria-label="Fotografias">{"".join(frames)}
     </section>
@@ -383,12 +410,12 @@ def build_contact():
     body = f"""
   <section class="booking">
     <div class="booking-intro">
-      {tp(CONTACT["label"], "p", 'class="label mono"')}
-      {t("Pronto para Construir <em>Algo Real?</em>", "Ready to Build <em>Something Real?</em>", "h1")}
+      {label(CONTACT["label"])}
+      {mega(("Pronto para<br>Construir<br>Algo Real?", "Ready to<br>Build Something<br>Real?"), cls="mega-s")}
       {tp(CONTACT["body"], "p", 'class="sec-body"')}
-      <div class="contact-links">
-        <a href="mailto:{EMAIL}"><span class="mono">Email</span><span>{EMAIL}</span></a>
-        <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener"><span class="mono">Instagram</span><span>@{INSTAGRAM}</span></a>
+      <div class="contact-links mono">
+        <a href="mailto:{EMAIL}"><span>Email</span><span>{EMAIL}</span></a>
+        <a href="https://instagram.com/{INSTAGRAM}" target="_blank" rel="noopener"><span>Instagram</span><span>@{INSTAGRAM}</span></a>
       </div>
     </div>
     {booking_chat()}
@@ -407,8 +434,8 @@ def forward(target, title):
 <meta http-equiv="refresh" content="0; url={target}">
 <link rel="canonical" href="{target}">
 </head>
-<body style="background:#0b0908;color:#efe7da;font-family:system-ui,sans-serif;padding:24px">
-<a href="{target}" style="color:#e8621a">{esc(title)} →</a>
+<body style="background:#e9e6e0;color:#161616;font-family:system-ui,sans-serif;padding:24px">
+<a href="{target}" style="color:#161616">{esc(title)} →</a>
 </body>
 </html>
 """

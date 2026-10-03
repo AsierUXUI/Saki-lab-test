@@ -440,6 +440,7 @@
         body.innerHTML = '';
         body.appendChild(document.importNode(content, true));
         translate(body);
+        fitAll(body);
         body.scrollTop = 0;
         lastFocus = document.activeElement;
         sh.classList.add('open'); sh.setAttribute('aria-hidden', 'false');
@@ -501,125 +502,102 @@
     })();
   }
 
-  /* ---------- TORCH: a light in the dark shows a bar underneath, a different one as it travels ---------- */
-  (function torch() {
-    var el = $('.torch');
-    if (!el) return;
-    var imgs = $$('.torch-under img', el), cap = $('.torch-caption', el);
-    var idx = 0, travel = 0, visible = true, touchedAt = 0, t0 = performance.now();
-    var rect = el.getBoundingClientRect();
-    var x = rect.width * .62, y = rect.height * .46, tx = x, ty = y, r = 0, lastX = x, lastY = y;
-    var base = function () { return Math.max(150, Math.min(300, Math.min(rect.width, rect.height) * .3)); };
+  /* ---------- BIG LINES: each block is sized so its longest line fills the width ---------- */
+  function fitAll(root) {
+    $$('.mega', root).forEach(function (el) {
+      if (el.classList.contains('place-mega')) return;
+      var box = el.parentElement, cs = getComputedStyle(box);
+      var avail = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      el.style.fontSize = '100px';
+      var rowsEl = $$('.row', el);
+      rowsEl.forEach(function (r) { r.style.fontSize = ''; });
+      if (innerWidth < 760 && (el.classList.contains('hero-mega') || el.classList.contains('contact-mega'))) {
+        /* on a phone every line is sized on its own, like a poster */
+        rowsEl.forEach(function (r) { r.style.fontSize = Math.floor(100 * avail / r.scrollWidth * .99) + 'px'; });
+        return;
+      }
+      var widest = Math.max.apply(null, $$('.row', el).map(function (r) { return r.scrollWidth; }));
+      var size = 100 * avail / widest;
+      if (el.classList.contains('hero-mega')) {
+        /* the hero also has to leave room for the line under it */
+        var rows = $$('.row', el).length;
+        size = Math.min(size, (innerHeight * (innerWidth < 760 ? .5 : .6)) / (rows * .94));
+      }
+      if (el.classList.contains('mega-s')) size = Math.min(size, Math.max(64, innerWidth * .11));
+      el.style.fontSize = Math.floor(size * .995) + 'px';
+    });
+  }
+  langHooks.push(function () {
+    $$('.mega[data-label-' + lang + ']').forEach(function (el) { el.setAttribute('aria-label', el.getAttribute('data-label-' + lang)); });
+    fitAll();
+  });
+  fitAll();
+  if (document.fonts) document.fonts.ready.then(function () { fitAll(); if (window.ScrollTrigger) ScrollTrigger.refresh(); });
+  var rz;
+  window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { fitAll(); }, 120); });
 
-    function caption() {
-      var im = imgs[idx];
-      $('b', cap).textContent = im.dataset.name;
-      $('span', cap).textContent = im.getAttribute('data-meta-' + lang);
-    }
+  /* ---------- PHOTOS INSIDE THE LINES: they change as the mouse travels (on a phone, on their own) ---------- */
+  $$('.pic').forEach(function (pic) {
+    var imgs = $$('img', pic), idx = 0, travel = 0, lx = null, ly = 0;
+    if (imgs.length < 2) return;
+    var section = pic.closest('section');
+    var nameEl = section && $('.pic-name span', section);
     function next() {
       imgs[idx].classList.remove('on');
       idx = (idx + 1) % imgs.length;
       imgs[idx].classList.add('on');
       var after = imgs[(idx + 1) % imgs.length];
       if (after.loading === 'lazy') after.loading = 'eager';
-      caption();
+      if (nameEl) nameEl.textContent = imgs[idx].dataset.name;
     }
-    caption();
-    langHooks.push(caption);
-
-    function measure() { rect = el.getBoundingClientRect(); }
-    window.addEventListener('resize', measure);
-    if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(el);
-
-    el.addEventListener('pointermove', function (e) {
-      if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
-      measure();
-      tx = e.clientX - rect.left; ty = e.clientY - rect.top;
-      el.classList.add('lit');
-    });
-    /* on a phone the light follows the finger, and wanders on its own when left alone */
-    function touch(e) {
-      var p = e.touches[0];
-      measure();
-      tx = p.clientX - rect.left; ty = p.clientY - rect.top;
-      touchedAt = performance.now();
-      el.classList.add('lit');
+    if (finePointer && !reduce) {
+      section.addEventListener('pointermove', function (e) {
+        if (lx !== null) travel += Math.hypot(e.clientX - lx, e.clientY - ly);
+        lx = e.clientX; ly = e.clientY;
+        if (travel > 140) { travel = 0; next(); }
+      });
+      section.addEventListener('pointerleave', function () { lx = null; });
     }
-    el.addEventListener('touchstart', touch, { passive: true });
-    el.addEventListener('touchmove', touch, { passive: true });
+    var visible = true;
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(pic);
+    setInterval(function () { if (visible && !document.hidden && (!finePointer || reduce)) next(); }, 1800);
+  });
 
-    if (reduce) {
-      el.style.setProperty('--r', base() * 1.3 + 'px');
-      setInterval(next, 5000);
-      return;
-    }
-    if (!finePointer) el.classList.add('lit');
-
-    (function loop(now) {
-      requestAnimationFrame(loop);
-      if (!visible || document.hidden) return;
-      if (!finePointer && now - touchedAt > 2500) {
-        var s = (now - t0) / 1000;
-        tx = rect.width * (.5 + .32 * Math.sin(s * .45));
-        ty = rect.height * (.42 + .2 * Math.sin(s * .7 + 1));
-      }
-      x = lerp(x, tx, .12); y = lerp(y, ty, .12);
-      var speed = Math.hypot(x - lastX, y - lastY);
-      lastX = x; lastY = y;
-      travel += speed;
-      if (travel > (finePointer ? 650 : 520)) { travel = 0; next(); }
-      r = lerp(r, base() + Math.min(70, speed * 3), .08);
-      el.style.setProperty('--x', x + 'px');
-      el.style.setProperty('--y', y + 'px');
-      el.style.setProperty('--r', r + 'px');
-      if (!finePointer) return;   /* on a phone the name sits still at the top */
-      var cxp = Math.min(x + r * .45, rect.width - cap.offsetWidth - 16);
-      cap.style.transform = 'translate(' + Math.max(16, cxp) + 'px,' + (y + r * .55) + 'px)';
-    })(performance.now());
+  /* ---------- PILL BAR: a mark under the section you are in ---------- */
+  (function sections() {
+    var links = $$('.pill-links a[data-sec]');
+    if (!links.length || !('IntersectionObserver' in window)) return;
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (x) {
+        if (!x.isIntersecting) return;
+        links.forEach(function (a) { a.classList.toggle('on', a.dataset.sec === x.target.id); });
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    links.forEach(function (a) { var s = document.getElementById(a.dataset.sec); if (s) io.observe(s); });
   })();
 
-  /* ---------- LENS: a circle under the cursor shows a second layer (a photo, the words in colour) ---------- */
-  (function lenses() {
-    var list = $$('[data-lens]').map(function (el) {
-      return { el: el, x: 0, y: 0, tx: 0, ty: 0, r: 0, tr: 0, on: false, seen: false, t0: Math.random() * 10, size: el.classList.contains('value') ? 130 : 170 };
-    });
-    if (!list.length) return;
-    list.forEach(function (L) {
-      var rc = function () { return L.el.getBoundingClientRect(); };
-      L.el.addEventListener('pointerenter', function (e) {
-        if (e.pointerType !== 'mouse') return;
-        var b = rc(); L.x = L.tx = e.clientX - b.left; L.y = L.ty = e.clientY - b.top; L.on = true;
-      });
-      L.el.addEventListener('pointermove', function (e) {
-        if (e.pointerType !== 'mouse') return;
-        var b = rc(); L.tx = e.clientX - b.left; L.ty = e.clientY - b.top; L.on = true;
-      });
-      L.el.addEventListener('pointerleave', function () { L.on = false; });
-      if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { L.seen = en[0].isIntersecting; }, { threshold: .35 }).observe(L.el);
-      else L.seen = true;
-    });
-    if (reduce) return;
-    (function loop(now) {
-      requestAnimationFrame(loop);
-      list.forEach(function (L) {
-        if (!finePointer) {
-          /* on a phone the lens drifts across while it is on screen */
-          var w = L.el.offsetWidth, h = L.el.offsetHeight, s = now / 1000 + L.t0;
-          L.tx = w * (.5 + .38 * Math.sin(s * .5)); L.ty = h * (.5 + .3 * Math.sin(s * .8));
-          L.tr = L.seen ? L.size * .75 : 0;
-        } else {
-          L.tr = L.on ? L.size : 0;
-        }
-        if (L.tr === 0 && L.r < .5) { if (L.r) { L.r = 0; L.el.style.setProperty('--lr', '0px'); } return; }
-        L.x = lerp(L.x, L.tx, .16); L.y = lerp(L.y, L.ty, .16); L.r = lerp(L.r, L.tr, .12);
-        L.el.style.setProperty('--lx', L.x + 'px');
-        L.el.style.setProperty('--ly', L.y + 'px');
-        L.el.style.setProperty('--lr', L.r + 'px');
-      });
-    })(performance.now());
+  /* ---------- BOTTOM CARD: steps aside where the page already offers the same thing ---------- */
+  (function dock() {
+    var d = $('.dock');
+    if (!d || !('IntersectionObserver' in window)) return;
+    var hide = $$('#contacto, .foot');
+    var seen = new Set();
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (x) { if (x.isIntersecting) seen.add(x.target); else seen.delete(x.target); });
+      d.classList.toggle('away', seen.size > 0);
+    }, { threshold: .15 });
+    hide.forEach(function (el) { io.observe(el); });
+    /* it tucks away while you read down the page and comes back when you scroll up */
+    var lastY = scrollY;
+    window.addEventListener('scroll', function () {
+      var y = scrollY;
+      if (Math.abs(y - lastY) < 6) return;
+      d.classList.toggle('tuck', y > lastY && y > innerHeight * .5);
+      lastY = y;
+    }, { passive: true });
   })();
 
-  /* ---------- SERVICES: each area opens; a photo floats beside the cursor ---------- */
+  /* ---------- SERVICES: each area opens; a round photo and a round colour follow the mouse ---------- */
   (function services() {
     var ol = $('.areas');
     if (!ol) return;
@@ -634,75 +612,96 @@
         if (window.ScrollTrigger) setTimeout(function () { ScrollTrigger.refresh(); }, 750);
       });
     });
-    var fp = $('.float-photo'), fimg = fp && $('img', fp);
-    if (!finePointer || !fp || reduce) return;
-    var fx = mx, fy = my, active = false;
+    var f = $('.follow'), pic = f && $('.follow-pic', f), dot = f && $('.follow-dot', f), fimg = f && $('img', f);
+    if (!finePointer || !f || reduce) return;
+    var px = mx, py = my, dx = mx, dy = my, active = false;
     areas.forEach(function (a) {
       a.addEventListener('pointerenter', function () {
         areas.forEach(function (o) { o.classList.toggle('hover', o === a); });
         ol.classList.add('hovering');
         if (fimg.getAttribute('src') !== a.dataset.photo) fimg.src = a.dataset.photo;
-        if (!active) { fx = mx; fy = my; }
-        active = true; fp.classList.add('on');
+        if (!active) { px = dx = mx; py = dy = my; }
+        active = true; f.classList.add('on');
       });
     });
-    ol.addEventListener('pointerleave', function () {
+    function off() {
       areas.forEach(function (o) { o.classList.remove('hover'); });
       ol.classList.remove('hovering');
-      active = false; fp.classList.remove('on');
-    });
+      active = false; f.classList.remove('on');
+    }
+    ol.addEventListener('pointerleave', off);
+    /* scrolling with the wheel moves the list away without a pointer event */
+    window.addEventListener('scroll', function () {
+      if (!active) return;
+      var r = ol.getBoundingClientRect();
+      if (mx < r.left || mx > r.right || my < r.top || my > r.bottom) off();
+    }, { passive: true });
     (function loop() {
       requestAnimationFrame(loop);
-      if (!active && !fp.classList.contains('on')) return;
-      fx = lerp(fx, mx, .1); fy = lerp(fy, my, .1);
-      var w = fp.offsetWidth, h = fp.offsetHeight;
-      var left = mx + 40 + w > innerWidth ? fx - w - 40 : fx + 40;
-      var rot = Math.max(-6, Math.min(6, (mx - fx) * .04));
-      fp.style.left = 0; fp.style.top = 0;
-      fp.style.translate = left + 'px ' + (fy - h / 2) + 'px';
-      fp.style.rotate = rot + 'deg';
+      if (!active) return;
+      var w = pic.offsetWidth;
+      px = lerp(px, mx, .16); py = lerp(py, my, .16);
+      dx = lerp(dx, mx, .07); dy = lerp(dy, my, .07);
+      /* the photo sits beside the cursor, the colour trails behind it */
+      var side = mx + w + 60 > innerWidth ? -w - 30 : 30;
+      pic.style.transform = 'translate(' + (px + side) + 'px,' + (py - w / 2) + 'px)';
+      dot.style.transform = 'translate(' + (dx + side + (side > 0 ? w * .55 : -w * .55)) + 'px,' + (dy - w / 2) + 'px)';
     })();
   })();
 
-  /* ---------- PROJECTS: moving over a name leaves a trail of its photos ---------- */
-  (function trail() {
-    var list = $('.proj-list'), box = $('.trail');
-    if (!list || !box || !finePointer || reduce) return;
-    var lastX = null, lastY = 0, dist = 0, live = [];
-    var counters = new WeakMap();
-    list.addEventListener('pointerover', function () { list.classList.add('hovering'); });
-    list.addEventListener('pointerleave', function () { list.classList.remove('hovering'); lastX = null; });
-    list.addEventListener('pointermove', function (e) {
-      var a = e.target.closest('a[data-trail]');
-      if (!a) return;
-      if (lastX === null) { lastX = e.clientX; lastY = e.clientY; }
-      dist += Math.hypot(e.clientX - lastX, e.clientY - lastY);
-      lastX = e.clientX; lastY = e.clientY;
-      if (dist < 90) return;
-      dist = 0;
-      var photos = JSON.parse(a.dataset.trail);
-      if (!photos.length) return;
-      var n = counters.get(a) || 0;
-      counters.set(a, n + 1);
-      var im = new Image();
-      im.src = photos[n % photos.length];
-      im.alt = '';
-      box.appendChild(im);
-      live.push(im);
-      if (live.length > 10) { var old = live.shift(); old.remove(); }
-      var w = im.offsetWidth || 200, h = w * 1.25;
-      var x = e.clientX - w / 2, y = e.clientY - h / 2, rot = (Math.random() - .5) * 10;
-      if (window.gsap) {
-        gsap.fromTo(im, { x: x, y: y, rotate: rot, scale: .6, opacity: 0 },
-          { scale: 1, opacity: 1, duration: .45, ease: 'expo.out' });
-        gsap.to(im, { opacity: 0, scale: .9, y: y + 40, duration: .9, delay: .6, ease: 'power2.in', onComplete: function () {
-          im.remove(); live = live.filter(function (x) { return x !== im; });
-        } });
-      } else {
-        im.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-        setTimeout(function () { im.remove(); }, 900);
-      }
+  /* ---------- PROJECTS: names change the screen; moving across the screen runs through its photos ---------- */
+  (function projects() {
+    var screen = $('.screen');
+    if (!screen) return;
+    var shots = $$('.shot', screen), names = $$('.reel a'), open = $('.screen-open', screen);
+    var cap = $('.screen-cap', screen), scrub = $('.scrub', screen);
+    var cur = 0, total = shots.length, galleries = {};
+    function pad(n) { return (n < 10 ? '0' : '') + n; }
+    function show(i) {
+      if (i === cur && shots[i].classList.contains('on')) return;
+      shots[cur].classList.remove('on');
+      cur = i;
+      shots[i].classList.add('on');
+      names.forEach(function (a, j) { a.classList.toggle('on', j === i); });
+      var a = names[i];
+      open.setAttribute('href', a.getAttribute('href'));
+      $('.screen-n', cap).textContent = pad(i + 1) + ' / ' + pad(total);
+      $('b', cap).textContent = a.lastChild.textContent;
+      meta();
+    }
+    function meta() {
+      var m = shots[cur].dataset;
+      $('.screen-meta', cap).textContent = lang === 'en' ? m.metaEn : m.metaPt;
+    }
+    names[0].classList.add('on');
+    names.forEach(function (a, i) {
+      a.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') show(i); });
+      a.addEventListener('focus', function () { show(i); });
     });
+    /* the screen opens the project it shows */
+    screen.addEventListener('click', function (e) {
+      if (e.target.closest('.screen-open')) return;
+      open.click();
+    });
+    screen.setAttribute('data-cursor', 'Ver'); screen.setAttribute('data-cursor-en', 'View');
+    if (finePointer && !reduce) {
+      screen.addEventListener('pointermove', function (e) {
+        var r = screen.getBoundingClientRect(), shot = shots[cur];
+        var g = galleries[cur] || (galleries[cur] = JSON.parse(shot.dataset.gallery));
+        var k = Math.min(g.length - 1, Math.floor((e.clientX - r.left) / r.width * g.length));
+        var im = $('img', shot);
+        if (im.dataset.k !== String(k)) { im.dataset.k = k; im.src = g[k]; }
+        screen.classList.add('scrubbing');
+        scrub.textContent = (k + 1) + ' / ' + g.length;
+      });
+      screen.addEventListener('pointerleave', function () { screen.classList.remove('scrubbing'); });
+    } else {
+      /* on a phone the screen moves on by itself */
+      var visible = false;
+      if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(screen);
+      setInterval(function () { if (visible && !document.hidden) show((cur + 1) % total); }, 2600);
+    }
+    langHooks.push(meta);
   })();
 
   /* ---------- MAGNETIC BUTTONS ---------- */
@@ -710,7 +709,7 @@
     $$('.magnetic').forEach(function (b) {
       b.addEventListener('pointermove', function (e) {
         var r = b.getBoundingClientRect();
-        var dx = (e.clientX - (r.left + r.width / 2)) * .3, dy = (e.clientY - (r.top + r.height / 2)) * .4;
+        var dx = (e.clientX - (r.left + r.width / 2)) * .25, dy = (e.clientY - (r.top + r.height / 2)) * .35;
         b.style.transition = 'transform .2s ease-out';
         b.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
       });
@@ -725,9 +724,14 @@
 
   /* ---------- MOTION ---------- */
   function start() {
+    var steps = $('.steps'), frames = $$('.process-frame img');
+    function lightStep(i) {
+      $$('.step', steps).forEach(function (s, j) { s.classList.toggle('lit', j <= i); });
+      frames.forEach(function (f, j) { f.classList.toggle('on', j === i); });
+    }
     if (!window.gsap || !window.ScrollTrigger || reduce) {
       document.body.classList.add('no-anim');
-      $$('.step').forEach(function (s) { s.classList.add('lit'); });
+      if (steps) lightStep(0);
       return;
     }
     gsap.registerPlugin(ScrollTrigger);
@@ -748,24 +752,23 @@
       });
     });
 
-    /* the headline rises out of the dark */
-    var hero = $$('.torch-title, .torch-sub, .torch .actions');
-    if (hero.length) gsap.from(hero, { y: 50, opacity: 0, duration: 1.4, stagger: .12, ease: 'expo.out', delay: .15 });
-
-    $$('.sec-head, .lens-quote, .studio-foot, .about-title, .about-grid, .contact-title, .contact-grid, .inline-cta').forEach(function (el) {
-      gsap.from(el, { y: 60, opacity: 0, duration: 1.3, ease: 'expo.out', scrollTrigger: { trigger: el, start: 'top 88%' } });
+    /* big lines rise out of their own baseline */
+    $$('.mega .row').forEach(function (row) {
+      var inHero = row.closest('.hero');
+      gsap.from(row, { yPercent: 40, opacity: 0, duration: 1.2, ease: 'expo.out', delay: inHero ? .1 + $$('.row', row.parentElement).indexOf(row) * .1 : 0,
+        scrollTrigger: inHero ? null : { trigger: row, start: 'top 92%' } });
     });
-    $$('.area, .proj, .value').forEach(function (el, i) {
-      gsap.from(el, { y: 30, opacity: 0, duration: 1, ease: 'expo.out', delay: (i % 4) * .05, scrollTrigger: { trigger: el, start: 'top 94%' } });
+    gsap.from('.hero-foot', { opacity: 0, y: 30, duration: 1.2, ease: 'expo.out', delay: .45 });
+    $$('.ed-title, .ed-meta, .ed-cols, .sec-head, .inline-cta, .screen, .reel, .contact-grid, .value').forEach(function (el) {
+      gsap.from(el, { y: 50, opacity: 0, duration: 1.2, ease: 'expo.out', scrollTrigger: { trigger: el, start: 'top 90%' } });
     });
 
-    /* process: each step lights up as it reaches the middle of the screen, the line fills behind */
-    var steps = $('.steps');
+    /* process: each step lights up at the middle of the screen, and the photo beside it follows */
     if (steps) {
-      $$('.step', steps).forEach(function (s) {
-        ScrollTrigger.create({ trigger: s, start: 'top 62%', onEnter: function () { s.classList.add('lit'); }, onLeaveBack: function () { s.classList.remove('lit'); } });
+      lightStep(0);
+      $$('.step', steps).forEach(function (s, i) {
+        ScrollTrigger.create({ trigger: s, start: 'top 60%', onEnter: function () { lightStep(i); }, onLeaveBack: function () { lightStep(Math.max(0, i - 1)); } });
       });
-      ScrollTrigger.create({ trigger: steps, start: 'top 62%', end: 'bottom 62%', scrub: true, onUpdate: function (st) { steps.style.setProperty('--p', st.progress); } });
     }
 
     /* project pages: photos rise in */
@@ -773,7 +776,7 @@
       gsap.from(fr, { opacity: 0, y: 80, duration: 1.4, ease: 'expo.out', scrollTrigger: { trigger: fr, start: 'top 92%' } });
     });
 
-    window.addEventListener('load', function () { ScrollTrigger.refresh(); });
+    window.addEventListener('load', function () { fitAll(); ScrollTrigger.refresh(); });
   }
 
   /* GSAP and Lenis are deferred, so they are ready by DOMContentLoaded */
