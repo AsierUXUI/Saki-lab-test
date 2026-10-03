@@ -3,135 +3,51 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>O Terraço — Sakim Lab</title>
-<meta name="description" content="Um telhado no centro histórico, uma rede de sombra e Lisboa inteira a mudar de cor.">
-<meta name="theme-color" content="#0b0908">
-<meta property="og:title" content="O Terraço — Sakim Lab">
-<meta property="og:description" content="Um telhado no centro histórico, uma rede de sombra e Lisboa inteira a mudar de cor.">
+<title>O Terraço Bar — Sakim Lab</title>
+<meta name="description" content="Direção de conceito e design de atmosfera para um bar de terraço no coração histórico de Lisboa, com vista para o Castelo de São Jorge.">
+<meta name="theme-color" content="#e9e6e0">
+<meta property="og:title" content="O Terraço Bar — Sakim Lab">
+<meta property="og:description" content="Direção de conceito e design de atmosfera para um bar de terraço no coração histórico de Lisboa, com vista para o Castelo de São Jorge.">
 <link rel="icon" href="../assets/img/marca/sakim-logo.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=7ecfde90">
+<link rel="preload" href="../assets/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/newsreader-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/site.css?v=4212fc28">
 <script src="../assets/js/gsap.min.js?v=5e6e6cba" defer></script>
 <script src="../assets/js/ScrollTrigger.min.js?v=00a3e5c7" defer></script>
 <script src="../assets/js/lenis.min.js?v=81fb34b5" defer></script>
-<script src="../assets/js/site.js?v=3e554e75" defer></script>
+<script src="../assets/js/site.js?v=3aae9cc0" defer></script>
 </head>
 <body class="no-js" data-page="lugar">
 <a class="skip" href="#main" data-pt="Saltar para o conteúdo" data-en="Skip to content">Saltar para o conteúdo</a>
-<div class="grain" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"><span></span></div>
-<div class="veil" aria-hidden="true">
-  <div class="veil-num"><span>0</span><sup>+</sup></div>
-  <div class="veil-cap mono" data-pt="Anos de noites em Lisboa" data-en="Years of nights in Lisbon">Anos de noites em Lisboa</div>
-</div>
-
-<header class="nav">
-  <a href="../index.html" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
-  <nav class="nav-links" aria-label="Menu">
-    <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="../sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="../metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="../contacto.html" class="nav-cta" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-  </nav>
-  <div class="nav-right">
-    <span class="clock-nav mono"><span data-pt="Lisboa" data-en="Lisbon">Lisboa</span> <span class="js-clock">--:--</span></span>
-    <div class="lang" role="group" aria-label="Idioma / Language">
-      <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
-    </div>
-    <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu" data-pt="Menu" data-en="Menu">Menu</button>
+<header class="bar">
+  <a class="pill pill-back" href="../index.html#projectos" data-pt="← Voltar" data-en="← Back">← Voltar</a>
+  <div class="pill pill-lang lang" role="group" aria-label="Idioma / Language">
+    <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
   </div>
 </header>
-<div class="menu" id="menu">
-  <a href="../index.html" data-pt="Início" data-en="Home">Início</a>
-  <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="../sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="../metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="../contacto.html" class="nav-cta" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-</div>
 
 <main id="main">
 
-  <section class="hero place-hero">
-    <div class="hero-media" aria-hidden="true"><img class="photo" src="../assets/img/lugares/o-terraco/por-do-sol.jpg" alt=""></div>
-    <div class="hero-content">
-      <div class="hero-eyebrow mono">
-        <span>07 / 14</span>
-        <span data-pt="Lisboa" data-en="Lisbon">Lisboa</span>
-        <span data-pt="Bar de terraço" data-en="Rooftop bar">Bar de terraço</span>
-      </div>
-      <h1><span class="line"><span>O Terraço</span></span></h1>
-    </div>
-    
-  </section>
+  <div class="place-content" data-place="o-terraco">
+    <header class="place-head">
+      <p class="tag mono">[ 02 / 14 ] · <span data-pt="Rooftop Bar · Lisboa" data-en="Rooftop Bar · Lisbon">Rooftop Bar · Lisboa</span></p>
+      <h1 class="mega place-mega"><span class="row">O Terraço Bar</span></h1>
+    </header>
+    <figure class="place-cover"><img class="photo" src="../assets/img/lugares/o-terraco/por-do-sol.jpg" alt=""></figure>
+    <p class="place-desc" data-pt="Direção de conceito e design de atmosfera para um bar de terraço no coração histórico de Lisboa, com vista para o Castelo de São Jorge." data-en="Concept direction and atmosphere design for a rooftop bar in the historic heart of Lisbon, overlooking São Jorge Castle.">Direção de conceito e design de atmosfera para um bar de terraço no coração histórico de Lisboa, com vista para o Castelo de São Jorge.</p>
+    <section class="frames" aria-label="Fotografias">
+    <figure class="frame f-full"><img class="photo" src="../assets/img/lugares/o-terraco/tarde.jpg" alt="Amigas num sofá ao fim da tarde" data-alt-pt="Amigas num sofá ao fim da tarde" data-alt-en="Friends on a sofa in the late afternoon" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/o-terraco/gente.jpg" alt="O terraço cheio ao sol" data-alt-pt="O terraço cheio ao sol" data-alt-en="The terrace full in the sun" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/o-terraco/sesta.jpg" alt="Alguém a dormir num sofá sobre Lisboa" data-alt-pt="Alguém a dormir num sofá sobre Lisboa" data-alt-en="Someone asleep on a sofa above Lisbon" loading="lazy"></figure>
+    <figure class="frame f-center"><img class="photo" src="../assets/img/lugares/o-terraco/guitarra.jpg" alt="Guitarra sob a sombra colorida" data-alt-pt="Guitarra sob a sombra colorida" data-alt-en="A guitar under the coloured canopy" loading="lazy"></figure>
+    <figure class="frame f-left"><img class="photo" src="../assets/img/lugares/o-terraco/por-do-sol.jpg" alt="O pôr do sol debaixo da rede" data-alt-pt="O pôr do sol debaixo da rede" data-alt-en="Sunset under the canopy" loading="lazy"></figure>
+    <figure class="frame f-right"><img class="photo" src="../assets/img/lugares/o-terraco/lanternas.jpg" alt="Lanternas acesas ao anoitecer" data-alt-pt="Lanternas acesas ao anoitecer" data-alt-en="Lanterns lit at dusk" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/o-terraco/hora-azul.jpg" alt="A hora azul sobre o rio" data-alt-pt="A hora azul sobre o rio" data-alt-en="Blue hour over the river" loading="lazy"></figure>
+    </section>
+  </div>
 
-  <section class="lead">
-    <p data-reveal data-pt="Um telhado no centro histórico, uma rede de sombra e Lisboa inteira a mudar de cor." data-en="A rooftop in the old centre, a canopy of shade and the whole of Lisbon changing colour.">Um telhado no centro histórico, uma rede de sombra e Lisboa inteira a mudar de cor.</p>
-  </section>
-
-  <section class="story">
-    <div class="label mono" data-pt="A pergunta" data-en="The question">A pergunta</div>
-    <div data-reveal>
-      <p data-pt="Como fazer as pessoas ficarem do pôr do sol até à noite? Sofás em vez de cadeiras, lanternas que se acendem devagar, música ao vivo quando o céu escurece." data-en="How do you get people to stay from sunset into the night? Sofas instead of chairs, lanterns that come on slowly, live music as the sky goes dark.">Como fazer as pessoas ficarem do pôr do sol até à noite? Sofás em vez de cadeiras, lanternas que se acendem devagar, música ao vivo quando o céu escurece.</p>
-      <p class="story-did"><span data-pt="O que desenhei:" data-en="What I shaped:">O que desenhei:</span> <span data-pt="Direção de conceito e design de atmosfera." data-en="Concept direction and atmosphere design.">Direção de conceito e design de atmosfera.</span></p>
-    </div>
-  </section>
-
-  <section class="frames" aria-label="Fotografias">
-    <figure class="frame f-full">
-      <img class="photo" src="../assets/img/lugares/o-terraco/tarde.jpg" alt="Amigas num sofá ao fim da tarde" data-alt-pt="Amigas num sofá ao fim da tarde" data-alt-en="Friends on a sofa in the late afternoon" loading="lazy">
-      <figcaption>01 — <span data-pt="Amigas num sofá ao fim da tarde" data-en="Friends on a sofa in the late afternoon">Amigas num sofá ao fim da tarde</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/o-terraco/gente.jpg" alt="O terraço cheio ao sol" data-alt-pt="O terraço cheio ao sol" data-alt-en="The terrace full in the sun" loading="lazy">
-      <figcaption>02 — <span data-pt="O terraço cheio ao sol" data-en="The terrace full in the sun">O terraço cheio ao sol</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/o-terraco/sesta.jpg" alt="Alguém a dormir num sofá sobre Lisboa" data-alt-pt="Alguém a dormir num sofá sobre Lisboa" data-alt-en="Someone asleep on a sofa above Lisbon" loading="lazy">
-      <figcaption>03 — <span data-pt="Alguém a dormir num sofá sobre Lisboa" data-en="Someone asleep on a sofa above Lisbon">Alguém a dormir num sofá sobre Lisboa</span></figcaption>
-    </figure>
-    <figure class="frame f-center">
-      <img class="photo" src="../assets/img/lugares/o-terraco/guitarra.jpg" alt="Guitarra sob a sombra colorida" data-alt-pt="Guitarra sob a sombra colorida" data-alt-en="A guitar under the coloured canopy" loading="lazy">
-      <figcaption>04 — <span data-pt="Guitarra sob a sombra colorida" data-en="A guitar under the coloured canopy">Guitarra sob a sombra colorida</span></figcaption>
-    </figure>
-    <figure class="frame f-left">
-      <img class="photo" src="../assets/img/lugares/o-terraco/por-do-sol.jpg" alt="O pôr do sol debaixo da rede" data-alt-pt="O pôr do sol debaixo da rede" data-alt-en="Sunset under the canopy" loading="lazy">
-      <figcaption>05 — <span data-pt="O pôr do sol debaixo da rede" data-en="Sunset under the canopy">O pôr do sol debaixo da rede</span></figcaption>
-    </figure>
-    <figure class="frame f-right">
-      <img class="photo" src="../assets/img/lugares/o-terraco/lanternas.jpg" alt="Lanternas acesas ao anoitecer" data-alt-pt="Lanternas acesas ao anoitecer" data-alt-en="Lanterns lit at dusk" loading="lazy">
-      <figcaption>06 — <span data-pt="Lanternas acesas ao anoitecer" data-en="Lanterns lit at dusk">Lanternas acesas ao anoitecer</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/o-terraco/hora-azul.jpg" alt="A hora azul sobre o rio" data-alt-pt="A hora azul sobre o rio" data-alt-en="Blue hour over the river" loading="lazy">
-      <figcaption>07 — <span data-pt="A hora azul sobre o rio" data-en="Blue hour over the river">A hora azul sobre o rio</span></figcaption>
-    </figure>
-  </section>
-
-  <a class="next" href="o-larguinho.html" data-cursor="Entrar">
-    <img class="photo" src="../assets/img/lugares/o-larguinho/largo-ao-anoitecer.jpg" alt="" loading="lazy">
-    <div class="next-body">
-      <span class="mono" data-pt="Próximo lugar" data-en="Next place">Próximo lugar</span>
-      <span class="next-name">O Larguinho</span>
-    </div>
-  </a>
-
-  <section class="cta">
-    <div>
-      <h2 data-pt="Pronto para construir &lt;em&gt;algo real?&lt;/em&gt;" data-en="Ready to build &lt;em&gt;something real?&lt;/em&gt;">Pronto para construir <em>algo real?</em></h2>
-      <p data-pt="Umas perguntas rápidas, e o resto conversamos à mesa." data-en="A few quick questions, and we&#x27;ll talk about the rest at the table.">Umas perguntas rápidas, e o resto conversamos à mesa.</p>
-    </div>
-    <a class="btn" href="../contacto.html"><span data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</span> <span aria-hidden="true">→</span></a>
-  </section>
 </main>
 
-<footer>
-  <a class="bye" href="../contacto.html" data-pt="Até &lt;em&gt;já.&lt;/em&gt;" data-en="See you &lt;em&gt;soon.&lt;/em&gt;">Até <em>já.</em></a>
-  <div class="foot mono">
-    <span><span class="js-greet">Boa noite</span> — <span data-pt="em Lisboa são" data-en="in Lisbon it&#x27;s">em Lisboa são</span> <span class="js-clock">--:--</span></span>
-    <span class="foot-links"><a href="mailto:studio@sakinlab.com">Email</a><a href="https://instagram.com/sakinlab" target="_blank" rel="noopener">Instagram</a><span>© <span class="js-year">2026</span> Sakim Lab</span></span>
-  </div>
-</footer>
 </body>
 </html>

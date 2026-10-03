@@ -472,29 +472,7 @@ def photo_path(place, i):
 
 
 def cover_path(place):
+    """The place's main photo, or None while it has no photos."""
+    if not place.get("cover"):
+        return None
     return f"assets/img/lugares/{place['slug']}/{place['cover']}.jpg"
-
-
-# Where and when each place happened, for the map and the year slider on the Places page.
-# geo:   (latitude, longitude). None while the location is unknown: listed as "not on the map yet".
-# addr:  street address shown on the map card, when known.
-# far:   outside Lisbon; shown as an arrow at the edge of the map instead of a dot.
-# year:  the year it opened (or he took it over); None while unknown ("year to confirm").
-# label: "left" puts the name on the left of the dot, where places sit close together.
-# Sources found online (Time Out Lisboa, Observador, The Infatuation, hotel listings), October 2026.
-MAP = {
-    "sakim":             {"geo": None, "year": None},
-    "so-what":           {"geo": (38.7076, -9.1552), "addr": "Santos — onde era o Porão de Santos", "label": "left", "year": 2024},  # street to confirm
-    "social-b":          {"geo": (38.7084, -9.1497), "addr": "Rua da Boavista, 116", "label": "left", "year": 2018},
-    "a-tabacaria":       {"geo": (38.7078, -9.1468), "addr": "Rua de São Paulo, 75", "year": 2015},
-    "velha-senhora":     {"geo": (38.7069, -9.1440), "addr": "Rua Nova do Carvalho, 40", "year": None},
-    "clube-ferroviario": {"geo": (38.7140, -9.1228), "addr": "Rua de Santa Apolónia, 59", "year": 2010},
-    "o-terraco":         {"geo": None, "year": None},
-    "o-larguinho":       {"geo": (38.7115, -9.1305), "addr": "Alfama", "year": None},              # neighbourhood only
-    "bica-me":           {"geo": (38.7103, -9.1472), "addr": "Bica", "label": "left", "year": None},                # neighbourhood only
-    "bicaense":          {"geo": (38.7097, -9.1465), "addr": "Rua da Bica de Duarte Belo", "year": 2002},
-    "ricucu":            {"far": True, "year": None},                                               # Praia Verde, Algarve
-    "monte-da-lua":      {"far": True, "year": None},                                               # Mozambique
-    "house-4":           {"geo": (38.7146, -9.1449), "addr": "Travessa de São Pedro, 9", "year": None},
-    "afro-taska":        {"geo": None, "year": None},
-}

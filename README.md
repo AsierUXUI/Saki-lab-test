@@ -4,18 +4,29 @@ Website for Sakim Lab: bars, restaurants and places created in Lisbon over 30+ y
 
 ## Pages
 
+The site is one long page, `index.html`: light paper, huge condensed type with photos set inside the lines, and a black pill bar on top.
+
+| Section | What happens |
+|---|---|
+| Hero | The headline fills the screen; the photo inside it changes as the mouse moves (on a phone, on its own) |
+| Studio | An editorial page between two rules: the quote, the numbers, two columns of text |
+| Services | Four big lines that open on click; a round photo and a round colour follow the mouse |
+| Projects | A dark room with one big screen; the names below change it, moving across it runs through the photos; it opens the project over the page |
+| Process | Steps light up as you scroll, the photo beside them changes with each step |
+| About | Each value is a round photo with a round colour that slides out on hover |
+| Contact | The big lines again, then the ways to reach him |
+
+A card at the bottom of the screen opens the booking conversation from anywhere.
+
+Other files:
+
 | File | Page |
 |---|---|
-| `index.html` | Home: the hero, then the map of Lisbon with the years |
-| `sobre.html` | About: the manifesto and three featured places |
-| `lugares/<place>.html` | One page per place |
-| `metodo.html` | How he works: a night in five acts |
-| `contacto.html` | Book a conversation |
-| `lugares.html` | Old address; forwards to the map on the home page |
+| `lugares/<project>.html` | One page per project (also opens over the home page) |
+| `contacto.html` | Book a conversation (it also opens as a side panel from every page) |
+| `lugares.html`, `sobre.html`, `metodo.html` | Old addresses; they forward to their section |
 
-Where each place is on the map and the year it opened live in `MAP` at the end of `tools/places.py`.
-
-All pages are generated. **Don't edit the HTML files by hand.** Edit `tools/places.py` (place texts and photos) or `tools/build.py` (the other page texts and layout), then run:
+All pages are generated. **Don't edit the HTML files by hand.** The words are in `tools/content.py` (taken from the original site, PT and EN), the photos in `tools/places.py`, and the layout in `tools/build.py`. After a change, run:
 
 ```bash
 python3 tools/build.py
@@ -26,7 +37,8 @@ python3 tools/build.py
 ```
 assets/
   css/site.css             styles for every page
-  js/site.js               animations, language switch, page transitions
+  fonts/                   Anton, Newsreader and Roboto Mono (open licences), served from the site
+  js/site.js               the light effects, language switch, booking conversation
   js/*.min.js              GSAP, ScrollTrigger and Lenis
   img/
     marca/                 the Sakim logo
@@ -35,7 +47,8 @@ assets/
     lugares/<place>/logo.jpg     the place's logo, when there is one
     lugares/<place>/arquivo/     every other photo of that place, kept but not shown
 tools/
-  places.py                texts and photo list for each place
+  content.py               every text on the site (PT and EN)
+  places.py                photo list for each project
   build.py                 builds the pages
 ```
 

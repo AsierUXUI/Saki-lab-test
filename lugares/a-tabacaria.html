@@ -4,178 +4,61 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A Tabacaria — Sakim Lab</title>
-<meta name="description" content="Uma tabacaria de 1885 que nunca deixou de vender pequenos prazeres. Só mudou de horário.">
-<meta name="theme-color" content="#0b0908">
+<meta name="description" content="Conceito completo, programa de bar, direção de cocktails e estratégia de lançamento para um bar de rum numa tabacaria histórica de 1885.">
+<meta name="theme-color" content="#e9e6e0">
 <meta property="og:title" content="A Tabacaria — Sakim Lab">
-<meta property="og:description" content="Uma tabacaria de 1885 que nunca deixou de vender pequenos prazeres. Só mudou de horário.">
+<meta property="og:description" content="Conceito completo, programa de bar, direção de cocktails e estratégia de lançamento para um bar de rum numa tabacaria histórica de 1885.">
 <link rel="icon" href="../assets/img/marca/sakim-logo.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=7ecfde90">
+<link rel="preload" href="../assets/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/newsreader-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/site.css?v=4212fc28">
 <script src="../assets/js/gsap.min.js?v=5e6e6cba" defer></script>
 <script src="../assets/js/ScrollTrigger.min.js?v=00a3e5c7" defer></script>
 <script src="../assets/js/lenis.min.js?v=81fb34b5" defer></script>
-<script src="../assets/js/site.js?v=3e554e75" defer></script>
+<script src="../assets/js/site.js?v=3aae9cc0" defer></script>
 </head>
 <body class="no-js" data-page="lugar">
 <a class="skip" href="#main" data-pt="Saltar para o conteúdo" data-en="Skip to content">Saltar para o conteúdo</a>
-<div class="grain" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"><span></span></div>
-<div class="veil" aria-hidden="true">
-  <div class="veil-num"><span>0</span><sup>+</sup></div>
-  <div class="veil-cap mono" data-pt="Anos de noites em Lisboa" data-en="Years of nights in Lisbon">Anos de noites em Lisboa</div>
-</div>
-
-<header class="nav">
-  <a href="../index.html" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
-  <nav class="nav-links" aria-label="Menu">
-    <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="../sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="../metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="../contacto.html" class="nav-cta" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-  </nav>
-  <div class="nav-right">
-    <span class="clock-nav mono"><span data-pt="Lisboa" data-en="Lisbon">Lisboa</span> <span class="js-clock">--:--</span></span>
-    <div class="lang" role="group" aria-label="Idioma / Language">
-      <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
-    </div>
-    <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu" data-pt="Menu" data-en="Menu">Menu</button>
+<header class="bar">
+  <a class="pill pill-back" href="../index.html#projectos" data-pt="← Voltar" data-en="← Back">← Voltar</a>
+  <div class="pill pill-lang lang" role="group" aria-label="Idioma / Language">
+    <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
   </div>
 </header>
-<div class="menu" id="menu">
-  <a href="../index.html" data-pt="Início" data-en="Home">Início</a>
-  <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="../sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="../metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="../contacto.html" class="nav-cta" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-</div>
 
 <main id="main">
 
-  <section class="hero place-hero">
-    <div class="hero-media" aria-hidden="true"><img class="photo" src="../assets/img/lugares/a-tabacaria/balcao.jpg" alt=""></div>
-    <div class="hero-content">
-      <div class="hero-eyebrow mono">
-        <span>04 / 14</span>
-        <span data-pt="Cais do Sodré" data-en="Cais do Sodré">Cais do Sodré</span>
-        <span data-pt="Bar de rum" data-en="Rum bar">Bar de rum</span>
-      </div>
-      <h1><span class="line"><span>A Tabacaria</span></span></h1>
-    </div>
-    
-  </section>
+  <div class="place-content" data-place="a-tabacaria">
+    <header class="place-head">
+      <p class="tag mono">[ 01 / 14 ] · <span data-pt="Bar · Lisboa" data-en="Bar · Lisbon">Bar · Lisboa</span></p>
+      <h1 class="mega place-mega"><span class="row">A Tabacaria</span></h1>
+    </header>
+    <figure class="place-cover"><img class="photo" src="../assets/img/lugares/a-tabacaria/balcao.jpg" alt=""></figure>
+    <p class="place-desc" data-pt="Conceito completo, programa de bar, direção de cocktails e estratégia de lançamento para um bar de rum numa tabacaria histórica de 1885." data-en="Full concept, bar programme, cocktail direction, and launch strategy for a rum bar in a historic 1885 tabacaria.">Conceito completo, programa de bar, direção de cocktails e estratégia de lançamento para um bar de rum numa tabacaria histórica de 1885.</p>
+    <section class="frames" aria-label="Fotografias">
+    <figure class="frame f-full"><img class="photo" src="../assets/img/lugares/a-tabacaria/fachada.jpg" alt="A fachada de azulejo verde" data-alt-pt="A fachada de azulejo verde" data-alt-en="The green-tiled façade" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/a-tabacaria/porta-a-noite.jpg" alt="A porta d&#x27;A Tabacaria à noite" data-alt-pt="A porta d&#x27;A Tabacaria à noite" data-alt-en="A Tabacaria&#x27;s door at night" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/a-tabacaria/balcao.jpg" alt="O balcão de madeira de 1885" data-alt-pt="O balcão de madeira de 1885" data-alt-en="The 1885 wooden counter" loading="lazy"></figure>
+    <figure class="frame f-center"><img class="photo" src="../assets/img/lugares/a-tabacaria/janela-electrico.jpg" alt="Um eléctrico visto da janela" data-alt-pt="Um eléctrico visto da janela" data-alt-en="A tram seen through the window" loading="lazy"></figure>
+    <figure class="frame f-left"><img class="photo" src="../assets/img/lugares/a-tabacaria/candeeiro.jpg" alt="Candeeiro esmaltado sobre as garrafas" data-alt-pt="Candeeiro esmaltado sobre as garrafas" data-alt-en="An enamel lamp over the bottles" loading="lazy"></figure>
+    <figure class="frame f-right"><img class="photo" src="../assets/img/lugares/a-tabacaria/totobola.jpg" alt="O letreiro antigo do Totobola" data-alt-pt="O letreiro antigo do Totobola" data-alt-en="The old football-pools sign" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/a-tabacaria/gramofone.jpg" alt="Um gramofone entre a fruta" data-alt-pt="Um gramofone entre a fruta" data-alt-en="A gramophone among the fruit" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/a-tabacaria/boticario.jpg" alt="Frascos de boticário na penumbra" data-alt-pt="Frascos de boticário na penumbra" data-alt-en="Apothecary jars in the half-light" loading="lazy"></figure>
+    <figure class="frame f-full"><img class="photo" src="../assets/img/lugares/a-tabacaria/frasco.jpg" alt="Um frasco com o rótulo da casa" data-alt-pt="Um frasco com o rótulo da casa" data-alt-en="A jar with the house label" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/a-tabacaria/torneiras.jpg" alt="Torneiras antigas de cerveja" data-alt-pt="Torneiras antigas de cerveja" data-alt-en="Old beer taps" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/a-tabacaria/tabua.jpg" alt="Uma tábua de petiscos e um cocktail" data-alt-pt="Uma tábua de petiscos e um cocktail" data-alt-en="A board of snacks and a cocktail" loading="lazy"></figure>
+    <figure class="frame f-center"><img class="photo" src="../assets/img/lugares/a-tabacaria/macarico.jpg" alt="Carne a ser maçaricada" data-alt-pt="Carne a ser maçaricada" data-alt-en="Meat being torched" loading="lazy"></figure>
+    <figure class="frame f-left"><img class="photo" src="../assets/img/lugares/a-tabacaria/espuma.jpg" alt="Um cocktail com espuma" data-alt-pt="Um cocktail com espuma" data-alt-en="A cocktail with foam" loading="lazy"></figure>
+    <figure class="frame f-right"><img class="photo" src="../assets/img/lugares/a-tabacaria/petalas.jpg" alt="Um cocktail com pétalas" data-alt-pt="Um cocktail com pétalas" data-alt-en="A cocktail with petals" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/a-tabacaria/vermelho.jpg" alt="Um cocktail vermelho com lima" data-alt-pt="Um cocktail vermelho com lima" data-alt-en="A red cocktail with lime" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/a-tabacaria/janela-gramofone.jpg" alt="O gramofone à janela, com o eléctrico lá fora" data-alt-pt="O gramofone à janela, com o eléctrico lá fora" data-alt-en="The gramophone at the window, a tram outside" loading="lazy"></figure>
+    <figure class="frame f-full"><img class="photo" src="../assets/img/lugares/a-tabacaria/sala-a-noite.jpg" alt="A sala à noite" data-alt-pt="A sala à noite" data-alt-en="The room at night" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/a-tabacaria/ultima-luz.jpg" alt="O bar com a última luz acesa" data-alt-pt="O bar com a última luz acesa" data-alt-en="The bar with the last light on" loading="lazy"></figure>
+    </section>
+  </div>
 
-  <section class="lead">
-    <p data-reveal data-pt="Uma tabacaria de 1885 que nunca deixou de vender pequenos prazeres. Só mudou de horário." data-en="An 1885 tobacconist that never stopped selling small pleasures. It just changed its hours.">Uma tabacaria de 1885 que nunca deixou de vender pequenos prazeres. Só mudou de horário.</p>
-  </section>
-
-  <section class="story">
-    <div class="label mono" data-pt="A pergunta" data-en="The question">A pergunta</div>
-    <div data-reveal>
-      <p data-pt="Como abrir um bar sem apagar mais de um século de história? Não escondendo nada: o balcão de madeira, os letreiros da lotaria, o Totobola, os frascos de boticário. O rum e os cocktails entraram como mais um produto da casa." data-en="How do you open a bar without erasing more than a century of history? By hiding nothing: the wooden counter, the lottery signs, the football-pools sign, the apothecary jars. Rum and cocktails simply became one more thing the shop sells.">Como abrir um bar sem apagar mais de um século de história? Não escondendo nada: o balcão de madeira, os letreiros da lotaria, o Totobola, os frascos de boticário. O rum e os cocktails entraram como mais um produto da casa.</p>
-      <p class="story-did"><span data-pt="O que desenhei:" data-en="What I shaped:">O que desenhei:</span> <span data-pt="Conceito completo, programa de bar, direção de cocktails e estratégia de lançamento." data-en="Full concept, bar programme, cocktail direction and launch strategy.">Conceito completo, programa de bar, direção de cocktails e estratégia de lançamento.</span></p>
-    </div>
-  </section>
-
-  <section class="frames" aria-label="Fotografias">
-    <figure class="frame f-full">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/fachada.jpg" alt="A fachada de azulejo verde" data-alt-pt="A fachada de azulejo verde" data-alt-en="The green-tiled façade" loading="lazy">
-      <figcaption>01 — <span data-pt="A fachada de azulejo verde" data-en="The green-tiled façade">A fachada de azulejo verde</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/porta-a-noite.jpg" alt="A porta d&#x27;A Tabacaria à noite" data-alt-pt="A porta d&#x27;A Tabacaria à noite" data-alt-en="A Tabacaria&#x27;s door at night" loading="lazy">
-      <figcaption>02 — <span data-pt="A porta d&#x27;A Tabacaria à noite" data-en="A Tabacaria&#x27;s door at night">A porta d'A Tabacaria à noite</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/balcao.jpg" alt="O balcão de madeira de 1885" data-alt-pt="O balcão de madeira de 1885" data-alt-en="The 1885 wooden counter" loading="lazy">
-      <figcaption>03 — <span data-pt="O balcão de madeira de 1885" data-en="The 1885 wooden counter">O balcão de madeira de 1885</span></figcaption>
-    </figure>
-    <figure class="frame f-center">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/janela-electrico.jpg" alt="Um eléctrico visto da janela" data-alt-pt="Um eléctrico visto da janela" data-alt-en="A tram seen through the window" loading="lazy">
-      <figcaption>04 — <span data-pt="Um eléctrico visto da janela" data-en="A tram seen through the window">Um eléctrico visto da janela</span></figcaption>
-    </figure>
-    <figure class="frame f-left">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/candeeiro.jpg" alt="Candeeiro esmaltado sobre as garrafas" data-alt-pt="Candeeiro esmaltado sobre as garrafas" data-alt-en="An enamel lamp over the bottles" loading="lazy">
-      <figcaption>05 — <span data-pt="Candeeiro esmaltado sobre as garrafas" data-en="An enamel lamp over the bottles">Candeeiro esmaltado sobre as garrafas</span></figcaption>
-    </figure>
-    <figure class="frame f-right">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/totobola.jpg" alt="O letreiro antigo do Totobola" data-alt-pt="O letreiro antigo do Totobola" data-alt-en="The old football-pools sign" loading="lazy">
-      <figcaption>06 — <span data-pt="O letreiro antigo do Totobola" data-en="The old football-pools sign">O letreiro antigo do Totobola</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/gramofone.jpg" alt="Um gramofone entre a fruta" data-alt-pt="Um gramofone entre a fruta" data-alt-en="A gramophone among the fruit" loading="lazy">
-      <figcaption>07 — <span data-pt="Um gramofone entre a fruta" data-en="A gramophone among the fruit">Um gramofone entre a fruta</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/boticario.jpg" alt="Frascos de boticário na penumbra" data-alt-pt="Frascos de boticário na penumbra" data-alt-en="Apothecary jars in the half-light" loading="lazy">
-      <figcaption>08 — <span data-pt="Frascos de boticário na penumbra" data-en="Apothecary jars in the half-light">Frascos de boticário na penumbra</span></figcaption>
-    </figure>
-    <figure class="frame f-full">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/frasco.jpg" alt="Um frasco com o rótulo da casa" data-alt-pt="Um frasco com o rótulo da casa" data-alt-en="A jar with the house label" loading="lazy">
-      <figcaption>09 — <span data-pt="Um frasco com o rótulo da casa" data-en="A jar with the house label">Um frasco com o rótulo da casa</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/torneiras.jpg" alt="Torneiras antigas de cerveja" data-alt-pt="Torneiras antigas de cerveja" data-alt-en="Old beer taps" loading="lazy">
-      <figcaption>10 — <span data-pt="Torneiras antigas de cerveja" data-en="Old beer taps">Torneiras antigas de cerveja</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/tabua.jpg" alt="Uma tábua de petiscos e um cocktail" data-alt-pt="Uma tábua de petiscos e um cocktail" data-alt-en="A board of snacks and a cocktail" loading="lazy">
-      <figcaption>11 — <span data-pt="Uma tábua de petiscos e um cocktail" data-en="A board of snacks and a cocktail">Uma tábua de petiscos e um cocktail</span></figcaption>
-    </figure>
-    <figure class="frame f-center">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/macarico.jpg" alt="Carne a ser maçaricada" data-alt-pt="Carne a ser maçaricada" data-alt-en="Meat being torched" loading="lazy">
-      <figcaption>12 — <span data-pt="Carne a ser maçaricada" data-en="Meat being torched">Carne a ser maçaricada</span></figcaption>
-    </figure>
-    <figure class="frame f-left">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/espuma.jpg" alt="Um cocktail com espuma" data-alt-pt="Um cocktail com espuma" data-alt-en="A cocktail with foam" loading="lazy">
-      <figcaption>13 — <span data-pt="Um cocktail com espuma" data-en="A cocktail with foam">Um cocktail com espuma</span></figcaption>
-    </figure>
-    <figure class="frame f-right">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/petalas.jpg" alt="Um cocktail com pétalas" data-alt-pt="Um cocktail com pétalas" data-alt-en="A cocktail with petals" loading="lazy">
-      <figcaption>14 — <span data-pt="Um cocktail com pétalas" data-en="A cocktail with petals">Um cocktail com pétalas</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/vermelho.jpg" alt="Um cocktail vermelho com lima" data-alt-pt="Um cocktail vermelho com lima" data-alt-en="A red cocktail with lime" loading="lazy">
-      <figcaption>15 — <span data-pt="Um cocktail vermelho com lima" data-en="A red cocktail with lime">Um cocktail vermelho com lima</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/janela-gramofone.jpg" alt="O gramofone à janela, com o eléctrico lá fora" data-alt-pt="O gramofone à janela, com o eléctrico lá fora" data-alt-en="The gramophone at the window, a tram outside" loading="lazy">
-      <figcaption>16 — <span data-pt="O gramofone à janela, com o eléctrico lá fora" data-en="The gramophone at the window, a tram outside">O gramofone à janela, com o eléctrico lá fora</span></figcaption>
-    </figure>
-    <figure class="frame f-full">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/sala-a-noite.jpg" alt="A sala à noite" data-alt-pt="A sala à noite" data-alt-en="The room at night" loading="lazy">
-      <figcaption>17 — <span data-pt="A sala à noite" data-en="The room at night">A sala à noite</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/a-tabacaria/ultima-luz.jpg" alt="O bar com a última luz acesa" data-alt-pt="O bar com a última luz acesa" data-alt-en="The bar with the last light on" loading="lazy">
-      <figcaption>18 — <span data-pt="O bar com a última luz acesa" data-en="The bar with the last light on">O bar com a última luz acesa</span></figcaption>
-    </figure>
-  </section>
-
-  <a class="next" href="velha-senhora.html" data-cursor="Entrar">
-    <img class="photo" src="../assets/img/lugares/velha-senhora/porta.jpg" alt="" loading="lazy">
-    <div class="next-body">
-      <span class="mono" data-pt="Próximo lugar" data-en="Next place">Próximo lugar</span>
-      <span class="next-name">O Bar da Velha Senhora</span>
-    </div>
-  </a>
-
-  <section class="cta">
-    <div>
-      <h2 data-pt="Pronto para construir &lt;em&gt;algo real?&lt;/em&gt;" data-en="Ready to build &lt;em&gt;something real?&lt;/em&gt;">Pronto para construir <em>algo real?</em></h2>
-      <p data-pt="Umas perguntas rápidas, e o resto conversamos à mesa." data-en="A few quick questions, and we&#x27;ll talk about the rest at the table.">Umas perguntas rápidas, e o resto conversamos à mesa.</p>
-    </div>
-    <a class="btn" href="../contacto.html"><span data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</span> <span aria-hidden="true">→</span></a>
-  </section>
 </main>
 
-<footer>
-  <a class="bye" href="../contacto.html" data-pt="Até &lt;em&gt;já.&lt;/em&gt;" data-en="See you &lt;em&gt;soon.&lt;/em&gt;">Até <em>já.</em></a>
-  <div class="foot mono">
-    <span><span class="js-greet">Boa noite</span> — <span data-pt="em Lisboa são" data-en="in Lisbon it&#x27;s">em Lisboa são</span> <span class="js-clock">--:--</span></span>
-    <span class="foot-links"><a href="mailto:studio@sakinlab.com">Email</a><a href="https://instagram.com/sakinlab" target="_blank" rel="noopener">Instagram</a><span>© <span class="js-year">2026</span> Sakim Lab</span></span>
-  </div>
-</footer>
 </body>
 </html>

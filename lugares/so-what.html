@@ -4,162 +4,57 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>So What — Sakim Lab</title>
-<meta name="description" content="Uma abóbada vazia que hoje tem fila à porta e um contrabaixo ao fundo.">
-<meta name="theme-color" content="#0b0908">
+<meta name="description" content="Música ao vivo, comida, jazz.">
+<meta name="theme-color" content="#e9e6e0">
 <meta property="og:title" content="So What — Sakim Lab">
-<meta property="og:description" content="Uma abóbada vazia que hoje tem fila à porta e um contrabaixo ao fundo.">
+<meta property="og:description" content="Música ao vivo, comida, jazz.">
 <link rel="icon" href="../assets/img/marca/sakim-logo.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=7ecfde90">
+<link rel="preload" href="../assets/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/newsreader-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/site.css?v=4212fc28">
 <script src="../assets/js/gsap.min.js?v=5e6e6cba" defer></script>
 <script src="../assets/js/ScrollTrigger.min.js?v=00a3e5c7" defer></script>
 <script src="../assets/js/lenis.min.js?v=81fb34b5" defer></script>
-<script src="../assets/js/site.js?v=3e554e75" defer></script>
+<script src="../assets/js/site.js?v=3aae9cc0" defer></script>
 </head>
 <body class="no-js" data-page="lugar">
 <a class="skip" href="#main" data-pt="Saltar para o conteúdo" data-en="Skip to content">Saltar para o conteúdo</a>
-<div class="grain" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"><span></span></div>
-<div class="veil" aria-hidden="true">
-  <div class="veil-num"><span>0</span><sup>+</sup></div>
-  <div class="veil-cap mono" data-pt="Anos de noites em Lisboa" data-en="Years of nights in Lisbon">Anos de noites em Lisboa</div>
-</div>
-
-<header class="nav">
-  <a href="../index.html" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
-  <nav class="nav-links" aria-label="Menu">
-    <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="../sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="../metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="../contacto.html" class="nav-cta" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-  </nav>
-  <div class="nav-right">
-    <span class="clock-nav mono"><span data-pt="Lisboa" data-en="Lisbon">Lisboa</span> <span class="js-clock">--:--</span></span>
-    <div class="lang" role="group" aria-label="Idioma / Language">
-      <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
-    </div>
-    <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu" data-pt="Menu" data-en="Menu">Menu</button>
+<header class="bar">
+  <a class="pill pill-back" href="../index.html#projectos" data-pt="← Voltar" data-en="← Back">← Voltar</a>
+  <div class="pill pill-lang lang" role="group" aria-label="Idioma / Language">
+    <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
   </div>
 </header>
-<div class="menu" id="menu">
-  <a href="../index.html" data-pt="Início" data-en="Home">Início</a>
-  <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="../sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="../metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="../contacto.html" class="nav-cta" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-</div>
 
 <main id="main">
 
-  <section class="hero place-hero">
-    <div class="hero-media" aria-hidden="true"><img class="photo" src="../assets/img/lugares/so-what/abobada-acesa.jpg" alt=""></div>
-    <div class="hero-content">
-      <div class="hero-eyebrow mono">
-        <span>02 / 14</span>
-        <span data-pt="Santos" data-en="Santos">Santos</span>
-        <span data-pt="Clube de jazz &amp; restaurante" data-en="Jazz club &amp; restaurant">Clube de jazz & restaurante</span>
-      </div>
-      <h1><span class="line"><span>So What</span></span></h1>
-    </div>
-    <img class="logo-mark" src="../assets/img/lugares/so-what/logo.jpg" alt="">
-  </section>
+  <div class="place-content" data-place="so-what">
+    <header class="place-head">
+      <p class="tag mono">[ 13 / 14 ] · <span data-pt="Bar · Restaurante · Jazz Clube" data-en="Bar · Restaurant · Jazz Club">Bar · Restaurante · Jazz Clube</span></p>
+      <h1 class="mega place-mega"><span class="row">So What</span></h1>
+    </header>
+    <figure class="place-cover"><img class="photo" src="../assets/img/lugares/so-what/abobada-acesa.jpg" alt=""></figure>
+    <p class="place-desc" data-pt="Música ao vivo, comida, jazz." data-en="Live music, food, jazz.">Música ao vivo, comida, jazz.</p>
+    <section class="frames" aria-label="Fotografias">
+    <figure class="frame f-full"><img class="photo" src="../assets/img/lugares/so-what/fila-a-porta.jpg" alt="Fila à porta do So What" data-alt-pt="Fila à porta do So What" data-alt-en="A queue outside So What" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/so-what/antes.jpg" alt="A abóbada vazia, antes das obras" data-alt-pt="A abóbada vazia, antes das obras" data-alt-en="The empty vault, before the works" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/so-what/movel-recuperado.jpg" alt="Um móvel antigo recuperado para o bar" data-alt-pt="Um móvel antigo recuperado para o bar" data-alt-en="An old cabinet rescued for the bar" loading="lazy"></figure>
+    <figure class="frame f-center"><img class="photo" src="../assets/img/lugares/so-what/abobada-acesa.jpg" alt="A abóbada pronta, com o bar aceso" data-alt-pt="A abóbada pronta, com o bar aceso" data-alt-en="The finished vault with the bar lit" loading="lazy"></figure>
+    <figure class="frame f-left"><img class="photo" src="../assets/img/lugares/so-what/tunel-vermelho.jpg" alt="O túnel de entrada pintado de vermelho" data-alt-pt="O túnel de entrada pintado de vermelho" data-alt-en="The entrance tunnel painted red" loading="lazy"></figure>
+    <figure class="frame f-right"><img class="photo" src="../assets/img/lugares/so-what/telefone-vermelho.jpg" alt="Bar com telefone vermelho e candeeiro amarelo" data-alt-pt="Bar com telefone vermelho e candeeiro amarelo" data-alt-en="The bar with a red phone and a yellow lamp" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/so-what/mesa-posta.jpg" alt="Copos e uma vela na mesa" data-alt-pt="Copos e uma vela na mesa" data-alt-en="Glasses and a candle on the table" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/so-what/prato.jpg" alt="Um prato da cozinha" data-alt-pt="Um prato da cozinha" data-alt-en="A dish from the kitchen" loading="lazy"></figure>
+    <figure class="frame f-full"><img class="photo" src="../assets/img/lugares/so-what/contrabaixo.jpg" alt="Contrabaixo e guitarra em palco" data-alt-pt="Contrabaixo e guitarra em palco" data-alt-en="Double bass and guitar on stage" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/so-what/voz.jpg" alt="Uma cantora sob luz violeta" data-alt-pt="Uma cantora sob luz violeta" data-alt-en="A singer under violet light" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/so-what/bateria.jpg" alt="O baterista em luz azul" data-alt-pt="O baterista em luz azul" data-alt-en="The drummer in blue light" loading="lazy"></figure>
+    <figure class="frame f-center"><img class="photo" src="../assets/img/lugares/so-what/sala-cheia.jpg" alt="A sala cheia a ouvir" data-alt-pt="A sala cheia a ouvir" data-alt-en="A full room, listening" loading="lazy"></figure>
+    <figure class="frame f-left"><img class="photo" src="../assets/img/lugares/so-what/piano.jpg" alt="O piano depois do último tema" data-alt-pt="O piano depois do último tema" data-alt-en="The piano after the last tune" loading="lazy"></figure>
+    <figure class="frame f-right"><img class="photo" src="../assets/img/lugares/so-what/esplanada.jpg" alt="A esplanada à noite" data-alt-pt="A esplanada à noite" data-alt-en="The terrace at night" loading="lazy"></figure>
+    </section>
+  </div>
 
-  <section class="lead">
-    <p data-reveal data-pt="Uma abóbada vazia que hoje tem fila à porta e um contrabaixo ao fundo." data-en="An empty vault that now has a queue at the door and a double bass at the back.">Uma abóbada vazia que hoje tem fila à porta e um contrabaixo ao fundo.</p>
-  </section>
-
-  <section class="story">
-    <div class="label mono" data-pt="A pergunta" data-en="The question">A pergunta</div>
-    <div data-reveal>
-      <p data-pt="Como se faz uma cave parecer que sempre teve jazz? Recuperámos móveis antigos, pintámos de vermelho o túnel de entrada e deixámos a música decidir o resto: o palco, a luz, a distância entre as mesas." data-en="How do you make a cellar feel as if it has always had jazz? We rescued old cabinets, painted the entrance tunnel red and let the music decide the rest: the stage, the light, the distance between tables.">Como se faz uma cave parecer que sempre teve jazz? Recuperámos móveis antigos, pintámos de vermelho o túnel de entrada e deixámos a música decidir o resto: o palco, a luz, a distância entre as mesas.</p>
-      <p class="story-did"><span data-pt="O que desenhei:" data-en="What I shaped:">O que desenhei:</span> <span data-pt="Conceito, transformação do espaço, mobiliário recuperado, bar, cozinha e música ao vivo." data-en="Concept, transformation of the space, rescued furniture, bar, kitchen and live music.">Conceito, transformação do espaço, mobiliário recuperado, bar, cozinha e música ao vivo.</span></p>
-    </div>
-  </section>
-
-  <section class="frames" aria-label="Fotografias">
-    <figure class="frame f-full">
-      <img class="photo" src="../assets/img/lugares/so-what/fila-a-porta.jpg" alt="Fila à porta do So What" data-alt-pt="Fila à porta do So What" data-alt-en="A queue outside So What" loading="lazy">
-      <figcaption>01 — <span data-pt="Fila à porta do So What" data-en="A queue outside So What">Fila à porta do So What</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/so-what/antes.jpg" alt="A abóbada vazia, antes das obras" data-alt-pt="A abóbada vazia, antes das obras" data-alt-en="The empty vault, before the works" loading="lazy">
-      <figcaption>02 — <span data-pt="A abóbada vazia, antes das obras" data-en="The empty vault, before the works">A abóbada vazia, antes das obras</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/so-what/movel-recuperado.jpg" alt="Um móvel antigo recuperado para o bar" data-alt-pt="Um móvel antigo recuperado para o bar" data-alt-en="An old cabinet rescued for the bar" loading="lazy">
-      <figcaption>03 — <span data-pt="Um móvel antigo recuperado para o bar" data-en="An old cabinet rescued for the bar">Um móvel antigo recuperado para o bar</span></figcaption>
-    </figure>
-    <figure class="frame f-center">
-      <img class="photo" src="../assets/img/lugares/so-what/abobada-acesa.jpg" alt="A abóbada pronta, com o bar aceso" data-alt-pt="A abóbada pronta, com o bar aceso" data-alt-en="The finished vault with the bar lit" loading="lazy">
-      <figcaption>04 — <span data-pt="A abóbada pronta, com o bar aceso" data-en="The finished vault with the bar lit">A abóbada pronta, com o bar aceso</span></figcaption>
-    </figure>
-    <figure class="frame f-left">
-      <img class="photo" src="../assets/img/lugares/so-what/tunel-vermelho.jpg" alt="O túnel de entrada pintado de vermelho" data-alt-pt="O túnel de entrada pintado de vermelho" data-alt-en="The entrance tunnel painted red" loading="lazy">
-      <figcaption>05 — <span data-pt="O túnel de entrada pintado de vermelho" data-en="The entrance tunnel painted red">O túnel de entrada pintado de vermelho</span></figcaption>
-    </figure>
-    <figure class="frame f-right">
-      <img class="photo" src="../assets/img/lugares/so-what/telefone-vermelho.jpg" alt="Bar com telefone vermelho e candeeiro amarelo" data-alt-pt="Bar com telefone vermelho e candeeiro amarelo" data-alt-en="The bar with a red phone and a yellow lamp" loading="lazy">
-      <figcaption>06 — <span data-pt="Bar com telefone vermelho e candeeiro amarelo" data-en="The bar with a red phone and a yellow lamp">Bar com telefone vermelho e candeeiro amarelo</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/so-what/mesa-posta.jpg" alt="Copos e uma vela na mesa" data-alt-pt="Copos e uma vela na mesa" data-alt-en="Glasses and a candle on the table" loading="lazy">
-      <figcaption>07 — <span data-pt="Copos e uma vela na mesa" data-en="Glasses and a candle on the table">Copos e uma vela na mesa</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/so-what/prato.jpg" alt="Um prato da cozinha" data-alt-pt="Um prato da cozinha" data-alt-en="A dish from the kitchen" loading="lazy">
-      <figcaption>08 — <span data-pt="Um prato da cozinha" data-en="A dish from the kitchen">Um prato da cozinha</span></figcaption>
-    </figure>
-    <figure class="frame f-full">
-      <img class="photo" src="../assets/img/lugares/so-what/contrabaixo.jpg" alt="Contrabaixo e guitarra em palco" data-alt-pt="Contrabaixo e guitarra em palco" data-alt-en="Double bass and guitar on stage" loading="lazy">
-      <figcaption>09 — <span data-pt="Contrabaixo e guitarra em palco" data-en="Double bass and guitar on stage">Contrabaixo e guitarra em palco</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/so-what/voz.jpg" alt="Uma cantora sob luz violeta" data-alt-pt="Uma cantora sob luz violeta" data-alt-en="A singer under violet light" loading="lazy">
-      <figcaption>10 — <span data-pt="Uma cantora sob luz violeta" data-en="A singer under violet light">Uma cantora sob luz violeta</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/so-what/bateria.jpg" alt="O baterista em luz azul" data-alt-pt="O baterista em luz azul" data-alt-en="The drummer in blue light" loading="lazy">
-      <figcaption>11 — <span data-pt="O baterista em luz azul" data-en="The drummer in blue light">O baterista em luz azul</span></figcaption>
-    </figure>
-    <figure class="frame f-center">
-      <img class="photo" src="../assets/img/lugares/so-what/sala-cheia.jpg" alt="A sala cheia a ouvir" data-alt-pt="A sala cheia a ouvir" data-alt-en="A full room, listening" loading="lazy">
-      <figcaption>12 — <span data-pt="A sala cheia a ouvir" data-en="A full room, listening">A sala cheia a ouvir</span></figcaption>
-    </figure>
-    <figure class="frame f-left">
-      <img class="photo" src="../assets/img/lugares/so-what/piano.jpg" alt="O piano depois do último tema" data-alt-pt="O piano depois do último tema" data-alt-en="The piano after the last tune" loading="lazy">
-      <figcaption>13 — <span data-pt="O piano depois do último tema" data-en="The piano after the last tune">O piano depois do último tema</span></figcaption>
-    </figure>
-    <figure class="frame f-right">
-      <img class="photo" src="../assets/img/lugares/so-what/esplanada.jpg" alt="A esplanada à noite" data-alt-pt="A esplanada à noite" data-alt-en="The terrace at night" loading="lazy">
-      <figcaption>14 — <span data-pt="A esplanada à noite" data-en="The terrace at night">A esplanada à noite</span></figcaption>
-    </figure>
-  </section>
-
-  <a class="next" href="social-b.html" data-cursor="Entrar">
-    <img class="photo" src="../assets/img/lugares/social-b/bar-violeta.jpg" alt="" loading="lazy">
-    <div class="next-body">
-      <span class="mono" data-pt="Próximo lugar" data-en="Next place">Próximo lugar</span>
-      <span class="next-name">Social B</span>
-    </div>
-  </a>
-
-  <section class="cta">
-    <div>
-      <h2 data-pt="Pronto para construir &lt;em&gt;algo real?&lt;/em&gt;" data-en="Ready to build &lt;em&gt;something real?&lt;/em&gt;">Pronto para construir <em>algo real?</em></h2>
-      <p data-pt="Umas perguntas rápidas, e o resto conversamos à mesa." data-en="A few quick questions, and we&#x27;ll talk about the rest at the table.">Umas perguntas rápidas, e o resto conversamos à mesa.</p>
-    </div>
-    <a class="btn" href="../contacto.html"><span data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</span> <span aria-hidden="true">→</span></a>
-  </section>
 </main>
 
-<footer>
-  <a class="bye" href="../contacto.html" data-pt="Até &lt;em&gt;já.&lt;/em&gt;" data-en="See you &lt;em&gt;soon.&lt;/em&gt;">Até <em>já.</em></a>
-  <div class="foot mono">
-    <span><span class="js-greet">Boa noite</span> — <span data-pt="em Lisboa são" data-en="in Lisbon it&#x27;s">em Lisboa são</span> <span class="js-clock">--:--</span></span>
-    <span class="foot-links"><a href="mailto:studio@sakinlab.com">Email</a><a href="https://instagram.com/sakinlab" target="_blank" rel="noopener">Instagram</a><span>© <span class="js-year">2026</span> Sakim Lab</span></span>
-  </div>
-</footer>
 </body>
 </html>

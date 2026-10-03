@@ -4,162 +4,57 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Social B — Sakim Lab</title>
-<meta name="description" content="Uma cave abobadada no centro de Lisboa, feita para quando a noite já vai longa.">
-<meta name="theme-color" content="#0b0908">
+<meta name="description" content="Direção de conceito e design de atmosfera para um bar e clube numa cave abobadada histórica no centro de Lisboa.">
+<meta name="theme-color" content="#e9e6e0">
 <meta property="og:title" content="Social B — Sakim Lab">
-<meta property="og:description" content="Uma cave abobadada no centro de Lisboa, feita para quando a noite já vai longa.">
+<meta property="og:description" content="Direção de conceito e design de atmosfera para um bar e clube numa cave abobadada histórica no centro de Lisboa.">
 <link rel="icon" href="../assets/img/marca/sakim-logo.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/css/site.css?v=7ecfde90">
+<link rel="preload" href="../assets/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/newsreader-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/css/site.css?v=4212fc28">
 <script src="../assets/js/gsap.min.js?v=5e6e6cba" defer></script>
 <script src="../assets/js/ScrollTrigger.min.js?v=00a3e5c7" defer></script>
 <script src="../assets/js/lenis.min.js?v=81fb34b5" defer></script>
-<script src="../assets/js/site.js?v=3e554e75" defer></script>
+<script src="../assets/js/site.js?v=3aae9cc0" defer></script>
 </head>
 <body class="no-js" data-page="lugar">
 <a class="skip" href="#main" data-pt="Saltar para o conteúdo" data-en="Skip to content">Saltar para o conteúdo</a>
-<div class="grain" aria-hidden="true"></div>
 <div class="cursor" aria-hidden="true"><span></span></div>
-<div class="veil" aria-hidden="true">
-  <div class="veil-num"><span>0</span><sup>+</sup></div>
-  <div class="veil-cap mono" data-pt="Anos de noites em Lisboa" data-en="Years of nights in Lisbon">Anos de noites em Lisboa</div>
-</div>
-
-<header class="nav">
-  <a href="../index.html" class="logo" aria-label="Sakim Lab"><span>Sakim</span><i></i><small>Lab</small></a>
-  <nav class="nav-links" aria-label="Menu">
-    <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="../sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="../metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="../contacto.html" class="nav-cta" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-  </nav>
-  <div class="nav-right">
-    <span class="clock-nav mono"><span data-pt="Lisboa" data-en="Lisbon">Lisboa</span> <span class="js-clock">--:--</span></span>
-    <div class="lang" role="group" aria-label="Idioma / Language">
-      <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
-    </div>
-    <button type="button" class="menu-btn" aria-expanded="false" aria-controls="menu" data-pt="Menu" data-en="Menu">Menu</button>
+<header class="bar">
+  <a class="pill pill-back" href="../index.html#projectos" data-pt="← Voltar" data-en="← Back">← Voltar</a>
+  <div class="pill pill-lang lang" role="group" aria-label="Idioma / Language">
+    <button type="button" data-lang="pt" class="on">PT</button><button type="button" data-lang="en">EN</button>
   </div>
 </header>
-<div class="menu" id="menu">
-  <a href="../index.html" data-pt="Início" data-en="Home">Início</a>
-  <a href="../index.html#lugares" data-pt="Lugares" data-en="Places">Lugares</a>
-    <a href="../sobre.html" data-pt="Sobre" data-en="About">Sobre</a>
-    <a href="../metodo.html" data-pt="Método" data-en="Method">Método</a>
-    <a href="../contacto.html" class="nav-cta" data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</a>
-</div>
 
 <main id="main">
 
-  <section class="hero place-hero">
-    <div class="hero-media" aria-hidden="true"><img class="photo" src="../assets/img/lugares/social-b/bar-violeta.jpg" alt=""></div>
-    <div class="hero-content">
-      <div class="hero-eyebrow mono">
-        <span>03 / 14</span>
-        <span data-pt="Cais do Sodré" data-en="Cais do Sodré">Cais do Sodré</span>
-        <span data-pt="Bar &amp; clube" data-en="Bar &amp; club">Bar & clube</span>
-      </div>
-      <h1><span class="line"><span>Social B</span></span></h1>
-    </div>
-    
-  </section>
+  <div class="place-content" data-place="social-b">
+    <header class="place-head">
+      <p class="tag mono">[ 05 / 14 ] · <span data-pt="Bar Club · Lisboa" data-en="Bar Club · Lisbon">Bar Club · Lisboa</span></p>
+      <h1 class="mega place-mega"><span class="row">Social B</span></h1>
+    </header>
+    <figure class="place-cover"><img class="photo" src="../assets/img/lugares/social-b/bar-violeta.jpg" alt=""></figure>
+    <p class="place-desc" data-pt="Direção de conceito e design de atmosfera para um bar e clube numa cave abobadada histórica no centro de Lisboa." data-en="Concept and atmosphere design for a bar and club in a historic vaulted space in central Lisbon.">Direção de conceito e design de atmosfera para um bar e clube numa cave abobadada histórica no centro de Lisboa.</p>
+    <section class="frames" aria-label="Fotografias">
+    <figure class="frame f-full"><img class="photo" src="../assets/img/lugares/social-b/letreiro.jpg" alt="O letreiro do Social B na rua, à noite" data-alt-pt="O letreiro do Social B na rua, à noite" data-alt-en="The Social B sign on the street at night" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/social-b/entrada.jpg" alt="A entrada abobadada" data-alt-pt="A entrada abobadada" data-alt-en="The vaulted entrance" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/social-b/bar-violeta.jpg" alt="O bar sob luz violeta" data-alt-pt="O bar sob luz violeta" data-alt-en="The bar under violet light" loading="lazy"></figure>
+    <figure class="frame f-center"><img class="photo" src="../assets/img/lugares/social-b/sofa-redondo.jpg" alt="Um sofá redondo debaixo da abóbada" data-alt-pt="Um sofá redondo debaixo da abóbada" data-alt-en="A round sofa under the vault" loading="lazy"></figure>
+    <figure class="frame f-left"><img class="photo" src="../assets/img/lugares/social-b/balcao-rosas.jpg" alt="Rosas vermelhas num balcão aos quadrados" data-alt-pt="Rosas vermelhas num balcão aos quadrados" data-alt-en="Red roses on a chequered bar" loading="lazy"></figure>
+    <figure class="frame f-right"><img class="photo" src="../assets/img/lugares/social-b/bules.jpg" alt="Bules e torneiras de cerveja" data-alt-pt="Bules e torneiras de cerveja" data-alt-en="Teapots and beer taps" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/social-b/bartenders.jpg" alt="Bartenders a trabalhar" data-alt-pt="Bartenders a trabalhar" data-alt-en="Bartenders at work" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/social-b/petiscos.jpg" alt="Croquetes com molho" data-alt-pt="Croquetes com molho" data-alt-en="Croquettes with sauce" loading="lazy"></figure>
+    <figure class="frame f-full"><img class="photo" src="../assets/img/lugares/social-b/copo-canela.jpg" alt="Uma bebida com canela e anis" data-alt-pt="Uma bebida com canela e anis" data-alt-en="A drink with cinnamon and star anise" loading="lazy"></figure>
+    <figure class="frame f-narrow-l"><img class="photo" src="../assets/img/lugares/social-b/cinema.jpg" alt="Um filme projectado sobre a sala" data-alt-pt="Um filme projectado sobre a sala" data-alt-en="A film projected over the room" loading="lazy"></figure>
+    <figure class="frame f-narrow-r"><img class="photo" src="../assets/img/lugares/social-b/biblioteca.jpg" alt="O canto da biblioteca" data-alt-pt="O canto da biblioteca" data-alt-en="The library corner" loading="lazy"></figure>
+    <figure class="frame f-center"><img class="photo" src="../assets/img/lugares/social-b/dj.jpg" alt="DJ e pista cheia" data-alt-pt="DJ e pista cheia" data-alt-en="A DJ and a full floor" loading="lazy"></figure>
+    <figure class="frame f-left"><img class="photo" src="../assets/img/lugares/social-b/musica.jpg" alt="Música ao vivo entre as mesas" data-alt-pt="Música ao vivo entre as mesas" data-alt-en="Live music among the tables" loading="lazy"></figure>
+    <figure class="frame f-right"><img class="photo" src="../assets/img/lugares/social-b/logo-azul.jpg" alt="O logo projectado em azul no tecto" data-alt-pt="O logo projectado em azul no tecto" data-alt-en="The logo projected in blue on the ceiling" loading="lazy"></figure>
+    </section>
+  </div>
 
-  <section class="lead">
-    <p data-reveal data-pt="Uma cave abobadada no centro de Lisboa, feita para quando a noite já vai longa." data-en="A vaulted cellar in central Lisbon, made for when the night is already long.">Uma cave abobadada no centro de Lisboa, feita para quando a noite já vai longa.</p>
-  </section>
-
-  <section class="story">
-    <div class="label mono" data-pt="A pergunta" data-en="The question">A pergunta</div>
-    <div data-reveal>
-      <p data-pt="Como dar a uma cave antiga a energia de um clube sem lhe roubar a memória? Luz violeta nas abóbadas, cinema projectado na parede, um canto de biblioteca — e um balcão onde o chá também se serve em bule." data-en="How do you give an old cellar the energy of a club without stealing its memory? Violet light on the vaults, films projected on the wall, a library corner — and a bar where tea also comes in a teapot.">Como dar a uma cave antiga a energia de um clube sem lhe roubar a memória? Luz violeta nas abóbadas, cinema projectado na parede, um canto de biblioteca — e um balcão onde o chá também se serve em bule.</p>
-      <p class="story-did"><span data-pt="O que desenhei:" data-en="What I shaped:">O que desenhei:</span> <span data-pt="Conceito e design de atmosfera." data-en="Concept and atmosphere design.">Conceito e design de atmosfera.</span></p>
-    </div>
-  </section>
-
-  <section class="frames" aria-label="Fotografias">
-    <figure class="frame f-full">
-      <img class="photo" src="../assets/img/lugares/social-b/letreiro.jpg" alt="O letreiro do Social B na rua, à noite" data-alt-pt="O letreiro do Social B na rua, à noite" data-alt-en="The Social B sign on the street at night" loading="lazy">
-      <figcaption>01 — <span data-pt="O letreiro do Social B na rua, à noite" data-en="The Social B sign on the street at night">O letreiro do Social B na rua, à noite</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/social-b/entrada.jpg" alt="A entrada abobadada" data-alt-pt="A entrada abobadada" data-alt-en="The vaulted entrance" loading="lazy">
-      <figcaption>02 — <span data-pt="A entrada abobadada" data-en="The vaulted entrance">A entrada abobadada</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/social-b/bar-violeta.jpg" alt="O bar sob luz violeta" data-alt-pt="O bar sob luz violeta" data-alt-en="The bar under violet light" loading="lazy">
-      <figcaption>03 — <span data-pt="O bar sob luz violeta" data-en="The bar under violet light">O bar sob luz violeta</span></figcaption>
-    </figure>
-    <figure class="frame f-center">
-      <img class="photo" src="../assets/img/lugares/social-b/sofa-redondo.jpg" alt="Um sofá redondo debaixo da abóbada" data-alt-pt="Um sofá redondo debaixo da abóbada" data-alt-en="A round sofa under the vault" loading="lazy">
-      <figcaption>04 — <span data-pt="Um sofá redondo debaixo da abóbada" data-en="A round sofa under the vault">Um sofá redondo debaixo da abóbada</span></figcaption>
-    </figure>
-    <figure class="frame f-left">
-      <img class="photo" src="../assets/img/lugares/social-b/balcao-rosas.jpg" alt="Rosas vermelhas num balcão aos quadrados" data-alt-pt="Rosas vermelhas num balcão aos quadrados" data-alt-en="Red roses on a chequered bar" loading="lazy">
-      <figcaption>05 — <span data-pt="Rosas vermelhas num balcão aos quadrados" data-en="Red roses on a chequered bar">Rosas vermelhas num balcão aos quadrados</span></figcaption>
-    </figure>
-    <figure class="frame f-right">
-      <img class="photo" src="../assets/img/lugares/social-b/bules.jpg" alt="Bules e torneiras de cerveja" data-alt-pt="Bules e torneiras de cerveja" data-alt-en="Teapots and beer taps" loading="lazy">
-      <figcaption>06 — <span data-pt="Bules e torneiras de cerveja" data-en="Teapots and beer taps">Bules e torneiras de cerveja</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/social-b/bartenders.jpg" alt="Bartenders a trabalhar" data-alt-pt="Bartenders a trabalhar" data-alt-en="Bartenders at work" loading="lazy">
-      <figcaption>07 — <span data-pt="Bartenders a trabalhar" data-en="Bartenders at work">Bartenders a trabalhar</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/social-b/petiscos.jpg" alt="Croquetes com molho" data-alt-pt="Croquetes com molho" data-alt-en="Croquettes with sauce" loading="lazy">
-      <figcaption>08 — <span data-pt="Croquetes com molho" data-en="Croquettes with sauce">Croquetes com molho</span></figcaption>
-    </figure>
-    <figure class="frame f-full">
-      <img class="photo" src="../assets/img/lugares/social-b/copo-canela.jpg" alt="Uma bebida com canela e anis" data-alt-pt="Uma bebida com canela e anis" data-alt-en="A drink with cinnamon and star anise" loading="lazy">
-      <figcaption>09 — <span data-pt="Uma bebida com canela e anis" data-en="A drink with cinnamon and star anise">Uma bebida com canela e anis</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-l">
-      <img class="photo" src="../assets/img/lugares/social-b/cinema.jpg" alt="Um filme projectado sobre a sala" data-alt-pt="Um filme projectado sobre a sala" data-alt-en="A film projected over the room" loading="lazy">
-      <figcaption>10 — <span data-pt="Um filme projectado sobre a sala" data-en="A film projected over the room">Um filme projectado sobre a sala</span></figcaption>
-    </figure>
-    <figure class="frame f-narrow-r">
-      <img class="photo" src="../assets/img/lugares/social-b/biblioteca.jpg" alt="O canto da biblioteca" data-alt-pt="O canto da biblioteca" data-alt-en="The library corner" loading="lazy">
-      <figcaption>11 — <span data-pt="O canto da biblioteca" data-en="The library corner">O canto da biblioteca</span></figcaption>
-    </figure>
-    <figure class="frame f-center">
-      <img class="photo" src="../assets/img/lugares/social-b/dj.jpg" alt="DJ e pista cheia" data-alt-pt="DJ e pista cheia" data-alt-en="A DJ and a full floor" loading="lazy">
-      <figcaption>12 — <span data-pt="DJ e pista cheia" data-en="A DJ and a full floor">DJ e pista cheia</span></figcaption>
-    </figure>
-    <figure class="frame f-left">
-      <img class="photo" src="../assets/img/lugares/social-b/musica.jpg" alt="Música ao vivo entre as mesas" data-alt-pt="Música ao vivo entre as mesas" data-alt-en="Live music among the tables" loading="lazy">
-      <figcaption>13 — <span data-pt="Música ao vivo entre as mesas" data-en="Live music among the tables">Música ao vivo entre as mesas</span></figcaption>
-    </figure>
-    <figure class="frame f-right">
-      <img class="photo" src="../assets/img/lugares/social-b/logo-azul.jpg" alt="O logo projectado em azul no tecto" data-alt-pt="O logo projectado em azul no tecto" data-alt-en="The logo projected in blue on the ceiling" loading="lazy">
-      <figcaption>14 — <span data-pt="O logo projectado em azul no tecto" data-en="The logo projected in blue on the ceiling">O logo projectado em azul no tecto</span></figcaption>
-    </figure>
-  </section>
-
-  <a class="next" href="a-tabacaria.html" data-cursor="Entrar">
-    <img class="photo" src="../assets/img/lugares/a-tabacaria/balcao.jpg" alt="" loading="lazy">
-    <div class="next-body">
-      <span class="mono" data-pt="Próximo lugar" data-en="Next place">Próximo lugar</span>
-      <span class="next-name">A Tabacaria</span>
-    </div>
-  </a>
-
-  <section class="cta">
-    <div>
-      <h2 data-pt="Pronto para construir &lt;em&gt;algo real?&lt;/em&gt;" data-en="Ready to build &lt;em&gt;something real?&lt;/em&gt;">Pronto para construir <em>algo real?</em></h2>
-      <p data-pt="Umas perguntas rápidas, e o resto conversamos à mesa." data-en="A few quick questions, and we&#x27;ll talk about the rest at the table.">Umas perguntas rápidas, e o resto conversamos à mesa.</p>
-    </div>
-    <a class="btn" href="../contacto.html"><span data-pt="Marcar consulta" data-en="Book a consultation">Marcar consulta</span> <span aria-hidden="true">→</span></a>
-  </section>
 </main>
 
-<footer>
-  <a class="bye" href="../contacto.html" data-pt="Até &lt;em&gt;já.&lt;/em&gt;" data-en="See you &lt;em&gt;soon.&lt;/em&gt;">Até <em>já.</em></a>
-  <div class="foot mono">
-    <span><span class="js-greet">Boa noite</span> — <span data-pt="em Lisboa são" data-en="in Lisbon it&#x27;s">em Lisboa são</span> <span class="js-clock">--:--</span></span>
-    <span class="foot-links"><a href="mailto:studio@sakinlab.com">Email</a><a href="https://instagram.com/sakinlab" target="_blank" rel="noopener">Instagram</a><span>© <span class="js-year">2026</span> Sakim Lab</span></span>
-  </div>
-</footer>
 </body>
 </html>
