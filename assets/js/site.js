@@ -341,6 +341,85 @@
     render();
   })();
 
+  /* ---------- PLACES: map, timeline and the switch between them ---------- */
+  (function places() {
+    var dataEl = $('#places-data');
+    if (!dataEl) return;
+    var cards = JSON.parse(dataEl.textContent);
+
+    var btns = $$('.view-btn'), panels = $$('[data-view-panel]');
+    function show(v) {
+      btns.forEach(function (b) { var on = b.dataset.view === v; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+      panels.forEach(function (p) { p.hidden = p.dataset.viewPanel !== v; });
+      try { history.replaceState(null, '', v === 'time' ? '#anos' : location.pathname); } catch (e) {}
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+    }
+    btns.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.view); close(); }); });
+    if (location.hash === '#anos') show('time');
+
+    /* on phones the map zooms in on the centre, where the dots are */
+    var svg = $('.map-svg'), full = svg.getAttribute('viewBox'), mq = matchMedia('(max-width: 760px)');
+    function fit() { svg.setAttribute('viewBox', mq.matches ? svg.dataset.mobileBox : full); close(); }
+    fit();
+    if (mq.addEventListener) mq.addEventListener('change', fit);
+
+    var wrap = $('.map-wrap'), card = $('.map-card'), current = null;
+    function open(a) {
+      var c = cards[a.dataset.i];
+      card.innerHTML = '';
+      var img = new Image(); img.className = 'photo'; img.src = c.cover; img.alt = '';
+      var body = document.createElement('div');
+      var where = document.createElement('span'); where.className = 'mono'; where.textContent = c.where[lang];
+      var name = document.createElement('strong'); name.textContent = c.name;
+      var line = document.createElement('p'); line.textContent = c.line[lang];
+      var go = document.createElement('a'); go.className = 'link-arrow'; go.href = c.href;
+      go.innerHTML = (lang === 'pt' ? 'Entrar' : 'Step inside') + ' <b>→</b>';
+      [where, name, line, go].forEach(function (x) { body.appendChild(x); });
+      card.appendChild(img); card.appendChild(body);
+      var w = wrap.getBoundingClientRect(), r = $('.dot-core', a).getBoundingClientRect();
+      var half = Math.min(190, w.width / 2 - 8);
+      var x = Math.max(half + 8, Math.min(w.width - half - 8, r.left + r.width / 2 - w.left));
+      var below = r.top - w.top < 190;
+      card.classList.toggle('below', below);
+      card.style.left = x + 'px';
+      card.style.top = (below ? r.bottom - w.top : r.top - w.top) + 'px';
+      card.hidden = false;
+      $$('.dot').forEach(function (d) { d.classList.toggle('on', d === a); });
+      current = a;
+    }
+    function close() {
+      if (!card) return;
+      card.hidden = true; current = null;
+      $$('.dot').forEach(function (d) { d.classList.remove('on'); });
+    }
+    $$('.dot').forEach(function (a) {
+      if (finePointer) a.addEventListener('mouseenter', function () { open(a); });
+      a.addEventListener('focus', function () { open(a); });
+      /* on touch screens the first tap shows the card, the second goes in */
+      var wasOpen = false;
+      a.addEventListener('pointerdown', function () { wasOpen = current === a; });
+      a.addEventListener('click', function (e) { if (!finePointer && !wasOpen) { e.preventDefault(); open(a); } wasOpen = false; });
+    });
+    if (finePointer) wrap.addEventListener('mouseleave', close);
+    document.addEventListener('click', function (e) { if (current && !e.target.closest('.dot, .map-card')) close(); });
+    $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { if (current) open(current); }); });
+
+    /* the timeline scrolls sideways with the wheel and can be dragged */
+    var tl = $('.timeline');
+    tl.addEventListener('wheel', function (e) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        var max = tl.scrollWidth - tl.clientWidth;
+        if ((e.deltaY > 0 && tl.scrollLeft < max) || (e.deltaY < 0 && tl.scrollLeft > 0)) { tl.scrollLeft += e.deltaY; e.preventDefault(); }
+      }
+    }, { passive: false });
+    var down = false, x0 = 0, s0 = 0, moved = false;
+    tl.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') return; down = true; moved = false; x0 = e.clientX; s0 = tl.scrollLeft; });
+    window.addEventListener('pointermove', function (e) { if (!down) return; if (Math.abs(e.clientX - x0) > 5) moved = true; tl.scrollLeft = s0 - (e.clientX - x0); });
+    window.addEventListener('pointerup', function () { down = false; });
+    tl.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    $$('img', tl).forEach(function (i) { i.draggable = false; });
+  })();
+
   /* ---------- LISBON CLOCK ---------- */
   function tick() {
     var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Lisbon', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());

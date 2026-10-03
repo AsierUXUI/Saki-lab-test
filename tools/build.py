@@ -9,7 +9,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from places import PLACES, SITE_PHOTOS, photo_path, cover_path  # noqa: E402
+from places import PLACES, MAP, SITE_PHOTOS, photo_path, cover_path  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BY_SLUG = {p["slug"]: p for p in PLACES}
@@ -244,26 +244,107 @@ def build_home():
 
 
 # ---------------------------------------------------------------- PLACES INDEX
+# The map is a stylised drawing of central Lisbon, projected from real coordinates.
+MAP_BOX = (-9.175, -9.105, 38.698, 38.728)          # lon min, lon max, lat min, lat max
+MAP_W = 1000
+SHORE = [(38.6995, -9.1760), (38.7030, -9.1620), (38.7050, -9.1520), (38.7056, -9.1460),
+         (38.7062, -9.1400), (38.7068, -9.1345), (38.7085, -9.1290), (38.7110, -9.1250),
+         (38.7135, -9.1215), (38.7175, -9.1165), (38.7230, -9.1110), (38.7290, -9.1040)]
+HOODS = [("Príncipe Real", 38.7168, -9.1495), ("Bairro Alto", 38.7136, -9.1452),
+         ("Santos", 38.7072, -9.1585), ("Baixa", 38.7118, -9.1378), ("Mouraria", 38.7160, -9.1360),
+         ("Castelo", 38.7139, -9.1334), ("Graça", 38.7178, -9.1308), ("Alfama", 38.7105, -9.1290),
+         ("Cais do Sodré", 38.7052, -9.1478), ("Santa Apolónia", 38.7162, -9.1205)]
+
+
+def project(lat, lon):
+    import math
+    lon0, lon1, lat0, lat1 = MAP_BOX
+    k = math.cos(math.radians((lat0 + lat1) / 2))
+    scale = MAP_W / ((lon1 - lon0) * k)
+    return round((lon - lon0) * k * scale, 1), round((lat1 - lat) * scale, 1)
+
+
+def map_svg(placed):
+    _, h = project(MAP_BOX[2], MAP_BOX[0])
+    shore = [project(lat, lon) for lat, lon in SHORE]
+    river = "M" + " L".join(f"{x},{y}" for x, y in shore) + f" L{MAP_W + 20},{h + 20} L-20,{h + 20} Z"
+    hoods = "".join(f'<text class="hood" x="{x}" y="{y}">{name}</text>'
+                    for name, lat, lon in HOODS for x, y in [project(lat, lon)])
+    rx, ry = project(38.7015, -9.1430)
+    dots = []
+    for i, p in placed:
+        x, y = project(*MAP[p["slug"]]["geo"])
+        label = (f'<text class="dot-label" x="{x - 12}" y="{y + 4}" text-anchor="end">' if x > 650
+                 else f'<text class="dot-label" x="{x + 12}" y="{y + 4}">')
+        dots.append(f'<a class="dot" href="lugares/{p["slug"]}.html" data-i="{i}" data-cursor="Entrar" aria-label="{esc(p["name"])}">'
+                    f'<circle class="dot-hit" cx="{x}" cy="{y}" r="18"/><circle class="dot-ring" cx="{x}" cy="{y}" r="7"/>'
+                    f'<circle class="dot-core" cx="{x}" cy="{y}" r="5"/>{label}{esc(p["name"])}</text></a>')
+    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="345 195 420 310" role="img" aria-label="Lisboa">'
+            f'<defs><linearGradient id="river" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0a35e" stop-opacity=".16"/>'
+            f'<stop offset="1" stop-color="#f0a35e" stop-opacity=".02"/></linearGradient></defs>'
+            f'<path class="river" d="{river}"/>'
+            f'<path class="shore" d="M' + " L".join(f"{x},{y}" for x, y in shore) + '"/>'
+            f'<text class="river-name" x="{rx}" y="{ry}">Tejo</text>{hoods}{"".join(dots)}</svg>')
+
+
 def build_index():
-    rows = []
-    for i, p in enumerate(PLACES):
-        rows.append(f"""
-      <li class="row"><a href="lugares/{p["slug"]}.html" data-peek="{cover_path(p)}" data-cursor="Entrar">
-        <span class="row-n mono">{i + 1:02d}</span>
-        <img class="row-thumb photo" src="{cover_path(p)}" alt="" loading="lazy">
-        <span class="row-name">{p["name"]}</span>
-        <span class="row-line">{t(p["line"]["pt"], p["line"]["en"])}{t(p["where"]["pt"], p["where"]["en"], "span", 'class="mono"')}</span>
+    placed = [(i, p) for i, p in enumerate(PLACES) if MAP[p["slug"]].get("geo")]
+    far = [(i, p) for i, p in enumerate(PLACES) if MAP[p["slug"]].get("far")]
+    unplaced = [(i, p) for i, p in enumerate(PLACES) if not MAP[p["slug"]].get("geo") and not MAP[p["slug"]].get("far")]
+
+    cards = {i: {"name": p["name"], "href": f"lugares/{p['slug']}.html", "cover": cover_path(p),
+                 "where": p["where"], "line": p["line"]} for i, p in enumerate(PLACES)}
+
+    far_links = "".join(
+        '<a class="far" href="lugares/' + p["slug"] + '.html" data-cursor="Entrar"><span aria-hidden="true">↓</span> '
+        + t(p["where"]["pt"], p["where"]["en"], "span", 'class="mono"') + " <b>" + p["name"] + "</b></a>" for i, p in far)
+    gaps = "".join(f'<a href="lugares/{p["slug"]}.html">{p["name"]}</a>' for i, p in unplaced)
+
+    order = sorted(range(len(PLACES)), key=lambda i: (MAP[PLACES[i]["slug"]]["year"] or 9999, i))
+    stops = []
+    for i in order:
+        p = PLACES[i]
+        year = MAP[p["slug"]]["year"]
+        when = (f'<span class="t-year">{year}</span>' if year else
+                '<span class="t-year t-unknown">—</span>' + t("ano a confirmar", "year to confirm", "span", 'class="t-note mono"'))
+        stops.append(f"""
+      <li class="t-stop"><a href="lugares/{p["slug"]}.html" data-cursor="Entrar">
+        <div class="t-when">{when}</div>
+        <div class="t-img"><img class="photo" src="{cover_path(p)}" alt="" loading="lazy"></div>
+        <span class="t-name">{p["name"]}</span>
+        {t(p["where"]["pt"], p["where"]["en"], "span", 'class="t-where mono"')}
       </a></li>""")
+
     body = f"""
   <section class="page-head">
     <div>{t("Lugares", "Places", "div", 'class="label mono"')}
     {t("Catorze <em>noites.</em>", "Fourteen <em>nights.</em>", "h1", 'class="page-title"')}</div>
-    {t("Cada um destes lugares começou com uma pergunta diferente. Espreite; entre para ficar.",
-       "Each of these places began with a different question. Take a look; step inside to stay.", "p")}
+    {t("Trinta anos de portas abertas, quase todas em Lisboa. Escolha por onde quer andar: pelo mapa, ou pelo tempo.",
+       "Thirty years of open doors, almost all of them in Lisbon. Choose how to wander: by the map, or through time.", "p")}
   </section>
-  <ol class="list">{"".join(rows)}
-  </ol>
-  <div class="peek" aria-hidden="true"><img alt=""></div>
+
+  <div class="views" role="tablist" aria-label="Vista">
+    {t("Mapa", "Map", "button", 'type="button" role="tab" class="view-btn on" data-view="map" aria-selected="true"')}
+    {t("Ao longo dos anos", "Over the years", "button", 'type="button" role="tab" class="view-btn" data-view="time" aria-selected="false"')}
+  </div>
+
+  <section class="view view-map" data-view-panel="map">
+    <div class="map-wrap">
+      {map_svg(placed)}
+      <div class="map-far">{far_links}</div>
+      <div class="map-card" hidden></div>
+    </div>
+    <div class="map-gaps">
+      {t("Ainda sem lugar no mapa", "Not on the map yet", "span", 'class="mono"')}
+      <div>{gaps}</div>
+    </div>
+  </section>
+
+  <section class="view view-time" data-view-panel="time" hidden>
+    <ol class="timeline" data-lenis-prevent>{"".join(stops)}
+    </ol>
+  </section>
+  <script type="application/json" id="places-data">{json.dumps(cards, ensure_ascii=False)}</script>
 """
     return shell("lugares", "", "Lugares — Sakim Lab",
                  "Bares, restaurantes e lugares criados em Lisboa e além: A Tabacaria, So What, Social B, O Bar da Velha Senhora e outros.", body)

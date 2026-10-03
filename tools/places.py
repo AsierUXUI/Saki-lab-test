@@ -473,3 +473,26 @@ def photo_path(place, i):
 
 def cover_path(place):
     return f"assets/img/lugares/{place['slug']}/{place['cover']}.jpg"
+
+
+# Where and when each place happened, for the map and the timeline on the Places page.
+# geo:  (latitude, longitude). Neighbourhood centres for now; replace with the street when known.
+#       None while the location is unknown: the place is listed as not yet on the map.
+# far:  outside Lisbon; shown as an arrow at the edge of the map instead of a dot.
+# year: the year it opened, or None while unknown ("year to confirm" on the timeline).
+MAP = {
+    "sakim":             {"geo": None, "year": None},
+    "so-what":           {"geo": None, "year": None},
+    "social-b":          {"geo": None, "year": None},
+    "a-tabacaria":       {"geo": None, "year": None},
+    "velha-senhora":     {"geo": (38.7070, -9.1440), "year": None},   # Cais do Sodré, Rua Nova do Carvalho
+    "clube-ferroviario": {"geo": (38.7140, -9.1230), "year": None},   # Santa Apolónia
+    "o-terraco":         {"geo": None, "year": None},
+    "o-larguinho":       {"geo": (38.7115, -9.1305), "year": None},   # Alfama
+    "bica-me":           {"geo": (38.7104, -9.1468), "year": None},   # Bica
+    "bicaense":          {"geo": (38.7112, -9.1457), "year": None},   # Bica
+    "ricucu":            {"far": True, "year": None},                  # Praia Verde, Algarve
+    "monte-da-lua":      {"far": True, "year": None},                  # Mozambique
+    "house-4":           {"geo": None, "year": None},
+    "afro-taska":        {"geo": None, "year": None},
+}
