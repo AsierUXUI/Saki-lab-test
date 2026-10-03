@@ -1,7 +1,8 @@
 """Builds every page of the site from tools/places.py.
 
 Run from the repository root:  python3 tools/build.py
-It writes index.html, lugares.html, metodo.html, contacto.html and lugares/<slug>.html.
+It writes index.html (home: hero and the map), sobre.html, metodo.html, contacto.html, lugares/<slug>.html,
+and lugares.html, which now only forwards to the map on the home page.
 """
 import datetime
 import html
@@ -66,7 +67,8 @@ def photo(slug, name):
     raise KeyError((slug, name))
 
 
-NAV = [("lugares", "lugares.html", "Lugares", "Places"),
+NAV = [("lugares", "index.html#lugares", "Lugares", "Places"),
+       ("sobre", "sobre.html", "Sobre", "About"),
        ("metodo", "metodo.html", "Método", "Method"),
        ("contacto", "contacto.html", "Marcar consulta", "Book a consultation")]
 
@@ -75,9 +77,11 @@ def shell(page, root, title, desc, body, head=""):
     def links():
         out = []
         for key, href, pt, en in NAV:
-            cur = ' aria-current="page"' if key == page else ""
+            cur = ' aria-current="page"' if key == page or (key == "lugares" and page == "home") else ""
+            if key == "lugares" and page == "home":
+                href = "#lugares"
             cls = ' class="nav-cta"' if key == "contacto" else ""
-            out.append(t(pt, en, "a", f'href="{root}{href}"{cls}{cur}'))
+            out.append(t(pt, en, "a", f'href="{"" if href.startswith("#") else root}{href}"{cls}{cur}'))
         return "\n    ".join(out)
 
     return f"""<!doctype html>
@@ -159,6 +163,16 @@ def hero_lines(*pairs):
     return "\n".join(f'<span class="line">{t(pt, en)}</span>' for pt, en in pairs)
 
 
+MANIFESTO = {
+    "pt": ("Um lugar não é paredes e um balcão. É a luz às onze da noite, a música um pouco mais alta do que devia, "
+           "o copo que chega antes de o pedir, o estranho que à saída já é amigo. Passei a vida a afinar estes "
+           "detalhes invisíveis — são eles que as pessoas levam para casa."),
+    "en": ("A place isn't walls and a counter. It's the light at eleven at night, the music a little louder than it "
+           "should be, the glass that arrives before you ask, the stranger who leaves as a friend. I've spent my life "
+           "tuning those invisible details — they're what people take home."),
+}
+
+
 # ---------------------------------------------------------------- HOME
 def build_home():
     root = ""
@@ -167,29 +181,9 @@ def build_home():
         f'<img class="photo on" src="{s}" alt="">' if i == 0 else f'<img class="photo" src="{s}" alt="" loading="lazy">'
         for i, s in enumerate(slides))
 
-    featured = ["sakim", "so-what", "a-tabacaria"]
-    nights = []
-    for slug in featured:
-        p = BY_SLUG[slug]
-        nights.append(f"""
-  <a class="night" href="lugares/{slug}.html" data-cursor="Entrar">
-    <img class="photo" src="{cover_path(p)}" alt="" loading="lazy">
-    <div class="night-body">
-      <div>{t(p["where"]["pt"], p["where"]["en"], "span", 'class="mono"')}<div class="night-name">{p["name"]}</div></div>
-      <div>{t(p["line"]["pt"], p["line"]["en"], "p", 'class="night-line"')}
-        <span class="link-arrow">{t("Entrar", "Step inside")} <b>→</b></span></div>
-    </div>
-  </a>""")
-
-    manifesto_pt = ("Um lugar não é paredes e um balcão. É a luz às onze da noite, a música um pouco mais alta do que devia, "
-                    "o copo que chega antes de o pedir, o estranho que à saída já é amigo. Passei a vida a afinar estes "
-                    "detalhes invisíveis — são eles que as pessoas levam para casa.")
-    manifesto_en = ("A place isn't walls and a counter. It's the light at eleven at night, the music a little louder than it "
-                    "should be, the glass that arrives before you ask, the stranger who leaves as a friend. I've spent my life "
-                    "tuning those invisible details — they're what people take home.")
-
+    places, head = places_section()
     body = f"""
-  <section class="hero">
+  <section class="hero hero-home">
     <div class="hero-media slides" aria-hidden="true">
       {slide_html}
     </div>
@@ -210,8 +204,32 @@ def build_home():
     </div>
   </section>
 
+{places}
+"""
+    return shell("home", root, "Sakim Lab — Lugares para a noite, Lisboa",
+                 "Há mais de trinta anos a criar bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.", body, head)
+
+
+# ---------------------------------------------------------------- ABOUT
+def build_about():
+    featured = ["sakim", "so-what", "a-tabacaria"]
+    nights = []
+    for slug in featured:
+        p = BY_SLUG[slug]
+        nights.append(f"""
+  <a class="night" href="lugares/{slug}.html" data-cursor="Entrar">
+    <img class="photo" src="{cover_path(p)}" alt="" loading="lazy">
+    <div class="night-body">
+      <div>{t(p["where"]["pt"], p["where"]["en"], "span", 'class="mono"')}<div class="night-name">{p["name"]}</div></div>
+      <div>{t(p["line"]["pt"], p["line"]["en"], "p", 'class="night-line"')}
+        <span class="link-arrow">{t("Entrar", "Step inside")} <b>→</b></span></div>
+    </div>
+  </a>""")
+    manifesto_pt = MANIFESTO["pt"]
+    manifesto_en = MANIFESTO["en"]
+    body = f"""
   <section class="manifesto">
-    {t("Manifesto", "Manifesto", "div", 'class="label mono"')}
+    {t("Sobre", "About", "div", 'class="label mono"')}
     <p class="manifesto-text" id="manifesto-text" data-pt="{esc(manifesto_pt)}" data-en="{esc(manifesto_en)}">{manifesto_pt}</p>
     <div class="manifesto-sign mono" data-reveal>
       <img src="{SITE_PHOTOS[2]}" alt="Sakim">
@@ -233,15 +251,15 @@ def build_home():
       <div class="window-text">
         {t("Cada lugar começa com uma pergunta — e só acaba quando alguém <em>não quer ir para casa.</em>",
            "Every place begins with a question — and only ends when someone <em>doesn't want to go home.</em>", "p")}
-        <a class="link-arrow" href="lugares.html">{t("Os catorze lugares", "All fourteen places")} <b>→</b></a>
+        <a class="link-arrow" href="index.html#lugares">{t("Os catorze lugares", "All fourteen places")} <b>→</b></a>
         <a class="link-arrow" href="metodo.html">{t("Como trabalho", "How I work")} <b>→</b></a>
         <a class="link-arrow" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <b>→</b></a>
       </div>
     </div>
   </section>
 """
-    return shell("home", root, "Sakim Lab — Lugares para a noite, Lisboa",
-                 "Há mais de trinta anos a criar bares, restaurantes e lugares em Lisboa — do primeiro esboço à última ronda.", body)
+    return shell("sobre", "", "Sobre — Sakim Lab",
+                 "Há mais de trinta anos a afinar os detalhes invisíveis de bares, restaurantes e lugares em Lisboa.", body)
 
 
 # ---------------------------------------------------------------- PLACES INDEX
@@ -288,7 +306,7 @@ def map_svg(placed):
             f'<text class="river-name" x="{rx}" y="{ry}">Tejo</text>{hoods}{"".join(dots)}</svg>')
 
 
-def build_index():
+def places_section():
     placed = [(i, p) for i, p in enumerate(PLACES) if MAP[p["slug"]].get("geo")]
     far = [(i, p) for i, p in enumerate(PLACES) if MAP[p["slug"]].get("far")]
     unplaced = [(i, p) for i, p in enumerate(PLACES) if not MAP[p["slug"]].get("geo") and not MAP[p["slug"]].get("far")]
@@ -309,9 +327,8 @@ def build_index():
     tick_marks = "".join(f'<span style="--at:{y}" title="{y}"></span>' for y in ticks)
 
     body = f"""
-  <section class="page-head">
-    <div>{t("Lugares", "Places", "div", 'class="label mono"')}
-    {t("Catorze <em>noites.</em>", "Fourteen <em>nights.</em>", "h1", 'class="page-title"')}</div>
+  <section class="places-intro" id="lugares">
+    {t("Lugares", "Places", "div", 'class="label mono"')}
     {t("Trinta anos de portas abertas, quase todas em Lisboa. Deixe o tempo correr — ou volte atrás e ande pelas ruas.",
        "Thirty years of open doors, almost all of them in Lisbon. Let time run — or go back and wander the streets.", "p")}
   </section>
@@ -320,19 +337,19 @@ def build_index():
     <div class="map-wrap">
       <div class="map-gl" id="map-gl" aria-label="Mapa de Lisboa"></div>
       {map_svg(placed)}
-      <div class="map-year serif" aria-live="polite"><span id="map-year">{first_year}</span><small class="mono" id="map-opened"></small></div>
       <div class="map-far">{far_links}</div>
       <div class="map-card" hidden></div>
-    </div>
-    <div class="years">
-      <button type="button" class="years-play" aria-label="Play">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
-      </button>
-      <div class="years-track" style="--from:{first_year};--to:{datetime.date.today().year}">
-        <div class="years-ticks" aria-hidden="true">{tick_marks}</div>
-        <input type="range" id="years-range" min="{first_year}" max="{datetime.date.today().year}" step="1" value="{first_year}"
-               aria-label="Ano">
-        <div class="years-ends mono" aria-hidden="true"><span>{first_year}</span><span>{datetime.date.today().year}</span></div>
+      <div class="map-time">
+        <div class="odo serif" aria-hidden="true"><span class="odo-col"><span class="odo-strip"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>0</i></span></span><span class="odo-col"><span class="odo-strip"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>0</i></span></span><span class="odo-col"><span class="odo-strip"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>0</i></span></span><span class="odo-col"><span class="odo-strip"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>0</i></span></span></div>
+        <span class="sr-only" id="map-year" aria-live="polite">{first_year}</span>
+        <button type="button" class="years-play" aria-label="Play">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        </button>
+        <div class="years-track" style="--from:{first_year};--to:{datetime.date.today().year}">
+          <div class="years-ticks" aria-hidden="true">{tick_marks}</div>
+          <input type="range" id="years-range" min="{first_year}" max="{datetime.date.today().year}" step="any" value="{first_year}" aria-label="Ano">
+          <span class="years-flag mono" id="map-opened" aria-live="polite"></span>
+        </div>
       </div>
     </div>
     <div class="map-gaps">
@@ -345,9 +362,24 @@ def build_index():
 """
     head = ('<link rel="stylesheet" href="assets/css/maplibre-gl.css">\n'
             '<script src="assets/js/maplibre-gl.js" defer></script>\n')
-    return shell("lugares", "", "Lugares — Sakim Lab",
-                 "Trinta anos de bares, restaurantes e lugares em Lisboa e além: A Tabacaria, So What, Social B, O Bar da Velha Senhora e outros.",
-                 body, head)
+    return body, head
+
+
+def build_places_redirect():
+    """The places now live on the home page; keep the old address working."""
+    return """<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<title>Lugares — Sakim Lab</title>
+<meta http-equiv="refresh" content="0; url=index.html#lugares">
+<link rel="canonical" href="index.html#lugares">
+</head>
+<body style="background:#0b0908;color:#efe7da;font-family:system-ui,sans-serif;padding:24px">
+<a href="index.html#lugares" style="color:#e8621a">Lugares →</a>
+</body>
+</html>
+"""
 
 
 # ---------------------------------------------------------------- PLACE PAGE
@@ -547,7 +579,8 @@ def main():
             assert os.path.exists(os.path.join(ROOT, photo_path(p, j))), photo_path(p, j)
         assert os.path.exists(os.path.join(ROOT, cover_path(p))), cover_path(p)
     write("index.html", build_home())
-    write("lugares.html", build_index())
+    write("lugares.html", build_places_redirect())
+    write("sobre.html", build_about())
     write("metodo.html", build_method())
     write("contacto.html", build_contact())
     for i, p in enumerate(PLACES):
