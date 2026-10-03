@@ -104,7 +104,7 @@ def shell(page, root, title, desc, body, head=""):
 <link rel="icon" href="{root}{SITE_PHOTOS[2]}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..700&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{root}{v("assets/css/site.css")}">
 <script src="{root}{v("assets/js/gsap.min.js")}" defer></script>
 <script src="{root}{v("assets/js/ScrollTrigger.min.js")}" defer></script>
@@ -323,7 +323,7 @@ def map_svg(placed):
         dots.append(f'<a class="dot" href="lugares/{p["slug"]}.html" data-i="{i}" data-year="{MAP[p["slug"]]["year"] or ""}" data-cursor="Entrar" aria-label="{esc(p["name"])}">'
                     f'<circle class="dot-hit" cx="{x}" cy="{y}" r="18"/><circle class="dot-ring" cx="{x}" cy="{y}" r="7"/>'
                     f'<circle class="dot-core" cx="{x}" cy="{y}" r="5"/>{label}{esc(p["name"])}</text></a>')
-    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="190 110 570 700" data-hero-box="-292 -40 1150 719" role="img" aria-label="Lisboa">'
+    return (f'<svg class="map-svg" viewBox="0 0 {MAP_W} {h}" data-mobile-box="200 150 520 560" data-hero-box="-292 -40 1150 719" role="img" aria-label="Lisboa">'
             f'<defs><linearGradient id="river" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0a35e" stop-opacity=".16"/>'
             f'<stop offset="1" stop-color="#f0a35e" stop-opacity=".02"/></linearGradient></defs>'
             f'<path class="river" d="{river}"/>'
@@ -354,7 +354,6 @@ def places_section():
     body = f"""
   <section class="map-hero" id="lugares">
       <div class="map-hero-text">
-        <div class="hero-eyebrow mono">{t("Lisboa — há mais de 30 anos", "Lisbon — for 30+ years")}</div>
         <h1>
 {hero_lines(("Não desenho bares.", "I don't design bars."), ("Desenho <em>experiências.</em>", "I design <em>experiences.</em>"))}
         </h1>
@@ -387,7 +386,6 @@ def places_section():
       {t("Ainda sem lugar no mapa", "Not on the map yet", "span", 'class="mono"')}
       <div>{gaps}</div>
     </div>
-    {t("Os pontos vazios ainda não têm ano — ficam sempre à vista.", "Hollow dots don't have a year yet — they are always shown.", "p", 'class="map-note mono"')}
   </section>
   <script type="application/json" id="places-data">{json.dumps({"first": first_year, "last": datetime.date.today().year, "places": cards}, ensure_ascii=False)}</script>
 """

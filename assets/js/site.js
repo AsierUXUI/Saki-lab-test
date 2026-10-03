@@ -444,8 +444,7 @@
       lastWhole = whole;
       yearSr.textContent = whole;
       markers.forEach(function (m) {
-        m.el.classList.toggle('undated', !m.year);
-        var later = !!m.year && m.year > whole;
+        var later = (m.year || data.last) > whole;   /* no year yet: comes on with today */
         var wasLater = m.el.classList.contains('later');
         m.el.classList.toggle('later', later);
         if (wasLater && !later) {
