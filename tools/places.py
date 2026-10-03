@@ -458,6 +458,46 @@ PLACES = [
     },
 ]
 
+# Bars without photos yet: they have a text-only page and a dot on the map.
+PLACES += [
+    {
+        "slug": "wip",
+        "name": "W.I.P.",
+        "where": {"pt": "Bairro Alto", "en": "Bairro Alto"},
+        "kind": {"pt": "Bar, loja & cabeleireiro", "en": "Bar, shop & hairdresser"},
+        "range": None,
+        "cover": None,
+        "line": {
+            "pt": "Cabeleireiro, loja de roupa e bar no mesmo sítio — muito antes de isso ter nome.",
+            "en": "A hairdresser, a clothes shop and a bar in one place — long before that had a name.",
+        },
+        "question": {
+            "pt": "Porque é que um bar não pode ser também o sítio onde se corta o cabelo e se compra uma camisa? O W.I.P. — work in progress — foi a primeira resposta.",
+            "en": "Why can't a bar also be where you get a haircut and buy a shirt? W.I.P. — work in progress — was the first answer.",
+        },
+        "did": {"pt": "Conceito e abertura.", "en": "Concept and opening."},
+        "photos": [],
+    },
+    {
+        "slug": "atira-te-ao-rio",
+        "name": "Atira-te ao Rio",
+        "where": {"pt": "Cacilhas, Almada", "en": "Cacilhas, Almada"},
+        "kind": {"pt": "Restaurante", "en": "Restaurant"},
+        "range": None,
+        "cover": None,
+        "line": {
+            "pt": "Uma mesa à beira do Tejo, do outro lado, com Lisboa inteira à frente.",
+            "en": "A table on the edge of the Tagus, on the other side, with the whole of Lisbon in front of it.",
+        },
+        "question": {
+            "pt": "Como se faz alguém atravessar o rio para jantar? Dando-lhe a melhor vista da cidade — a própria cidade, vista de fora.",
+            "en": "How do you get someone to cross the river for dinner? By giving them the best view of the city — the city itself, seen from outside.",
+        },
+        "did": {"pt": "Conceito e abertura.", "en": "Concept and opening."},
+        "photos": [],
+    },
+]
+
 # Photos used outside a single place
 SITE_PHOTOS = {
     2: "assets/img/marca/sakim-logo.jpg",
@@ -472,6 +512,9 @@ def photo_path(place, i):
 
 
 def cover_path(place):
+    """The place's main photo, or None while it has no photos."""
+    if not place.get("cover"):
+        return None
     return f"assets/img/lugares/{place['slug']}/{place['cover']}.jpg"
 
 
@@ -483,18 +526,21 @@ def cover_path(place):
 # label: "left" puts the name on the left of the dot, where places sit close together.
 # Sources found online (Time Out Lisboa, Observador, The Infatuation, hotel listings), October 2026.
 MAP = {
-    "sakim":             {"geo": None, "year": None},
-    "so-what":           {"geo": (38.7076, -9.1552), "addr": "Santos — onde era o Porão de Santos", "label": "left", "year": 2024},  # street to confirm
-    "social-b":          {"geo": (38.7084, -9.1497), "addr": "Rua da Boavista, 116", "label": "left", "year": 2018},
-    "a-tabacaria":       {"geo": (38.7078, -9.1468), "addr": "Rua de São Paulo, 75", "year": 2015},
-    "velha-senhora":     {"geo": (38.7069, -9.1440), "addr": "Rua Nova do Carvalho, 40", "year": None},
-    "clube-ferroviario": {"geo": (38.7140, -9.1228), "addr": "Rua de Santa Apolónia, 59", "year": 2010},
-    "o-terraco":         {"geo": None, "year": None},
-    "o-larguinho":       {"geo": (38.7115, -9.1305), "addr": "Alfama", "year": None},              # neighbourhood only
-    "bica-me":           {"geo": (38.7103, -9.1472), "addr": "Bica", "label": "left", "year": None},                # neighbourhood only
+    # Confirmed online: address and year. PLACEHOLDER: made up for now, to be confirmed by him.
+    "wip":               {"geo": (38.7128, -9.1440), "addr": "Bairro Alto", "year": 1997},                          # PLACEHOLDER location; year ~1997-98 per press
     "bicaense":          {"geo": (38.7097, -9.1465), "addr": "Rua da Bica de Duarte Belo", "year": 2002},
-    "ricucu":            {"far": True, "year": None},                                               # Praia Verde, Algarve
-    "monte-da-lua":      {"far": True, "year": None},                                               # Mozambique
-    "house-4":           {"geo": (38.7146, -9.1449), "addr": "Travessa de São Pedro, 9", "year": None},
-    "afro-taska":        {"geo": None, "year": None},
+    "bica-me":           {"geo": (38.7103, -9.1472), "addr": "Bica", "label": "left", "year": 2004},                # PLACEHOLDER year
+    "atira-te-ao-rio":   {"geo": (38.6857, -9.1505), "addr": "Cais do Ginjal, Cacilhas", "year": 2006},            # PLACEHOLDER year
+    "house-4":           {"geo": (38.7146, -9.1449), "addr": "Travessa de São Pedro, 9", "year": 2009},            # PLACEHOLDER year
+    "clube-ferroviario": {"geo": (38.7140, -9.1228), "addr": "Rua de Santa Apolónia, 59", "year": 2010},
+    "velha-senhora":     {"geo": (38.7069, -9.1440), "addr": "Rua Nova do Carvalho, 40", "year": 2011},            # PLACEHOLDER year
+    "o-terraco":         {"geo": (38.7136, -9.1388), "addr": "Baixa", "year": 2012},                               # PLACEHOLDER location and year
+    "o-larguinho":       {"geo": (38.7115, -9.1305), "addr": "Alfama", "year": 2013},                              # PLACEHOLDER year
+    "a-tabacaria":       {"geo": (38.7078, -9.1468), "addr": "Rua de São Paulo, 75", "year": 2015},
+    "ricucu":            {"far": True, "year": 2016},                                                              # PLACEHOLDER year; Praia Verde, Algarve
+    "monte-da-lua":      {"far": True, "year": 2017},                                                              # PLACEHOLDER year; Mozambique
+    "social-b":          {"geo": (38.7084, -9.1497), "addr": "Rua da Boavista, 116", "label": "left", "year": 2018},
+    "afro-taska":        {"geo": (38.7208, -9.1352), "addr": "Intendente", "year": 2019},                          # PLACEHOLDER location and year
+    "sakim":             {"geo": (38.7158, -9.1352), "addr": "Mouraria", "year": 2022},                            # PLACEHOLDER location and year
+    "so-what":           {"geo": (38.7076, -9.1552), "addr": "Santos — onde era o Porão de Santos", "label": "left", "year": 2024},
 }

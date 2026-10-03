@@ -600,3 +600,16 @@ footer { padding: clamp(80px, 14vh, 140px) var(--gutter) 28px; overflow: hidden;
 .pin.undated .pin-core, .dot.undated .dot-core { background: var(--ember); fill: var(--ember); border: 0; stroke: none; }
 .pin.later, .dot.later { opacity: 0; transform: scale(.6); pointer-events: none; transition: opacity .45s, transform .45s var(--ease); }
 .pin, .dot { transition: opacity .45s, transform .45s var(--ease); }
+
+/* Markers: MapLibre places each one with a transform on the element itself, so effects go on its children */
+.pin, .pin.later { transform: none; transition: opacity .45s; }
+.pin.later { opacity: 0; pointer-events: none; }
+.pin-core { transition: transform .45s var(--ease), background .3s; }
+.pin.later .pin-core { transform: scale(.4); }
+.far { transition: opacity .45s; }
+.far.later { opacity: 0; pointer-events: none; }
+.map-card.no-img { grid-template-columns: 1fr; width: 300px; }
+/* a place without photos yet */
+.place-hero.no-photo { background: radial-gradient(ellipse at 30% 70%, rgba(232, 98, 26, .18), transparent 60%), var(--ink); }
+.place-hero.no-photo::after { display: none; }
+.no-photos { color: var(--mute); padding: 0 var(--gutter) 120px; }

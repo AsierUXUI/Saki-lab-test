@@ -363,7 +363,6 @@
     function open(anchor, i) {
       var c = cards[i];
       card.innerHTML = '';
-      var img = new Image(); img.className = 'photo'; img.src = c.cover; img.alt = '';
       var body = document.createElement('div');
       var where = document.createElement('span'); where.className = 'mono';
       where.textContent = (c.addr || c.where[lang]) + (c.year ? ' · ' + c.year : '');
@@ -372,7 +371,9 @@
       var go = document.createElement('a'); go.className = 'link-arrow'; go.href = c.href;
       go.innerHTML = (lang === 'pt' ? 'Entrar' : 'Step inside') + ' <b>→</b>';
       [where, name, line, go].forEach(function (x) { body.appendChild(x); });
-      card.appendChild(img); card.appendChild(body);
+      if (c.cover) { var img = new Image(); img.className = 'photo'; img.src = c.cover; img.alt = ''; card.appendChild(img); }
+      card.classList.toggle('no-img', !c.cover);
+      card.appendChild(body);
       var w = wrap.getBoundingClientRect(), r = anchor.getBoundingClientRect();
       var half = Math.min(190, w.width / 2 - 8);
       var x = Math.max(half + 8, Math.min(w.width - half - 8, r.left + r.width / 2 - w.left));
@@ -388,8 +389,15 @@
       card.hidden = true; current = null;
       markers.forEach(function (m) { m.el.classList.remove('on'); });
     }
+    var leaveTimer = null;
+    function leaveSoon() { clearTimeout(leaveTimer); leaveTimer = setTimeout(close, 220); }
+    function stay() { clearTimeout(leaveTimer); }
+    if (finePointer) { card.addEventListener('mouseenter', stay); card.addEventListener('mouseleave', leaveSoon); }
     function bind(el, anchor, i) {
-      if (finePointer) el.addEventListener('mouseenter', function () { open(anchor(), i); });
+      if (finePointer) {
+        el.addEventListener('mouseenter', function () { stay(); open(anchor(), i); });
+        el.addEventListener('mouseleave', leaveSoon);
+      }
       el.addEventListener('focus', function () { open(anchor(), i); });
       /* on touch screens the first tap shows the card, the second goes in */
       var wasOpen = false;
@@ -415,6 +423,7 @@
     }
     fit();
     if (mq.addEventListener) mq.addEventListener('change', fit);
+    $$('.far').forEach(function (a) { markers.push({ i: null, el: a, year: +a.dataset.year || null }); });
     $$('.dot').forEach(function (a) {
       var i = a.dataset.i;
       markers.push({ i: i, el: a, year: cards[i].year });
@@ -554,6 +563,7 @@
         el.className = 'pin' + (cards[i].left ? ' pin-left' : ''); el.href = cards[i].href; el.setAttribute('aria-label', cards[i].name); el.dataset.cursor = 'Entrar';
         el.innerHTML = '<span class="pin-ring"></span><span class="pin-core"></span><span class="pin-label">' + cards[i].name.replace(/</g, '&lt;') + '</span>';
         new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([cards[i].geo[1], cards[i].geo[0]]).addTo(map);
+        el.setAttribute('aria-label', cards[i].name);   /* MapLibre replaces it with 'Map marker' */
         markers.push({ i: i, el: el, year: cards[i].year });
         bind(el, function () { return $('.pin-core', el); }, i);
       });

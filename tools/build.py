@@ -276,7 +276,7 @@ def build_about():
       <div class="window-text">
         {t("Cada lugar começa com uma pergunta — e só acaba quando alguém <em>não quer ir para casa.</em>",
            "Every place begins with a question — and only ends when someone <em>doesn't want to go home.</em>", "p")}
-        <a class="link-arrow" href="index.html#lugares">{t("Os catorze lugares", "All fourteen places")} <b>→</b></a>
+        <a class="link-arrow" href="index.html#lugares">{t("Todos os lugares", "All the places")} <b>→</b></a>
         <a class="link-arrow" href="metodo.html">{t("Como trabalho", "How I work")} <b>→</b></a>
         <a class="link-arrow" href="contacto.html">{t("Marcar consulta", "Book a consultation")} <b>→</b></a>
       </div>
@@ -344,10 +344,10 @@ def places_section():
                     "geo": m.get("geo"), "year": m.get("year"), "left": m.get("label") == "left"}
 
     far_links = "".join(
-        '<a class="far" href="lugares/' + p["slug"] + '.html" data-cursor="Entrar"><span aria-hidden="true">↓</span> '
+        '<a class="far" href="lugares/' + p["slug"] + '.html" data-year="' + str(MAP[p["slug"]]["year"] or "") + '" data-cursor="Entrar"><span aria-hidden="true">↓</span> '
         + t(p["where"]["pt"], p["where"]["en"], "span", 'class="mono"') + " <b>" + p["name"] + "</b></a>" for i, p in far)
     gaps = "".join(f'<a href="lugares/{p["slug"]}.html">{p["name"]}</a>' for i, p in unplaced)
-    first_year = 2000
+    first_year = 1996
     ticks = sorted({MAP[p["slug"]]["year"] for p in PLACES if MAP[p["slug"]]["year"]})
     tick_marks = "".join(f'<span style="--at:{y}" title="{y}"></span>' for y in ticks)
 
@@ -432,8 +432,8 @@ def build_place(i):
 
     body = f"""
   <div class="place-content" data-place="{p["slug"]}">
-  <section class="hero place-hero">
-    <div class="hero-media" aria-hidden="true"><img class="photo" src="{root}{cover_path(p)}" alt=""></div>
+  <section class="hero place-hero{"" if p["photos"] else " no-photo"}">
+    {f'<div class="hero-media" aria-hidden="true"><img class="photo" src="{root}{cover_path(p)}" alt=""></div>' if cover_path(p) else ""}
     <div class="hero-content">
       <div class="hero-eyebrow mono">
         <span>{i + 1:02d} / {len(PLACES)}</span>
@@ -457,8 +457,7 @@ def build_place(i):
     </div>
   </section>
 
-  <section class="frames" aria-label="Fotografias">{"".join(frames)}
-  </section>
+  {f'<section class="frames" aria-label="Fotografias">{"".join(frames)}</section>' if frames else '<p class="no-photos mono">' + t("Ainda sem fotografias — em breve.", "No photos yet — coming soon.") + '</p>'}
   </div>
 
 """
@@ -620,7 +619,8 @@ def main():
     for i, p in enumerate(PLACES):
         for j in range(len(p["photos"])):
             assert os.path.exists(os.path.join(ROOT, photo_path(p, j))), photo_path(p, j)
-        assert os.path.exists(os.path.join(ROOT, cover_path(p))), cover_path(p)
+        if cover_path(p):
+            assert os.path.exists(os.path.join(ROOT, cover_path(p))), cover_path(p)
     write("index.html", build_home())
     write("lugares.html", build_places_redirect())
     write("sobre.html", build_about())
