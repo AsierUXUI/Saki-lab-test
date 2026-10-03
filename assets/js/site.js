@@ -76,10 +76,12 @@
         done: function (n) { return 'Prazer, ' + n + '. Já tenho tudo o que preciso. Por onde prefere que continuemos a conversa?'; },
         viaWa: 'Continuamos no WhatsApp', viaEmail: 'Prefiro por email',
         msg: {
+          header: 'SAKIM LAB · Pedido de conversa pelo site',
+          footer: 'Enviado a partir do site Sakim Lab.',
           intro: 'Olá Sakim! Vim pelo site e gostava que nos sentássemos a conversar.',
           need: 'O que tenho entre mãos', partes: 'Peças que faltam', melhorar: 'O que quero melhorar', where: 'Onde', when: 'Quando',
           whenever: 'quando lhe der jeito — proponha você', name: 'Nome', company: 'Projecto / casa',
-          subject: 'Consulta — Sakim Lab'
+          subject: 'Pedido de conversa pelo site — Sakim Lab'
         }
       },
       en: {
@@ -109,10 +111,12 @@
         done: function (n) { return 'Nice to meet you, ' + n + '. I have everything I need. Where would you like to carry on the conversation?'; },
         viaWa: "Let's continue on WhatsApp", viaEmail: "I'd rather email",
         msg: {
+          header: 'SAKIM LAB · Conversation request from the website',
+          footer: 'Sent from the Sakim Lab website.',
           intro: 'Hello Sakim! I found you through the website and would love to sit down and talk.',
           need: 'What I have', partes: 'Pieces missing', melhorar: 'What I want to improve', where: 'Where', when: 'When',
           whenever: 'whenever suits you — you suggest', name: 'Name', company: 'Project / place',
-          subject: 'Consultation — Sakim Lab'
+          subject: 'Conversation request from the website — Sakim Lab'
         }
       }
     };
@@ -143,14 +147,18 @@
       return answer.charAt(0).toUpperCase() + answer.slice(1);
     }
     function whoAnswer() { return st.company ? st.name + ' · ' + st.company : st.name; }
-    function message() {
-      var L = T[lang], m = L.msg, lines = [m.intro, ''];
-      lines.push('• ' + m.need + ': ' + L.needs[st.need]);
-      if (st.need !== 'tudo') lines.push('• ' + m[st.need] + ': ' + partsAnswer());
-      lines.push('• ' + m.where + ': ' + st.where);
-      lines.push('• ' + m.when + ': ' + (st.when === 'livre' ? m.whenever : whenAnswer()));
-      lines.push('• ' + m.name + ': ' + st.name);
-      if (st.company) lines.push('• ' + m.company + ': ' + st.company);
+    /* The same message for WhatsApp (with its *bold* and _italic_) and for email (plain text). */
+    function message(wa) {
+      var L = T[lang], m = L.msg, b = wa ? '*' : '', i = wa ? '_' : '', rule = '──────────────';
+      var row = function (label, value) { return b + label + ':' + b + ' ' + value; };
+      var lines = [b + m.header + b, rule, '', m.intro, ''];
+      lines.push(row(m.need, L.needs[st.need]));
+      if (st.need !== 'tudo') lines.push(row(m[st.need], partsAnswer()));
+      lines.push(row(m.where, st.where));
+      lines.push(row(m.when, st.when === 'livre' ? m.whenever : whenAnswer()));
+      lines.push(row(m.name, st.name));
+      if (st.company) lines.push(row(m.company, st.company));
+      lines.push('', rule, i + m.footer + i);
       return lines.join('\n');
     }
     function conversation() {
@@ -304,15 +312,15 @@
       } else if (st.step === 'name') {
         wrap.appendChild(nameForm());
       } else if (st.step === 'done') {
-        var text = message(), row = el('div', 'chat-sends');
+        var row = el('div', 'chat-sends');
         if (data.whatsapp) {
           var wa = el('a', 'chat-send', L.viaWa + ' →');
-          wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(text);
+          wa.href = 'https://wa.me/' + data.whatsapp + '?text=' + encodeURIComponent(message(true));
           wa.target = '_blank'; wa.rel = 'noopener';
           row.appendChild(wa);
         }
         var mail = el('a', 'chat-send alt', L.viaEmail + ' →');
-        mail.href = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(text);
+        mail.href = 'mailto:' + data.email + '?subject=' + encodeURIComponent(L.msg.subject) + '&body=' + encodeURIComponent(message(false));
         row.appendChild(mail);
         wrap.appendChild(row);
       }
@@ -339,6 +347,85 @@
     restart.addEventListener('click', function () { reset(); touched = true; render(); });
     renderBooking = function () { shown = log.children.length; render(); };
     render();
+  })();
+
+  /* ---------- PLACES: map, timeline and the switch between them ---------- */
+  (function places() {
+    var dataEl = $('#places-data');
+    if (!dataEl) return;
+    var cards = JSON.parse(dataEl.textContent);
+
+    var btns = $$('.view-btn'), panels = $$('[data-view-panel]');
+    function show(v) {
+      btns.forEach(function (b) { var on = b.dataset.view === v; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+      panels.forEach(function (p) { p.hidden = p.dataset.viewPanel !== v; });
+      try { history.replaceState(null, '', v === 'time' ? '#anos' : location.pathname); } catch (e) {}
+      if (window.ScrollTrigger) ScrollTrigger.refresh();
+    }
+    btns.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.view); close(); }); });
+    if (location.hash === '#anos') show('time');
+
+    /* on phones the map zooms in on the centre, where the dots are */
+    var svg = $('.map-svg'), full = svg.getAttribute('viewBox'), mq = matchMedia('(max-width: 760px)');
+    function fit() { svg.setAttribute('viewBox', mq.matches ? svg.dataset.mobileBox : full); close(); }
+    fit();
+    if (mq.addEventListener) mq.addEventListener('change', fit);
+
+    var wrap = $('.map-wrap'), card = $('.map-card'), current = null;
+    function open(a) {
+      var c = cards[a.dataset.i];
+      card.innerHTML = '';
+      var img = new Image(); img.className = 'photo'; img.src = c.cover; img.alt = '';
+      var body = document.createElement('div');
+      var where = document.createElement('span'); where.className = 'mono'; where.textContent = c.where[lang];
+      var name = document.createElement('strong'); name.textContent = c.name;
+      var line = document.createElement('p'); line.textContent = c.line[lang];
+      var go = document.createElement('a'); go.className = 'link-arrow'; go.href = c.href;
+      go.innerHTML = (lang === 'pt' ? 'Entrar' : 'Step inside') + ' <b>→</b>';
+      [where, name, line, go].forEach(function (x) { body.appendChild(x); });
+      card.appendChild(img); card.appendChild(body);
+      var w = wrap.getBoundingClientRect(), r = $('.dot-core', a).getBoundingClientRect();
+      var half = Math.min(190, w.width / 2 - 8);
+      var x = Math.max(half + 8, Math.min(w.width - half - 8, r.left + r.width / 2 - w.left));
+      var below = r.top - w.top < 190;
+      card.classList.toggle('below', below);
+      card.style.left = x + 'px';
+      card.style.top = (below ? r.bottom - w.top : r.top - w.top) + 'px';
+      card.hidden = false;
+      $$('.dot').forEach(function (d) { d.classList.toggle('on', d === a); });
+      current = a;
+    }
+    function close() {
+      if (!card) return;
+      card.hidden = true; current = null;
+      $$('.dot').forEach(function (d) { d.classList.remove('on'); });
+    }
+    $$('.dot').forEach(function (a) {
+      if (finePointer) a.addEventListener('mouseenter', function () { open(a); });
+      a.addEventListener('focus', function () { open(a); });
+      /* on touch screens the first tap shows the card, the second goes in */
+      var wasOpen = false;
+      a.addEventListener('pointerdown', function () { wasOpen = current === a; });
+      a.addEventListener('click', function (e) { if (!finePointer && !wasOpen) { e.preventDefault(); open(a); } wasOpen = false; });
+    });
+    if (finePointer) wrap.addEventListener('mouseleave', close);
+    document.addEventListener('click', function (e) { if (current && !e.target.closest('.dot, .map-card')) close(); });
+    $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { if (current) open(current); }); });
+
+    /* the timeline scrolls sideways with the wheel and can be dragged */
+    var tl = $('.timeline');
+    tl.addEventListener('wheel', function (e) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        var max = tl.scrollWidth - tl.clientWidth;
+        if ((e.deltaY > 0 && tl.scrollLeft < max) || (e.deltaY < 0 && tl.scrollLeft > 0)) { tl.scrollLeft += e.deltaY; e.preventDefault(); }
+      }
+    }, { passive: false });
+    var down = false, x0 = 0, s0 = 0, moved = false;
+    tl.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse') return; down = true; moved = false; x0 = e.clientX; s0 = tl.scrollLeft; });
+    window.addEventListener('pointermove', function (e) { if (!down) return; if (Math.abs(e.clientX - x0) > 5) moved = true; tl.scrollLeft = s0 - (e.clientX - x0); });
+    window.addEventListener('pointerup', function () { down = false; });
+    tl.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+    $$('img', tl).forEach(function (i) { i.draggable = false; });
   })();
 
   /* ---------- LISBON CLOCK ---------- */
