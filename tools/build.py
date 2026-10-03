@@ -337,19 +337,19 @@ def places_section():
     <div class="map-wrap">
       <div class="map-gl" id="map-gl" aria-label="Mapa de Lisboa"></div>
       {map_svg(placed)}
-      <div class="map-year serif" aria-live="polite"><span id="map-year">{first_year}</span><small class="mono" id="map-opened"></small></div>
       <div class="map-far">{far_links}</div>
       <div class="map-card" hidden></div>
-    </div>
-    <div class="years">
-      <button type="button" class="years-play" aria-label="Play">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
-      </button>
-      <div class="years-track" style="--from:{first_year};--to:{datetime.date.today().year}">
-        <div class="years-ticks" aria-hidden="true">{tick_marks}</div>
-        <input type="range" id="years-range" min="{first_year}" max="{datetime.date.today().year}" step="1" value="{first_year}"
-               aria-label="Ano">
-        <div class="years-ends mono" aria-hidden="true"><span>{first_year}</span><span>{datetime.date.today().year}</span></div>
+      <div class="map-time">
+        <div class="odo serif" aria-hidden="true"><span class="odo-col"><span class="odo-strip"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>0</i></span></span><span class="odo-col"><span class="odo-strip"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>0</i></span></span><span class="odo-col"><span class="odo-strip"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>0</i></span></span><span class="odo-col"><span class="odo-strip"><i>0</i><i>1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>6</i><i>7</i><i>8</i><i>9</i><i>0</i></span></span></div>
+        <span class="sr-only" id="map-year" aria-live="polite">{first_year}</span>
+        <button type="button" class="years-play" aria-label="Play">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-play" d="M8 5v14l11-7z"/><path class="i-pause" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        </button>
+        <div class="years-track" style="--from:{first_year};--to:{datetime.date.today().year}">
+          <div class="years-ticks" aria-hidden="true">{tick_marks}</div>
+          <input type="range" id="years-range" min="{first_year}" max="{datetime.date.today().year}" step="any" value="{first_year}" aria-label="Ano">
+          <span class="years-flag mono" id="map-opened" aria-live="polite"></span>
+        </div>
       </div>
     </div>
     <div class="map-gaps">

@@ -355,7 +355,7 @@
     if (!dataEl) return;
     var data = JSON.parse(dataEl.textContent), cards = data.places;
     var wrap = $('.map-wrap'), card = $('.map-card'), current = null;
-    var range = $('#years-range'), yearEl = $('#map-year'), openedEl = $('#map-opened'), play = $('.years-play');
+    var range = $('#years-range'), openedEl = $('#map-opened'), play = $('.years-play');
     var markers = [];   /* { i, el, year } for both the SVG dots and the street-map markers */
 
     /* ----- the card ----- */
@@ -397,7 +397,7 @@
     }
     if (finePointer) wrap.addEventListener('mouseleave', close);
     document.addEventListener('click', function (e) { if (current && !e.target.closest('.dot, .pin, .map-card')) close(); });
-    $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { setYear(year); if (current) open(current.anchor, current.i); }); });
+    $$('.lang button').forEach(function (b) { b.addEventListener('click', function () { if (current) open(current.anchor, current.i); }); });
 
     /* ----- the drawn map (shown until the street map has loaded, and if it never does) ----- */
     var svg = $('.map-svg'), full = svg.getAttribute('viewBox'), mq = matchMedia('(max-width: 760px)');
@@ -410,74 +410,112 @@
       bind(a, function () { return $('.dot-core', a); }, i);
     });
 
-    /* ----- the years ----- */
-    var year = data.first, timer = null;
-    function setYear(y) {
-      year = y;
-      range.value = y;
-      yearEl.textContent = y;
-      range.style.setProperty('--p', (y - data.first) / (data.last - data.first));
+    /* ----- the years: time runs smoothly, each place lights up the year it opened ----- */
+    var t = data.first, playing = null, lastWhole = null;
+    var strips = $$('.odo-strip'), yearSr = $('#map-year');
+    function odometer(v) {
+      /* the units roll continuously; the other digits roll when they change */
+      var whole = Math.floor(v), frac = v - whole;
+      var digits = String(whole).padStart(4, '0').split('').map(Number);
+      var rolling = true;   /* a digit rolls along while every digit to its right is rolling over from 9 */
+      for (var k = 3; k >= 0; k--) {
+        strips[k].style.transform = 'translateY(' + (-(digits[k] + (rolling ? frac : 0)) * 100 / 11) + '%)';
+        rolling = rolling && digits[k] === 9;
+      }
+    }
+    function setTime(v) {
+      t = Math.max(data.first, Math.min(data.last, v));
+      var whole = Math.floor(t);
+      range.value = t;
+      range.style.setProperty('--p', (t - data.first) / (data.last - data.first));
+      odometer(t);
+      if (whole === lastWhole) return;
+      lastWhole = whole;
+      yearSr.textContent = whole;
       markers.forEach(function (m) {
         m.el.classList.toggle('undated', !m.year);
-        m.el.classList.toggle('later', !!m.year && m.year > y);
+        var later = !!m.year && m.year > whole;
+        var wasLater = m.el.classList.contains('later');
+        m.el.classList.toggle('later', later);
+        if (wasLater && !later) {
+          /* a new light comes on */
+          m.el.classList.remove('flash'); void m.el.getBoundingClientRect(); m.el.classList.add('flash');
+        }
       });
-      var opened = Object.keys(cards).filter(function (i) { return cards[i].year === y; }).map(function (i) { return cards[i].name; });
-      openedEl.textContent = opened.length ? (lang === 'pt' ? 'Abre ' : 'Opens ') + opened.join(', ') : '';
-      if (current && cards[current.i].year > y) close();
+      var opened = Object.keys(cards).filter(function (i) { return cards[i].year === whole; }).map(function (i) { return cards[i].name; });
+      if (opened.length) openedEl.textContent = whole + ' · ' + opened.join(', ');
+      else if (!playing) openedEl.textContent = '';
+      openedEl.style.left = ((t - data.first) / (data.last - data.first) * 100) + '%';
+      if (current && cards[current.i].year > whole) close();
     }
-    function stop() { clearInterval(timer); timer = null; play.classList.remove('playing'); play.setAttribute('aria-label', 'Play'); }
+    function stop() {
+      if (playing) cancelAnimationFrame(playing);
+      playing = null; play.classList.remove('playing'); play.setAttribute('aria-label', 'Play');
+    }
     function run() {
-      if (year >= data.last) setYear(data.first);
+      if (t >= data.last) { lastWhole = null; setTime(data.first); }
+      var from = t, start = performance.now(), duration = 4200 * (data.last - from) / (data.last - data.first);
       play.classList.add('playing'); play.setAttribute('aria-label', 'Pause');
-      timer = setInterval(function () { if (year >= data.last) stop(); else setYear(year + 1); }, 380);
+      (function frame(now) {
+        var k = Math.min(1, (now - start) / duration);
+        setTime(from + (data.last - from) * k);
+        if (k < 1) playing = requestAnimationFrame(frame); else { stop(); openedEl.textContent = ''; }
+      })(start);
     }
-    play.addEventListener('click', function () { if (timer) stop(); else run(); });
-    range.addEventListener('input', function () { stop(); setYear(+range.value); });
-    setYear(reduce ? data.last : data.first);
+    play.addEventListener('click', function () { if (playing) stop(); else run(); });
+    range.addEventListener('input', function () { stop(); setTime(+range.value); });
+    range.addEventListener('change', function () { setTime(Math.round(+range.value)); });
+    lastWhole = null;
+    setTime(reduce ? data.last : data.first);
     /* time starts running the first time the map comes into view */
     if (!reduce && 'IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) { io.disconnect(); setTimeout(run, 600); }
-      }, { threshold: .4 });
+        if (entries[0].isIntersecting) { io.disconnect(); setTimeout(run, 500); }
+      }, { threshold: .35 });
       io.observe(wrap);
-    } else setYear(data.last);
+    }
 
     /* ----- the street map: OpenStreetMap data from OpenFreeMap, styled for the night ----- */
-    function streetMap() {
-      if (!window.maplibregl) return;
+    /* STYLE START: OpenStreetMap data (OpenMapTiles schema) drawn in the site's night palette */
+    function nightStyle() {
       var cream = 'rgba(239,231,218,', src = 'openmaptiles';
-      var style = {
+      return {
         version: 8,
         glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
         sources: { openmaptiles: { type: 'vector', url: 'https://tiles.openfreemap.org/planet' } },
         layers: [
-          { id: 'bg', type: 'background', paint: { 'background-color': '#0e0b0a' } },
-          { id: 'park', type: 'fill', source: src, 'source-layer': 'park', paint: { 'fill-color': cream + '.035)' } },
-          { id: 'green', type: 'fill', source: src, 'source-layer': 'landcover', filter: ['in', 'class', 'grass', 'wood'], paint: { 'fill-color': cream + '.03)' } },
-          { id: 'water', type: 'fill', source: src, 'source-layer': 'water', paint: { 'fill-color': '#2a170c' } },
-          { id: 'water-edge', type: 'line', source: src, 'source-layer': 'water', paint: { 'line-color': 'rgba(240,163,94,.35)', 'line-width': 1 } },
-          { id: 'buildings', type: 'fill', source: src, 'source-layer': 'building', minzoom: 14, paint: { 'fill-color': cream + '.045)' } },
+          { id: 'bg', type: 'background', paint: { 'background-color': '#120e0c' } },
+          { id: 'park', type: 'fill', source: src, 'source-layer': 'park', paint: { 'fill-color': 'rgba(120,140,90,.10)' } },
+          { id: 'green', type: 'fill', source: src, 'source-layer': 'landcover', filter: ['in', 'class', 'grass', 'wood'], paint: { 'fill-color': 'rgba(120,140,90,.08)' } },
+          { id: 'water', type: 'fill', source: src, 'source-layer': 'water', paint: { 'fill-color': '#3a2414' } },
+          { id: 'water-edge', type: 'line', source: src, 'source-layer': 'water', paint: { 'line-color': 'rgba(240,163,94,.6)', 'line-width': 1.2 } },
+          { id: 'buildings', type: 'fill', source: src, 'source-layer': 'building', minzoom: 13, paint: { 'fill-color': cream + '.07)', 'fill-outline-color': cream + '.12)' } },
           { id: 'rail', type: 'line', source: src, 'source-layer': 'transportation', filter: ['==', 'class', 'rail'],
-            paint: { 'line-color': cream + '.12)', 'line-width': 1, 'line-dasharray': [2, 2] } },
+            paint: { 'line-color': cream + '.25)', 'line-width': 1, 'line-dasharray': [2, 2] } },
           { id: 'streets-minor', type: 'line', source: src, 'source-layer': 'transportation',
             filter: ['in', 'class', 'minor', 'service', 'path', 'pedestrian', 'track'],
             layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': cream + '.13)', 'line-width': ['interpolate', ['linear'], ['zoom'], 13, .4, 17, 3] } },
+            paint: { 'line-color': cream + '.3)', 'line-width': ['interpolate', ['linear'], ['zoom'], 12, .5, 15, 1.4, 18, 5] } },
           { id: 'streets', type: 'line', source: src, 'source-layer': 'transportation',
             filter: ['in', 'class', 'tertiary', 'secondary', 'primary', 'trunk', 'motorway'],
             layout: { 'line-cap': 'round', 'line-join': 'round' },
-            paint: { 'line-color': cream + '.26)', 'line-width': ['interpolate', ['linear'], ['zoom'], 12, .6, 17, 6] } },
+            paint: { 'line-color': cream + '.5)', 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 15, 2.6, 18, 9] } },
           { id: 'street-names', type: 'symbol', source: src, 'source-layer': 'transportation_name', minzoom: 15,
             layout: { 'symbol-placement': 'line', 'text-field': ['get', 'name'], 'text-font': ['Noto Sans Regular'], 'text-size': 10 },
-            paint: { 'text-color': cream + '.42)', 'text-halo-color': '#0e0b0a', 'text-halo-width': 1.4 } },
+            paint: { 'text-color': cream + '.6)', 'text-halo-color': '#120e0c', 'text-halo-width': 1.4 } },
           { id: 'river-name', type: 'symbol', source: src, 'source-layer': 'water_name',
             layout: { 'text-field': ['get', 'name'], 'text-font': ['Noto Sans Italic'], 'text-size': 18, 'text-letter-spacing': .1 },
-            paint: { 'text-color': 'rgba(240,163,94,.45)' } },
+            paint: { 'text-color': 'rgba(240,163,94,.6)' } },
           { id: 'hoods', type: 'symbol', source: src, 'source-layer': 'place', filter: ['in', 'class', 'neighbourhood', 'suburb', 'quarter'],
             layout: { 'text-field': ['upcase', ['get', 'name']], 'text-font': ['Noto Sans Regular'], 'text-size': 10, 'text-letter-spacing': .25 },
-            paint: { 'text-color': 'rgba(240,163,94,.5)', 'text-halo-color': '#0e0b0a', 'text-halo-width': 1.2 } }
+            paint: { 'text-color': 'rgba(240,163,94,.65)', 'text-halo-color': '#120e0c', 'text-halo-width': 1.2 } }
         ]
       };
+    }
+    /* STYLE END */
+    function streetMap() {
+      if (!window.maplibregl) return;
+      var src = 'openmaptiles', style = nightStyle();
       var placed = Object.keys(cards).filter(function (i) { return cards[i].geo; });
       var bounds = new maplibregl.LngLatBounds();
       placed.forEach(function (i) { bounds.extend([cards[i].geo[1], cards[i].geo[0]]); });
@@ -499,11 +537,14 @@
         markers.push({ i: i, el: el, year: cards[i].year });
         bind(el, function () { return $('.pin-core', el); }, i);
       });
-      setYear(year);
+      lastWhole = null; setTime(t);
       map.on('movestart', close);
       /* swap the drawn map for the street map once its streets have actually arrived */
-      map.on('sourcedata', function (e) {
-        if (e.sourceId === src && e.isSourceLoaded && !wrap.classList.contains('has-streets')) wrap.classList.add('has-streets');
+      map.on('idle', function () {
+        if (wrap.classList.contains('has-streets')) return;
+        try {
+          if (map.querySourceFeatures(src, { sourceLayer: 'transportation' }).length) wrap.classList.add('has-streets');
+        } catch (e) {}
       });
     }
     document.addEventListener('DOMContentLoaded', streetMap);
