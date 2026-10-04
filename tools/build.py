@@ -341,14 +341,13 @@ def build_home():
     </div>
   </section>"""
 
-    # SERVICES: four big lines; a round photo and a round colour follow the mouse
+    # SERVICES: four big lines; on hover the name turns orange and the icon moves
     areas = []
     for k, a in enumerate(SERVICES["areas"]):
-        src, _, _ = photo(*a["photo"])
         items = "".join(f'<li>{icon(ic, "item-icon")}{tp(n, "h4")}{tp(d, "p")}</li>'
                         for (n, d), ic in zip(a["items"], ITEMS[a["letter"]]))
         areas.append(f"""
-      <li class="area" data-photo="{src}">
+      <li class="area" data-move="{["spin", "tilt", "swing", "hop"][k]}">
         <button type="button" class="area-head" aria-expanded="false">
           <span class="area-icon">{icon(AREAS[a["letter"]])}</span>
           <span class="area-title">
@@ -369,7 +368,6 @@ def build_home():
     </div>
     <ol class="areas">{"".join(areas)}
     </ol>
-    <div class="follow" aria-hidden="true"><span class="follow-dot"></span><span class="follow-pic"><img alt=""></span></div>
     <div class="inline-cta">
       {tp(SERVICES["cta"], "p")}
       {t("Agendar uma Consulta", "Schedule a Consultation", "a", 'class="btn magnetic" href="contacto.html"')}

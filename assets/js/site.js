@@ -667,7 +667,7 @@
       if (Math.round(t / .016) % 20 === 0) syncDrift();
       speed *= .9;
       r += ((inside ? Math.min(240, hero.offsetWidth * .17) : 0) - r) * .1;
-      strength += ((inside ? 8 + speed * .55 : 0) - strength) * .06;
+      strength += ((inside ? 16 + speed * .8 : 0) - strength) * .06;
       disp.setAttribute('scale', strength.toFixed(1));
       noise.setAttribute('baseFrequency', (0.005 + 0.0015 * Math.sin(t * 1.1)).toFixed(4) + ' ' + (0.008 + 0.002 * Math.cos(t * .8)).toFixed(4));
       filter.setAttribute('x', (px - r - 40).toFixed(0));
@@ -677,6 +677,14 @@
       lens.style.setProperty('--rx', px + 'px');
       lens.style.setProperty('--ry', py + 'px');
       lens.style.setProperty('--rr', r + 'px');
+      /* the same circle, in the headline's and the sentence's own coordinates */
+      hero.classList.toggle('lensing', r > .5);
+      hero.style.setProperty('--rr', r + 'px');
+      [h1, $('.hero-foot', hero)].forEach(function (el) {
+        if (!el) return;
+        el.style.setProperty('--rxl', (px - el.offsetLeft) + 'px');
+        el.style.setProperty('--ryl', (py - el.offsetTop) + 'px');
+      });
     })();
     return { prepare: prepare, sync: syncDrift };
   })();
@@ -738,7 +746,7 @@
     }, { passive: true });
   })();
 
-  /* ---------- SERVICES: each area opens; a round photo and a round colour follow the mouse ---------- */
+  /* ---------- SERVICES: each area opens; on hover its name turns orange and its icon moves ---------- */
   (function services() {
     var ol = $('.areas');
     if (!ol) return;
@@ -753,41 +761,18 @@
         if (window.ScrollTrigger) setTimeout(function () { ScrollTrigger.refresh(); }, 750);
       });
     });
-    var f = $('.follow'), pic = f && $('.follow-pic', f), dot = f && $('.follow-dot', f), fimg = f && $('img', f);
-    if (!finePointer || !f || reduce) return;
-    var px = mx, py = my, dx = mx, dy = my, active = false;
+    /* hover marks the area under the cursor (name in orange, the icon moves) and dims the others */
     areas.forEach(function (a) {
-      a.addEventListener('pointerenter', function () {
+      a.addEventListener('pointerenter', function (e) {
+        if (e.pointerType !== 'mouse') return;
         areas.forEach(function (o) { o.classList.toggle('hover', o === a); });
         ol.classList.add('hovering');
-        if (fimg.getAttribute('src') !== a.dataset.photo) fimg.src = a.dataset.photo;
-        if (!active) { px = dx = mx; py = dy = my; }
-        active = true; f.classList.add('on');
       });
     });
-    function off() {
+    ol.addEventListener('pointerleave', function () {
       areas.forEach(function (o) { o.classList.remove('hover'); });
       ol.classList.remove('hovering');
-      active = false; f.classList.remove('on');
-    }
-    ol.addEventListener('pointerleave', off);
-    /* scrolling with the wheel moves the list away without a pointer event */
-    window.addEventListener('scroll', function () {
-      if (!active) return;
-      var r = ol.getBoundingClientRect();
-      if (mx < r.left || mx > r.right || my < r.top || my > r.bottom) off();
-    }, { passive: true });
-    (function loop() {
-      requestAnimationFrame(loop);
-      if (!active) return;
-      var w = pic.offsetWidth;
-      px = lerp(px, mx, .16); py = lerp(py, my, .16);
-      dx = lerp(dx, mx, .07); dy = lerp(dy, my, .07);
-      /* the photo sits beside the cursor, the colour trails behind it */
-      var side = mx + w + 60 > innerWidth ? -w - 30 : 30;
-      pic.style.transform = 'translate(' + (px + side) + 'px,' + (py - w / 2) + 'px)';
-      dot.style.transform = 'translate(' + (dx + side + (side > 0 ? w * .55 : -w * .55)) + 'px,' + (dy - w / 2) + 'px)';
-    })();
+    });
   })();
 
   /* ---------- PROJECTS: names change the screen; moving across the screen runs through its photos ---------- */

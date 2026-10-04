@@ -20,7 +20,6 @@
   /* colour, used sparingly */
   --ember: #e8621a;   /* the orange: only for buttons, a few letters, highlights and underlines */
   --amber: #f0a37e;
-  --wine: #8f3a55;
   --display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
   --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
   --sans: var(--serif);
@@ -167,9 +166,13 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .hero-mega { position: relative; z-index: 2; }
 /* the lens: a complete copy of the hero (photos, wash, headline) that ripples like water under the cursor */
 .hero-lens { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; filter: url(#liquid);
-  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 55%, transparent 100%);
-  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 55%, transparent 100%); }
+  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 86%, transparent 100%);
+  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 86%, transparent 100%); }
 .hero-lens .hero-mega { position: absolute; margin: 0; }
+/* inside the circle only the lens shows: the real headline, photo and sentence step aside, so nothing is doubled */
+.hero.lensing > .hero-mega, .hero.lensing > .hero-foot {
+  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rxl, -999px) var(--ryl, -999px), transparent 86%, #000 100%);
+  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rxl, -999px) var(--ryl, -999px), transparent 86%, #000 100%); }
 @media (max-width: 760px) {
   .hero-drift { inset: -20% -30%; gap: 10px; }
   .drift-col { gap: 10px; }
@@ -216,7 +219,22 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .area-head { width: 100%; display: grid; grid-template-columns: 76px minmax(0, 1.5fr) minmax(0, 1fr) auto; gap: 28px; align-items: center; padding: clamp(18px, 2.8vh, 30px) 0; text-align: left; }
 .area-icon { width: 76px; height: 76px; border-radius: 50%; background: #111; color: #f2efe9; display: grid; place-items: center; transition: background .4s, transform .6s var(--ease); }
 .area-icon .icon { width: 34px; height: 34px; }
-.area.hover .area-icon, .area.open .area-icon { background: var(--wine); transform: rotate(-8deg); }
+.area-icon { position: relative; }
+.area-icon .icon { transition: transform .7s var(--ease); }
+/* hover: the name turns orange, the icon rolls in and does its own little movement */
+.area.hover .area-icon, .area.open .area-icon { background: var(--ember); color: var(--ink); transform: translateX(10px) rotate(-12deg); }
+.area.hover .area-icon .icon { animation: icon-move 1.6s var(--ease) infinite; }
+.area[data-move="spin"].hover .area-icon .icon { animation-name: icon-spin; }
+.area[data-move="tilt"].hover .area-icon .icon { animation-name: icon-tilt; }
+.area[data-move="swing"].hover .area-icon .icon { animation-name: icon-swing; transform-origin: 50% 0; }
+.area[data-move="hop"].hover .area-icon .icon { animation-name: icon-hop; }
+@keyframes icon-spin { 0% { transform: rotate(0); } 60%, 100% { transform: rotate(360deg); } }
+@keyframes icon-tilt { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-18deg); } 50% { transform: rotate(12deg); } 75% { transform: rotate(-6deg); } }
+@keyframes icon-swing { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(16deg); } 50% { transform: rotate(-12deg); } 75% { transform: rotate(6deg); } }
+@keyframes icon-hop { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-7px); } 45% { transform: translateY(0); } 60% { transform: translateY(-3px); } 75% { transform: translateY(0); } }
+.area.hover .area-name, .area.open .area-name { color: var(--ember); }
+.area.hover .area-letter { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .area.hover .area-icon .icon { animation: none; } }
 .area-title { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .area-letter { color: var(--ink-soft); }
 .area-name { font-family: var(--display); text-transform: uppercase; font-size: clamp(40px, 5.4vw, 96px); line-height: .9; transition: transform .6s var(--ease), color .4s; }
@@ -226,7 +244,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .area-head:hover .area-more { background: #111; color: #f2efe9; }
 .area-head:hover .area-more i { background: #f2efe9; color: #111; }
 .area.open .area-more i { transform: rotate(45deg); }
-.areas.hovering .area:not(.hover):not(.open) .area-name { color: rgba(22, 22, 22, .3); }
+.areas.hovering .area:not(.hover):not(.open) .area-name { color: rgba(22, 22, 22, .35); }
 .area-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .7s var(--ease); }
 .area.open .area-body { grid-template-rows: 1fr; }
 .area-body > ul { overflow: hidden; min-height: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-left: 104px; }
@@ -235,11 +253,6 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .item-icon { width: 30px; height: 30px; margin-bottom: 18px; color: var(--ember); }
 .area-body h4 { font-family: var(--mono); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
 .area-body p { font-size: 17px; line-height: 1.38; color: var(--ink-soft); }
-.follow { position: fixed; left: 0; top: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity .35s; }
-.follow.on { opacity: 1; }
-.follow-pic, .follow-dot { position: absolute; left: 0; top: 0; width: clamp(160px, 15vw, 240px); aspect-ratio: 1; border-radius: 50%; overflow: hidden; }
-.follow-dot { background: var(--wine); }
-.follow-pic img { width: 100%; height: 100%; object-fit: cover; }
 .inline-cta { display: flex; justify-content: space-between; align-items: center; gap: 20px 40px; flex-wrap: wrap; margin-top: clamp(40px, 7vh, 72px); }
 .inline-cta p { font-size: clamp(24px, 2.4vw, 38px); line-height: 1.1; }
 @media (max-width: 900px) {
@@ -307,7 +320,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .circles { position: relative; display: block; width: clamp(150px, 12vw, 200px); aspect-ratio: 1; margin-bottom: 28px; }
 .circles img, .circles i { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; }
 .circles img { z-index: 2; object-fit: cover; transition: transform .7s var(--ease); }
-.circles i { background: var(--wine); transition: transform .7s var(--ease); }
+.circles i { background: var(--ember); transition: transform .7s var(--ease); }
 .value:hover .circles i { transform: translateX(78%); }
 .value:hover .circles img { transform: scale(1.04); }
 .value h4 { font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(30px, 2.6vw, 44px); line-height: .95; margin-bottom: 12px; }
@@ -375,7 +388,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .map-view canvas { filter: sepia(.3) saturate(.75) contrast(.97); }
 .map-pin, .map-area { position: absolute; left: 50%; top: 50%; z-index: 2; border-radius: 50%; transform: translate(-50%, -50%); }
 .map-pin { width: 22px; height: 22px; background: var(--ember); border: 4px solid #f2efe9; box-shadow: 0 0 0 1px rgba(22, 22, 22, .25); }
-.map-area { width: 34%; aspect-ratio: 1; background: rgba(143, 58, 85, .22); border: 2px solid var(--wine); }
+.map-area { width: 34%; aspect-ratio: 1; background: rgba(232, 98, 26, .16); border: 2px solid var(--ember); }
 .map figcaption { display: flex; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; margin-top: 12px; }
 .map-credit { color: var(--ink-soft); text-transform: none; letter-spacing: 0; font-size: 11px; }
 .map-credit a { text-decoration: underline; text-decoration-color: var(--ember); text-underline-offset: 2px; }
