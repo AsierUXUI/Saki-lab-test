@@ -153,15 +153,31 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .hero { min-height: 100svh; padding: 92px var(--gutter) 130px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
 .pic-name b { font-weight: 500; }
 .tag b, .pic-name b { color: var(--ink); }
-/* hero hover: letters that stretch, and a copy of the headline filled with the photo */
-.hero .ch { display: inline-block; transform-origin: 50% 50%; will-change: transform; }
-.hero .pic { will-change: transform; }
+/* hero: photos drifting behind, a liquid ripple on the headline under the cursor */
+.hero { isolation: isolate; contain: paint; }   /* keeps the tilted photo grid from widening the page on phones */
+.hero-drift { position: absolute; inset: -30% -12%; z-index: 0; display: flex; gap: 16px; transform: rotate(-7deg); pointer-events: none; }
+.drift-col { flex: 1; display: flex; flex-direction: column; gap: 16px; animation: drift-up 70s linear infinite; will-change: transform; }
+.drift-col:nth-child(even) { animation-name: drift-down; animation-duration: 85s; }
+.drift-col:nth-child(3n) { animation-duration: 95s; }
+.drift-col img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 12px; }
+.hero-drift.paused .drift-col { animation-play-state: paused; }
+@keyframes drift-up { from { transform: translateY(0); } to { transform: translateY(calc(-50% - 8px)); } }
+@keyframes drift-down { from { transform: translateY(calc(-50% - 8px)); } to { transform: translateY(0); } }
+.hero::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: radial-gradient(ellipse at 30% 50%, rgba(233, 230, 224, .88), rgba(233, 230, 224, .7) 75%); }
 .hero-mega { position: relative; z-index: 2; }
-.mega-photo { position: absolute; z-index: 3; margin: 0; pointer-events: none;
-  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 55%, transparent 100%);
-  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 55%, transparent 100%); }
-.mega-photo .ch { color: transparent; -webkit-background-clip: text; background-clip: text; background-repeat: no-repeat; }
-.mega-photo .pic { visibility: hidden; }
+.mega-liquid { position: absolute; z-index: 3; margin: 0; pointer-events: none; filter: url(#liquid);
+  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 45%, transparent 100%);
+  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 45%, transparent 100%); }
+.hero-mega.liquid-on {
+  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), transparent 45%, #000 100%);
+  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), transparent 45%, #000 100%); }
+@media (max-width: 760px) {
+  .hero-drift { inset: -20% -30%; gap: 10px; }
+  .drift-col { gap: 10px; }
+  .drift-col:nth-child(n+5) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .drift-col { animation: none; } }
 .hero-foot { position: relative; z-index: 2; }
 
 .hero-foot { display: grid; grid-template-columns: 1fr minmax(0, 1.1fr); gap: 24px 48px; align-items: end; margin-top: clamp(24px, 4vh, 48px); }

@@ -580,111 +580,81 @@
     }, reduce ? 4000 : 2000);
   });
 
-  /* ---------- HERO HOVER: the letters widen under the cursor and fill with the bar photo around it ---------- */
+  /* ---------- HERO HOVER: the headline turns liquid under the cursor, rippling more the faster it moves ---------- */
   var heroFx = (function () {
     var hero = $('.hero'), h1 = hero && $('.hero-mega', hero), pic = h1 && $('.pic', h1);
-    if (!hero || !h1 || !pic || !finePointer || reduce) return null;
-    var photos = $$('img', pic), current = $('img.on', pic) || photos[0];
-    var clone = null, letters = [], ghosts = [], lines = [];
-    var px = -999, py = -999, inside = false, r = 0;
-    function split() {
-      /* each letter in its own box, so it can move on its own */
-      $$('.row > span[data-pt]', h1).forEach(function (sp) {
-        if ($('.ch', sp)) return;
-        sp.innerHTML = sp.textContent.split('').map(function (c, i, all) {
-          if (c === ' ') return ' ';
-          return '<span class="ch' + (c === '.' && i === all.length - 1 ? ' acc' : '') + '">' + c + '</span>';
-        }).join('');
-      });
-    }
-    function paint() {
-      /* every letter of the copy carries the same photo, positioned as if it were one picture behind the whole headline */
-      if (!clone) return;
-      var W = clone.offsetWidth, H = clone.offsetHeight;
-      var nw = current.naturalWidth || 4, nh = current.naturalHeight || 3;
-      var k = Math.max(W / nw, H / nh), bw = nw * k, bh = nh * k, ox = (W - bw) / 2, oy = (H - bh) / 2;
-      var url = 'url("' + (current.currentSrc || current.src) + '")';
-      /* offsets ignore the stretching, so the picture lines up with the letters at rest */
-      ghosts.forEach(function (g) {
-        var left = 0, top = 0, el = g;
-        while (el && el !== clone) { left += el.offsetLeft; top += el.offsetTop; el = el.offsetParent; }
-        g.style.backgroundImage = url;
-        g.style.backgroundSize = bw + 'px ' + bh + 'px';
-        g.style.backgroundPosition = (ox - left) + 'px ' + (oy - top) + 'px';
-      });
-    }
+    if (!hero || !h1 || !finePointer || reduce) return null;
+    /* the water: noise that displaces the letters; its strength follows the cursor's speed */
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
+    svg.style.position = 'absolute';
+    svg.innerHTML = '<filter id="liquid" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="1" seed="4" result="noise"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>';
+    document.body.appendChild(svg);
+    var noise = svg.querySelector('feTurbulence'), disp = svg.querySelector('feDisplacementMap');
+    var clone = null, px = -999, py = -999, inside = false, r = 0, strength = 0, last = null, speed = 0, t = 0;
+
     function prepare() {
-      split();
       if (clone) clone.remove();
       clone = h1.cloneNode(true);
-      clone.className = 'mega hero-mega mega-photo';
+      clone.className = 'mega hero-mega mega-liquid';
       clone.removeAttribute('aria-label');
       clone.setAttribute('aria-hidden', 'true');
-      $$('.row', clone).forEach(function (row) { row.removeAttribute('style'); row.style.fontSize = ''; });
-      $$('.row', h1).forEach(function (row, i) { if (row.style.fontSize) $$('.row', clone)[i].style.fontSize = row.style.fontSize; });
+      $$('.row', clone).forEach(function (row, i) {
+        row.removeAttribute('style');
+        var size = $$('.row', h1)[i].style.fontSize;
+        if (size) row.style.fontSize = size;
+      });
       clone.style.top = h1.offsetTop + 'px';
       clone.style.left = h1.offsetLeft + 'px';
       clone.style.width = h1.offsetWidth + 'px';
       h1.after(clone);
-      letters = $$('.ch', h1);
-      ghosts = $$('.ch', clone);
-      var hb = hero.getBoundingClientRect();
-      /* each line keeps its letters (and the photo) in order, so widening one pushes the others aside */
-      var k = 0;
-      lines = $$('.row', h1).map(function (row) {
-        return $$('.ch, .pic', row).map(function (el) {
-          var b = el.getBoundingClientRect();
-          var isPic = el.classList.contains('pic');
-          return { el: el, ghost: isPic ? null : ghosts[k++], pic: isPic, x: b.left - hb.left + b.width / 2,
-                   y: b.top - hb.top + b.height / 2, w: b.width, h: b.height, s: 1 };
-        });
-      });
-      paint();
+      h1.classList.add('liquid-on');
     }
-    pic.addEventListener('picchange', function (e) {
-      current = e.detail;
-      if (current.complete) paint(); else current.addEventListener('load', paint, { once: true });
+    /* the copy shows the same photo as the headline */
+    if (pic) pic.addEventListener('picchange', function () {
+      if (!clone) return;
+      var on = $$('img', pic).map(function (im) { return im.classList.contains('on'); });
+      $$('.pic img', clone).forEach(function (im, i) { im.classList.toggle('on', on[i]); });
     });
 
     hero.addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
       var hb = hero.getBoundingClientRect();
       px = e.clientX - hb.left; py = e.clientY - hb.top; inside = true;
+      if (last) speed = Math.min(80, speed + Math.hypot(e.clientX - last.x, e.clientY - last.y));
+      last = { x: e.clientX, y: e.clientY };
     });
-    hero.addEventListener('pointerleave', function () { inside = false; });
+    hero.addEventListener('pointerleave', function () { inside = false; last = null; });
 
     (function loop() {
       requestAnimationFrame(loop);
       if (!clone) return;
-      var target = inside ? Math.min(240, hero.offsetWidth * .17) : 0;
-      var moving = lines.some(function (line) { return line.some(function (it) { return it.s > 1.002; }); });
-      if (!inside && r < .5 && !moving) return;
-      r += (target - r) * .12;
-      clone.style.setProperty('--rx', (px - clone.offsetLeft) + 'px');
-      clone.style.setProperty('--ry', (py - clone.offsetTop) + 'px');
-      clone.style.setProperty('--rr', r + 'px');
-      /* letters near the cursor grow wider; the rest of the line slides apart to make room */
-      lines.forEach(function (line) {
-        var h = line.length ? line[0].h : 1, total = 0;
-        line.forEach(function (it) {
-          var dx = (px - it.x) / (h * .45), dy = (py - it.y) / (h * .6);
-          var goal = it.pic || !inside ? 1 : 1 + .6 * Math.exp(-(dx * dx + dy * dy) / 2);
-          it.s += (goal - it.s) * .16;
-          it.extra = it.w * (it.s - 1);
-          total += it.extra;
-        });
-        var before = 0;
-        line.forEach(function (it) {
-          var shift = before + it.extra / 2 - total / 2;
-          before += it.extra;
-          var tf = Math.abs(shift) < .05 && it.s < 1.001 ? '' : 'translateX(' + shift.toFixed(2) + 'px)' + (it.pic ? '' : ' scaleX(' + it.s.toFixed(3) + ')');
-          it.el.style.transform = tf;
-          if (it.ghost) it.ghost.style.transform = tf;
-        });
+      if (!inside && r < .5 && strength < .2) return;
+      t += .016;
+      speed *= .9;
+      r += ((inside ? Math.min(260, hero.offsetWidth * .18) : 0) - r) * .1;
+      /* a little movement even when still, more when the cursor sweeps */
+      strength += ((inside ? 8 + speed * .55 : 0) - strength) * .06;
+      disp.setAttribute('scale', strength.toFixed(1));
+      noise.setAttribute('baseFrequency', (0.005 + 0.0015 * Math.sin(t * 1.1)).toFixed(4) + ' ' + (0.008 + 0.002 * Math.cos(t * .8)).toFixed(4));
+      [h1, clone].forEach(function (el) {
+        el.style.setProperty('--rx', (px - h1.offsetLeft) + 'px');
+        el.style.setProperty('--ry', (py - h1.offsetTop) + 'px');
+        el.style.setProperty('--rr', r + 'px');
       });
     })();
     return { prepare: prepare };
   })();
+  /* the drifting photos rest while the hero is off screen */
+  (function () {
+    var drift = $('.hero-drift');
+    if (!drift || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver(function (en) { drift.classList.toggle('paused', !en[0].isIntersecting); }).observe(drift.parentElement);
+  })();
+
   if (heroFx) {
     heroFx.prepare();
     langHooks.push(heroFx.prepare);

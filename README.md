@@ -8,7 +8,7 @@ The site is one long page, `index.html`: light paper, huge condensed type with p
 
 | Section | What happens |
 |---|---|
-| Hero | The headline fills the screen; the photo inside it changes as the mouse moves (on a phone, on its own) |
+| Hero | The headline over columns of bar photos drifting on their own; the photo inside the headline changes by itself; under the cursor the headline ripples like water |
 | Studio | An editorial page between two rules: the quote, the numbers, two columns of text |
 | Services | Four big lines that open on click; a round photo and a round colour follow the mouse |
 | Projects | A dark room with one big screen; the names below change it, moving across it runs through the photos; it opens the project over the page |
@@ -43,6 +43,7 @@ assets/
   js/site.js               the light effects, language switch, booking conversation
   js/*.min.js              GSAP, ScrollTrigger and Lenis
   img/
+    mini/                  small copies of the photos for the moving grid (made by tools/thumbs.py)
     marca/                 the Sakim logo
     lisboa/                photos not tied to one place
     lugares/<place>/       photos shown on that place's page
@@ -52,6 +53,7 @@ tools/
   content.py               every text on the site (PT and EN)
   places.py                photo list for each project
   build.py                 builds the pages
+  thumbs.py                makes the small copies in assets/img/mini (run after adding photos)
 ```
 
 ## Project pages
