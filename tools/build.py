@@ -292,7 +292,7 @@ def press_section():
           <a href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" aria-label="{esc(a["outlet"] + ": " + a["title"])}"><i></i></a>
         </li>""")
         teasers.append(f"""
-        <a class="teaser{" on" if i == 0 else ""}" href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" tabindex="-1">
+        <a class="teaser{" on" if i == 0 else ""}" href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" draggable="false">
           <img src="{src}" alt="" loading="lazy">
           <span class="teaser-text">
             <span class="teaser-meta mono"><b>{esc(a["outlet"])}</b><span>{year}</span><span>{esc(about)}</span></span>
@@ -309,7 +309,14 @@ def press_section():
         <ol class="stops">{"".join(stops)}
         </ol>
       </div>
-      <div class="teasers" aria-live="polite">{"".join(teasers)}
+      <div class="teasers">
+        <div class="track">{"".join(teasers)}
+        </div>
+      </div>
+      <div class="press-nav">
+        <button type="button" class="pill-round nav-prev" aria-label="Anterior / Previous">←</button>
+        <span class="press-count mono"><b>01</b> / {len(PRESS):02d}</span>
+        <button type="button" class="pill-round nav-next" aria-label="Seguinte / Next">→</button>
       </div>
     </div>"""
 

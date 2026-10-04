@@ -789,26 +789,76 @@
     langHooks.push(meta);
   })();
 
-  /* ---------- IN THE PRESS: pointing at a stop on the bar shows that article's teaser ---------- */
+  /* ---------- IN THE PRESS: a carousel of article cards that glides as the pointer moves along the timeline ---------- */
   (function press() {
-    var stops = $$('.stop'), teasers = $$('.teaser');
-    if (!stops.length) return;
-    function show(i) {
+    var stops = $$('.stop'), cards = $$('.teaser'), box = $('.teasers'), track = $('.track');
+    if (!stops.length || !track) return;
+    var line = $('.stops'), prevB = $('.nav-prev'), nextB = $('.nav-next'), count = $('.press-count b');
+    var n = cards.length, pos = 0, target = 0, cur = -1, step = 1;
+    function measure() { step = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : 1; }
+    function mark(i) {
+      if (i === cur) return;
+      cur = i;
       stops.forEach(function (s, j) { s.classList.toggle('on', j === i); });
-      teasers.forEach(function (t, j) { t.classList.toggle('on', j === i); });
+      cards.forEach(function (c, j) { c.classList.toggle('on', j === i); });
+      if (count) count.textContent = (i < 9 ? '0' : '') + (i + 1);
+      /* on a small screen the line scrolls too, so the lit stop stays in view */
+      var tl = $('.timeline');
+      if (tl && tl.scrollWidth > tl.clientWidth) {
+        var sl = stops[i].offsetLeft - tl.clientWidth / 2;
+        tl.scrollTo({ left: Math.max(0, sl), behavior: reduce ? 'auto' : 'smooth' });
+      }
+      if (prevB) prevB.disabled = i === 0;
+      if (nextB) nextB.disabled = i === n - 1;
     }
-    stops.forEach(function (s, i) {
-      var a = $('a', s);
-      var wasOn = false;
-      a.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') show(i); });
-      /* on a touch screen the first tap shows the teaser, a second tap (or the teaser) opens the article */
-      a.addEventListener('pointerdown', function (e) { wasOn = e.pointerType === 'mouse' || s.classList.contains('on'); });
-      a.addEventListener('focus', function () { show(i); });
-      a.addEventListener('click', function (e) {
-        if (!wasOn) { e.preventDefault(); show(i); }
-        wasOn = false;
+    function go(i) { target = Math.max(0, Math.min(n - 1, i)); if (!finePointer) scrollToCard(target); }
+    function scrollToCard(i) { box.scrollTo({ left: cards[i].offsetLeft - cards[0].offsetLeft, behavior: reduce ? 'auto' : 'smooth' }); mark(i); }
+    measure();
+    window.addEventListener('resize', measure);
+    mark(0);
+
+    if (finePointer) {
+      /* the pointer's place along the line becomes a place in the carousel, so it glides with every move */
+      line.addEventListener('pointermove', function (e) {
+        if (e.pointerType !== 'mouse') return;
+        var first = stops[0].getBoundingClientRect(), last = stops[n - 1].getBoundingClientRect();
+        var a = first.left + 22, z = last.left + 22;
+        target = Math.max(0, Math.min(n - 1, (e.clientX - a) / (z - a) * (n - 1)));
       });
+      line.addEventListener('pointerleave', function () { target = Math.round(target); });
+      var last = performance.now();
+      (function loop(now) {
+        requestAnimationFrame(loop);
+        var dt = Math.min(.1, (now - last) / 1000); last = now;
+        var d = target - pos;
+        if (Math.abs(d) < .0005) { if (pos !== target) { pos = target; } else return; }
+        pos += d * (1 - Math.pow(1 - .12, dt * 60));
+        track.style.transform = 'translate3d(' + (-pos * step).toFixed(2) + 'px,0,0)';
+        mark(Math.round(pos));
+      })(last);
+    } else {
+      /* on a touch screen the cards are swiped; the line follows the card in view */
+      var t;
+      box.addEventListener('scroll', function () {
+        clearTimeout(t);
+        t = setTimeout(function () { mark(Math.round(box.scrollLeft / step)); }, 60);
+      }, { passive: true });
+    }
+
+    stops.forEach(function (s, i) {
+      var a = $('a', s), wasOn = false;
+      a.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') target = i; });
+      a.addEventListener('pointerdown', function (e) { wasOn = e.pointerType === 'mouse' || s.classList.contains('on'); });
+      a.addEventListener('focus', function () { go(i); });
+      /* on a touch screen the first tap brings its card, a second tap (or the card) opens the article */
+      a.addEventListener('click', function (e) { if (!wasOn) { e.preventDefault(); go(i); } wasOn = false; });
     });
+    cards.forEach(function (c, i) {
+      /* a card further along first comes to the front; the one in front opens */
+      c.addEventListener('click', function (e) { if (i !== cur) { e.preventDefault(); go(i); } });
+    });
+    if (prevB) prevB.addEventListener('click', function () { go(cur - 1); });
+    if (nextB) nextB.addEventListener('click', function () { go(cur + 1); });
   })();
 
   /* ---------- MAPS: a still map from OpenFreeMap, drawn only when it comes into view ---------- */
