@@ -560,19 +560,13 @@
     }, reduce ? 4000 : 2000);
   });
 
-  /* ---------- HERO HOVER: the letters stretch under the cursor, fill with the bar photo around it,
-     and moving across the page leaves a trail of the bars behind ---------- */
+  /* ---------- HERO HOVER: the letters stretch under the cursor and fill with the bar photo around it ---------- */
   var heroFx = (function () {
     var hero = $('.hero'), h1 = hero && $('.hero-mega', hero), pic = h1 && $('.pic', h1);
     if (!hero || !h1 || !pic || !finePointer || reduce) return null;
     var photos = $$('img', pic), current = $('img.on', pic) || photos[0];
     var clone = null, letters = [], ghosts = [], centres = [];
     var px = -999, py = -999, inside = false, r = 0;
-    var trail = document.createElement('div');
-    trail.className = 'hero-trail';
-    trail.setAttribute('aria-hidden', 'true');
-    hero.insertBefore(trail, hero.firstChild);
-
     function split() {
       /* each letter in its own box, so it can move on its own */
       $$('.row > span[data-pt]', h1).forEach(function (sp) {
@@ -624,29 +618,12 @@
       if (current.complete) paint(); else current.addEventListener('load', paint, { once: true });
     });
 
-    var last = null, travel = 0, n = 0, live = [];
     hero.addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
       var hb = hero.getBoundingClientRect();
       px = e.clientX - hb.left; py = e.clientY - hb.top; inside = true;
-      /* the trail: a bar photo every so often along the way, one bar after another */
-      if (last) travel += Math.hypot(e.clientX - last.x, e.clientY - last.y);
-      last = { x: e.clientX, y: e.clientY };
-      if (travel < 110 || !window.gsap) return;
-      travel = 0;
-      var src = photos[n++ % photos.length];
-      var im = new Image();
-      im.src = src.currentSrc || src.src; im.alt = '';
-      trail.appendChild(im); live.push(im);
-      if (live.length > 9) live.shift().remove();
-      var w = im.offsetWidth || 180, h = w * 1.25;
-      gsap.fromTo(im, { x: px - w / 2, y: py - h / 2, rotate: (Math.random() - .5) * 12, scale: .5, opacity: 0 },
-        { scale: 1, opacity: 1, duration: .5, ease: 'expo.out' });
-      gsap.to(im, { opacity: 0, scale: .85, duration: .9, delay: .7, ease: 'power2.in', onComplete: function () {
-        im.remove(); live = live.filter(function (x) { return x !== im; });
-      } });
     });
-    hero.addEventListener('pointerleave', function () { inside = false; last = null; });
+    hero.addEventListener('pointerleave', function () { inside = false; });
 
     (function loop() {
       requestAnimationFrame(loop);
