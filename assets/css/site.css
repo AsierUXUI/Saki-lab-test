@@ -63,6 +63,12 @@ strong { font-weight: 500; }
 .cursor.is-label { width: 86px; height: 86px; margin: -43px 0 0 -43px; background: var(--ember); mix-blend-mode: normal; }
 .cursor.is-label span { opacity: 1; }
 @media (pointer: coarse) { .cursor { display: none; } }
+/* on desktop the dot is the only cursor */
+html.has-cursor, html.has-cursor * { cursor: none !important; }
+html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.has-cursor [contenteditable] { cursor: text !important; }
+.cursor.is-link { width: 46px; height: 46px; margin: -23px 0 0 -23px; }
+.cursor.is-text { opacity: 0; }
+.cursor { transition: width .4s var(--ease), height .4s var(--ease), margin .4s var(--ease), background .3s, opacity .2s; }
 
 /* ---------------------------------------------------------------- BIG CONDENSED LINES */
 .mega { font-family: var(--display); font-weight: 400; text-transform: uppercase; line-height: .86; letter-spacing: -.005em; font-size: 12vw; }
