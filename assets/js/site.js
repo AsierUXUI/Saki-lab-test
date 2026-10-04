@@ -560,19 +560,20 @@
     }, reduce ? 4000 : 2000);
   });
 
-  /* ---------- HERO HOVER: the letters stretch under the cursor and fill with the bar photo around it ---------- */
+  /* ---------- HERO HOVER: the letters widen under the cursor and fill with the bar photo around it ---------- */
   var heroFx = (function () {
     var hero = $('.hero'), h1 = hero && $('.hero-mega', hero), pic = h1 && $('.pic', h1);
     if (!hero || !h1 || !pic || !finePointer || reduce) return null;
     var photos = $$('img', pic), current = $('img.on', pic) || photos[0];
-    var clone = null, letters = [], ghosts = [], centres = [];
+    var clone = null, letters = [], ghosts = [], lines = [];
     var px = -999, py = -999, inside = false, r = 0;
     function split() {
       /* each letter in its own box, so it can move on its own */
       $$('.row > span[data-pt]', h1).forEach(function (sp) {
         if ($('.ch', sp)) return;
-        sp.innerHTML = sp.textContent.split('').map(function (c) {
-          return c === ' ' ? ' ' : '<span class="ch">' + c + '</span>';
+        sp.innerHTML = sp.textContent.split('').map(function (c, i, all) {
+          if (c === ' ') return ' ';
+          return '<span class="ch' + (c === '.' && i === all.length - 1 ? ' acc' : '') + '">' + c + '</span>';
         }).join('');
       });
     }
@@ -583,12 +584,13 @@
       var nw = current.naturalWidth || 4, nh = current.naturalHeight || 3;
       var k = Math.max(W / nw, H / nh), bw = nw * k, bh = nh * k, ox = (W - bw) / 2, oy = (H - bh) / 2;
       var url = 'url("' + (current.currentSrc || current.src) + '")';
-      var base = clone.getBoundingClientRect();
+      /* offsets ignore the stretching, so the picture lines up with the letters at rest */
       ghosts.forEach(function (g) {
-        var b = g.getBoundingClientRect();
+        var left = 0, top = 0, el = g;
+        while (el && el !== clone) { left += el.offsetLeft; top += el.offsetTop; el = el.offsetParent; }
         g.style.backgroundImage = url;
         g.style.backgroundSize = bw + 'px ' + bh + 'px';
-        g.style.backgroundPosition = (ox - (b.left - base.left)) + 'px ' + (oy - (b.top - base.top)) + 'px';
+        g.style.backgroundPosition = (ox - left) + 'px ' + (oy - top) + 'px';
       });
     }
     function prepare() {
@@ -607,9 +609,15 @@
       letters = $$('.ch', h1);
       ghosts = $$('.ch', clone);
       var hb = hero.getBoundingClientRect();
-      centres = letters.map(function (l) {
-        var b = l.getBoundingClientRect();
-        return { x: b.left - hb.left + b.width / 2, y: b.top - hb.top + b.height * .55, h: b.height, s: 1 };
+      /* each line keeps its letters (and the photo) in order, so widening one pushes the others aside */
+      var k = 0;
+      lines = $$('.row', h1).map(function (row) {
+        return $$('.ch, .pic', row).map(function (el) {
+          var b = el.getBoundingClientRect();
+          var isPic = el.classList.contains('pic');
+          return { el: el, ghost: isPic ? null : ghosts[k++], pic: isPic, x: b.left - hb.left + b.width / 2,
+                   y: b.top - hb.top + b.height / 2, w: b.width, h: b.height, s: 1 };
+        });
       });
       paint();
     }
@@ -629,21 +637,30 @@
       requestAnimationFrame(loop);
       if (!clone) return;
       var target = inside ? Math.min(240, hero.offsetWidth * .17) : 0;
-      if (!inside && r < .5 && !letters.some(function (l, i) { return centres[i].s > 1.002; })) return;
+      var moving = lines.some(function (line) { return line.some(function (it) { return it.s > 1.002; }); });
+      if (!inside && r < .5 && !moving) return;
       r += (target - r) * .12;
       clone.style.setProperty('--rx', (px - clone.offsetLeft) + 'px');
       clone.style.setProperty('--ry', (py - clone.offsetTop) + 'px');
       clone.style.setProperty('--rr', r + 'px');
-      /* letters near the cursor grow taller, like a lens passing over the type */
-      letters.forEach(function (l, i) {
-        var c = centres[i];
-        var dx = (px - c.x) / (c.h * .55), dy = (py - c.y) / (c.h * .9);
-        var f = inside ? Math.exp(-(dx * dx + dy * dy) / 2) : 0;
-        var goal = 1 + .42 * f;
-        c.s += (goal - c.s) * .16;
-        var tf = c.s > 1.001 ? 'scaleY(' + c.s.toFixed(3) + ')' : '';
-        l.style.transform = tf;
-        ghosts[i].style.transform = tf;
+      /* letters near the cursor grow wider; the rest of the line slides apart to make room */
+      lines.forEach(function (line) {
+        var h = line.length ? line[0].h : 1, total = 0;
+        line.forEach(function (it) {
+          var dx = (px - it.x) / (h * .45), dy = (py - it.y) / (h * .6);
+          var goal = it.pic || !inside ? 1 : 1 + .6 * Math.exp(-(dx * dx + dy * dy) / 2);
+          it.s += (goal - it.s) * .16;
+          it.extra = it.w * (it.s - 1);
+          total += it.extra;
+        });
+        var before = 0;
+        line.forEach(function (it) {
+          var shift = before + it.extra / 2 - total / 2;
+          before += it.extra;
+          var tf = Math.abs(shift) < .05 && it.s < 1.001 ? '' : 'translateX(' + shift.toFixed(2) + 'px)' + (it.pic ? '' : ' scaleX(' + it.s.toFixed(3) + ')');
+          it.el.style.transform = tf;
+          if (it.ghost) it.ghost.style.transform = tf;
+        });
       });
     })();
     return { prepare: prepare };
@@ -795,6 +812,32 @@
       setInterval(function () { if (visible && !document.hidden) show((cur + 1) % total); }, 2600);
     }
     langHooks.push(meta);
+  })();
+
+  /* ---------- IN THE PRESS: a photo of the place follows the cursor along the list ---------- */
+  (function press() {
+    var list = $('.press-list'), peek = $('.press-peek'), im = peek && $('img', peek);
+    if (!list || !peek || !finePointer || reduce) return;
+    var x = mx, y = my, on = false;
+    $$('a', list).forEach(function (a) {
+      a.addEventListener('pointerenter', function () {
+        if (im.getAttribute('src') !== a.dataset.photo) im.src = a.dataset.photo;
+        if (!on) { x = mx; y = my; }
+        on = true; peek.classList.add('on');
+      });
+    });
+    list.addEventListener('pointerleave', function () { on = false; peek.classList.remove('on'); });
+    window.addEventListener('scroll', function () {
+      var r = list.getBoundingClientRect();
+      if (on && (my < r.top || my > r.bottom)) { on = false; peek.classList.remove('on'); }
+    }, { passive: true });
+    (function loop() {
+      requestAnimationFrame(loop);
+      if (!on) return;
+      x += (mx - x) * .14; y += (my - y) * .14;
+      var w = peek.offsetWidth;
+      peek.style.transform = 'translate(' + (x + 28) + 'px,' + (y - w * .62) + 'px) rotate(' + Math.max(-6, Math.min(6, (mx - x) * .05)) + 'deg)';
+    })();
   })();
 
   /* ---------- MAGNETIC BUTTONS ---------- */

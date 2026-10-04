@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from places import PLACES, SITE_PHOTOS, GEO, photo_path, cover_path, services_done  # noqa: E402
 from icons import icon, AREAS, ITEMS  # noqa: E402
 from content import (NAV, START, HERO, STUDIO, SERVICES, PROJECTS, PROJECT_TEXT, PROJECT_ORDER,  # noqa: E402
-                     PROCESS, ABOUT, CONTACT)
+                     PROCESS, ABOUT, CONTACT, PRESS, PRESS_LABEL, PRESS_TITLE)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BY_SLUG = {p["slug"]: p for p in PLACES}
@@ -203,6 +203,11 @@ def place_sheet():
 
 
 # ---------------------------------------------------------------- HOME: one long page
+def accent_stop(text):
+    """A full stop at the end of a big line is set in the accent colour."""
+    return text[:-1] + '<span class="acc">.</span>' if text.endswith(".") else text
+
+
 def mega(pair, pic_row=None, pics=None, cls="", tag="h1"):
     """Big condensed lines. A strip of photos can sit at the end of one line."""
     pt_rows, en_rows = [plain(x) for x in pair[0].split("<br>")], [plain(x) for x in pair[1].split("<br>")]
@@ -214,7 +219,7 @@ def mega(pair, pic_row=None, pics=None, cls="", tag="h1"):
                            + (f' data-meta-pt="{esc(pc[2][0])}" data-meta-en="{esc(pc[2][1])}"' if len(pc) > 2 else "")
                            + f'{"" if j < 2 else " loading=" + chr(34) + "lazy" + chr(34)}>' for j, pc in enumerate(pics))
             pic = f' <span class="pic" aria-hidden="true">{imgs}</span>'
-        rows.append(f'<span class="row">{t(rp, re_)}{pic}</span>')
+        rows.append(f'<span class="row">{t(accent_stop(rp), accent_stop(re_))}{pic}</span>')
     label = esc(plain(pair[0].replace("<br>", " ")))
     return f'<{tag} class="mega {cls}" aria-label="{label}" data-label-pt="{label}" data-label-en="{esc(plain(pair[1].replace("<br>", " ")))}">{"".join(rows)}</{tag}>'
 
@@ -241,6 +246,33 @@ def hero_photos():
 
 def pics_of(lst):
     return [(photo(s, n)[0], PROJECT_TEXT[s]["name"]) for s, n in lst]
+
+
+def press_section():
+    rows = []
+    for a in PRESS:
+        if a["about"] == "mikas":
+            about, src = "Mikas", SITE_PHOTOS[2]
+        else:
+            about, src = PROJECT_TEXT[a["about"]]["name"], cover_path(BY_SLUG[a["about"]])
+        year = str(a["year"]) if a["year"] else "—"
+        rows.append(f"""
+        <li><a href="{esc(a["url"])}" target="_blank" rel="noopener" data-photo="{src}">
+          <span class="press-outlet mono">{esc(a["outlet"])}</span>
+          <span class="press-title">{esc(a["title"])}</span>
+          <span class="press-about mono">{esc(about)}</span>
+          <span class="press-year mono">{year}</span>
+          <i aria-hidden="true">↗</i>
+        </a></li>""")
+    return f"""<div class="press" id="imprensa">
+      <div class="press-head">
+        {label(PRESS_LABEL)}
+        {tp(PRESS_TITLE, "h3", 'class="sec-title"')}
+      </div>
+      <ol class="press-list">{"".join(rows)}
+      </ol>
+      <div class="press-peek" aria-hidden="true"><img alt=""></div>
+    </div>"""
 
 
 def build_home():
@@ -371,6 +403,7 @@ def build_home():
       <ul class="values">{"".join(values)}
       </ul>
     </div>
+    {press_section()}
   </section>"""
 
     # CONTACT: the big lines again, with the table photos inside
