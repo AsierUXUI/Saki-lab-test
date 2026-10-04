@@ -324,10 +324,44 @@ strong { font-weight: 500; }
 .place-head .tag { margin-bottom: 16px; }
 .place-mega { font-size: clamp(64px, 14vw, 240px); }
 .place-mega .row { white-space: normal; width: auto; }
-.place-cover { margin: clamp(24px, 4vh, 40px) var(--gutter) 0; border-radius: clamp(12px, 1.6vw, 24px); overflow: hidden; }
-.place-cover img { width: 100%; max-height: 86svh; object-fit: cover; }
-.place-desc { font-size: clamp(26px, 3vw, 50px); line-height: 1.12; letter-spacing: -.01em; max-width: 1200px; padding: clamp(60px, 12vh, 140px) var(--gutter); }
-.frame img { border-radius: 10px; }
+.place-intro { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); align-items: start; padding: clamp(28px, 5vh, 56px) var(--gutter) clamp(48px, 8vh, 96px); }
+.place-desc { font-size: clamp(24px, 2.4vw, 40px); line-height: 1.15; letter-spacing: -.01em; }
+/* which services the project had */
+.done { margin-top: clamp(28px, 5vh, 48px); }
+.done > .mono { margin-bottom: 14px; }
+.done ul { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.done li { display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 10px; border-radius: 999px; font-size: 16px; line-height: 1.2; }
+.done li .icon { flex: none; width: 34px; height: 34px; padding: 7px; border-radius: 50%; }
+.done li .mono { flex: none; }
+.done li.on { background: #111; color: #f2efe9; }
+.done li.on .icon { background: #f2efe9; color: #111; }
+.done li.off { border: 1px dashed var(--rule); color: var(--ink-soft); }
+.done li.off .icon { border: 1px solid var(--rule); }
+/* the still map */
+.map { margin: 0; }
+.map-view { position: relative; overflow: hidden; border-radius: clamp(12px, 1.4vw, 20px); background-color: #e2ded6;
+  background-image: linear-gradient(rgba(22, 22, 22, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(22, 22, 22, .06) 1px, transparent 1px);
+  background-size: 40px 40px; }
+.map-view img { position: absolute; max-width: none; height: auto; filter: sepia(.28) saturate(.7) contrast(.96); }
+.map-pin, .map-area { position: absolute; left: 50%; top: 50%; z-index: 2; border-radius: 50%; transform: translate(-50%, -50%); }
+.map-pin { width: 22px; height: 22px; background: var(--wine); border: 4px solid #f2efe9; box-shadow: 0 0 0 1px rgba(22, 22, 22, .25); }
+.map-area { width: 34%; aspect-ratio: 1; background: rgba(143, 58, 85, .22); border: 2px solid var(--wine); }
+.map figcaption { display: flex; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; margin-top: 12px; }
+.map-credit { color: var(--ink-soft); text-transform: none; letter-spacing: 0; font-size: 11px; }
+.map-credit a { text-decoration: underline; text-underline-offset: 2px; }
+/* the photos: a grid, the ones that were sharp to begin with shown larger */
+.gallery { display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: calc((100vw - 2 * var(--gutter)) * .3); gap: clamp(10px, 1.2vw, 18px); padding: 0 var(--gutter); }
+.g { margin: 0; overflow: hidden; border-radius: 10px; background: #dcd8d0; grid-column: span var(--span, 4); }
+.g img { width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease); }
+.g:hover img { transform: scale(1.03); }
+/* rows of equal height: sharp photos take half a row, most a third, the small ones a quarter */
+@media (max-width: 900px) {
+  .place-intro { grid-template-columns: 1fr; }
+  .gallery { grid-template-columns: repeat(2, 1fr); grid-auto-rows: auto; grid-auto-flow: row dense; }
+  .g { grid-column: span 1; aspect-ratio: 4 / 5; }
+  .g-l { grid-column: span 2; aspect-ratio: 4 / 3; }
+}
+@media (max-width: 520px) { .done ul { grid-template-columns: 1fr; } }
 
 @media (prefers-reduced-motion: reduce) {
   .pic img, .process-frame img { transition: none; }

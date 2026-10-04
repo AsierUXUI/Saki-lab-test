@@ -865,7 +865,7 @@
     }
 
     /* project pages: photos rise in */
-    $$('.frame').forEach(function (fr) {
+    $$('.g').forEach(function (fr) {
       gsap.from(fr, { opacity: 0, y: 80, duration: 1.4, ease: 'expo.out', scrollTrigger: { trigger: fr, start: 'top 92%' } });
     });
 

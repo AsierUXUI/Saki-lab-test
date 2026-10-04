@@ -476,3 +476,35 @@ def cover_path(place):
     if not place.get("cover"):
         return None
     return f"assets/img/lugares/{place['slug']}/{place['cover']}.jpg"
+
+
+# Where each project is, for the map on its page.
+# geo:  (latitude, longitude) the map is centred on
+# zoom: map zoom (16 a street, 15 a neighbourhood, 12 a town, 5 a country)
+# mark: "pin" for a confirmed address, "area" when only the neighbourhood or town is known,
+#       None when the place is not yet known (the map then just shows the city or country)
+# addr: what is written under the map
+# Addresses found online (Time Out Lisboa, Observador, The Infatuation, listings), October 2026.
+GEO = {
+    "a-tabacaria":       {"geo": (38.7078, -9.1468), "zoom": 16, "mark": "pin", "addr": "Rua de São Paulo, 75 · Cais do Sodré"},
+    "o-terraco":         {"geo": (38.7139, -9.1394), "zoom": 13, "mark": None, "addr": "Lisboa"},          # address to confirm
+    "bica-me":           {"geo": (38.7103, -9.1472), "zoom": 15, "mark": "area", "addr": "Bica"},
+    "bicaense":          {"geo": (38.7097, -9.1465), "zoom": 16, "mark": "pin", "addr": "Rua da Bica de Duarte Belo · Bica"},
+    "social-b":          {"geo": (38.7084, -9.1497), "zoom": 16, "mark": "pin", "addr": "Rua da Boavista, 116 · Santos"},
+    "o-larguinho":       {"geo": (38.7115, -9.1305), "zoom": 15, "mark": "area", "addr": "Alfama"},
+    "afro-taska":        {"geo": (38.7139, -9.1394), "zoom": 13, "mark": None, "addr": "Lisboa"},          # address to confirm
+    "house-4":           {"geo": (38.7146, -9.1449), "zoom": 16, "mark": "pin", "addr": "Travessa de São Pedro, 9 · Bairro Alto"},
+    "monte-da-lua":      {"geo": (-18.6, 35.5), "zoom": 5, "mark": None, "addr": "Moçambique"},           # place to confirm
+    "clube-ferroviario": {"geo": (38.7140, -9.1228), "zoom": 16, "mark": "pin", "addr": "Rua de Santa Apolónia, 59"},
+    "ricucu":            {"geo": (37.1795, -7.4870), "zoom": 13, "mark": "area", "addr": "Praia Verde · Algarve"},
+    "velha-senhora":     {"geo": (38.7069, -9.1440), "zoom": 16, "mark": "pin", "addr": "Rua Nova do Carvalho, 40 · Cais do Sodré"},
+    "so-what":           {"geo": (38.7076, -9.1552), "zoom": 15, "mark": "area", "addr": "Santos"},
+    "sakim":             {"geo": (38.7139, -9.1394), "zoom": 13, "mark": None, "addr": "Lisboa"},          # address to confirm
+}
+
+# Which of the four service areas (A-D, see content.SERVICES) each project had. All four unless listed.
+SERVICES_DONE = {}
+
+
+def services_done(slug):
+    return SERVICES_DONE.get(slug, ["A", "B", "C", "D"])
