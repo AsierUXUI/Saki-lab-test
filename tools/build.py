@@ -15,6 +15,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from places import PLACES, SITE_PHOTOS, photo_path, cover_path  # noqa: E402
+from icons import icon, AREAS, ITEMS  # noqa: E402
 from content import (NAV, START, HERO, STUDIO, SERVICES, PROJECTS, PROJECT_TEXT, PROJECT_ORDER,  # noqa: E402
                      PROCESS, ABOUT, CONTACT)
 
@@ -226,17 +227,38 @@ PROCESS_PICS = [("o-larguinho", "electrico"), ("a-tabacaria", "fachada"), ("velh
 CONTACT_PICS = [("sakim", "mesa-longa"), ("so-what", "mesa-posta"), ("a-tabacaria", "espuma"), ("o-terraco", "hora-azul")]
 
 
+def hero_tiles():
+    """The wall behind the headline: the cover of every project, then a second photo of each."""
+    out = [(slug, BY_SLUG[slug]["cover"]) for slug in PROJECT_ORDER]
+    for slug in PROJECT_ORDER:
+        other = [ph[1] for ph in BY_SLUG[slug]["photos"] if ph[1] != BY_SLUG[slug]["cover"]]
+        if other:
+            out.append((slug, other[len(other) // 2]))
+    return [(slug, ph, photo(slug, ph)[0]) for slug, ph in out[:28]]
+
+
 def pics_of(lst):
     return [(photo(s, n)[0], PROJECT_TEXT[s]["name"]) for s, n in lst]
 
 
 def build_home():
-    # HERO: the headline set huge, a photo inside the second line that changes as the mouse moves
+    # HERO: the headline set huge over a wall of the bars. Pointing at a photo lights it up,
+    # names the place and puts it inside the headline; clicking opens the project.
+    tiles, pics = [], []
+    for i, (slug, ph, src) in enumerate(hero_tiles()):
+        tx = PROJECT_TEXT[slug]
+        pics.append((src, tx["name"]))
+        tiles.append(f'<a class="tile" href="lugares/{slug}.html" data-i="{i}" data-name="{esc(tx["name"])}" '
+                     f'data-meta-pt="{esc(tx["meta"][0])}" data-meta-en="{esc(tx["meta"][1])}" '
+                     f'data-cursor="{PROJECTS["open"][0]}" data-cursor-en="{PROJECTS["open"][1]}" tabindex="-1">'
+                     f'<img class="photo" src="{src}" alt="" loading="{"eager" if i < 14 else "lazy"}"></a>')
+    first = PROJECT_TEXT[hero_tiles()[0][0]]
     hero = f"""
   <section class="hero" id="top">
-    {mega(HERO["title"], 1, pics_of(HERO_PICS), "hero-mega")}
+    <div class="wall" aria-hidden="true">{"".join(tiles)}</div>
+    {mega(HERO["title"], 1, pics, "hero-mega")}
     <div class="hero-foot">
-      <p class="tag mono pic-name" aria-hidden="true">[ <span>{PROJECT_TEXT[HERO_PICS[0][0]]["name"]}</span> ]</p>
+      <p class="tag mono pic-name" aria-hidden="true">[ <b>{esc(first["name"])}</b> · <span>{esc(first["meta"][0])}</span> ]</p>
       {tp(HERO["sub"], "p", 'class="hero-sub"')}
     </div>
   </section>"""
@@ -258,16 +280,20 @@ def build_home():
 
     # SERVICES: four big lines; a round photo and a round colour follow the mouse
     areas = []
-    for a in SERVICES["areas"]:
+    for k, a in enumerate(SERVICES["areas"]):
         src, _, _ = photo(*a["photo"])
-        items = "".join(f'<li>{tp(n, "h4")}{tp(d, "p")}</li>' for n, d in a["items"])
+        items = "".join(f'<li>{icon(ic, "item-icon")}{tp(n, "h4")}{tp(d, "p")}</li>'
+                        for (n, d), ic in zip(a["items"], ITEMS[a["letter"]]))
         areas.append(f"""
       <li class="area" data-photo="{src}">
         <button type="button" class="area-head" aria-expanded="false">
-          <span class="area-letter mono">[ {a["letter"]} ]</span>
-          {tp(a["name"], "span", 'class="area-name"')}
+          <span class="area-icon">{icon(AREAS[a["letter"]])}</span>
+          <span class="area-title">
+            {t(f"Serviço {a['letter']} · {len(a['items'])} incluídos", f"Service {a['letter']} · {len(a['items'])} included", "span", 'class="area-letter mono"')}
+            {tp(a["name"], "span", 'class="area-name"')}
+          </span>
           {tp(a["summary"], "span", 'class="area-sum"')}
-          <span class="area-plus mono" aria-hidden="true">+</span>
+          <span class="area-more mono">{t("Ver", "See")}<i aria-hidden="true">+</i></span>
         </button>
         <div class="area-body"><ul>{items}</ul></div>
       </li>""")
