@@ -735,61 +735,6 @@
     });
   })();
 
-  /* ---------- PROJECTS: names change the screen; moving across the screen runs through its photos ---------- */
-  (function projects() {
-    var screen = $('.screen');
-    if (!screen) return;
-    var shots = $$('.shot', screen), names = $$('.reel a'), open = $('.screen-open', screen);
-    var cap = $('.screen-cap', screen), scrub = $('.scrub', screen);
-    var cur = 0, total = shots.length, galleries = {};
-    function pad(n) { return (n < 10 ? '0' : '') + n; }
-    function show(i) {
-      if (i === cur && shots[i].classList.contains('on')) return;
-      shots[cur].classList.remove('on');
-      cur = i;
-      shots[i].classList.add('on');
-      names.forEach(function (a, j) { a.classList.toggle('on', j === i); });
-      var a = names[i];
-      open.setAttribute('href', a.getAttribute('href'));
-      $('.screen-n', cap).textContent = pad(i + 1) + ' / ' + pad(total);
-      $('b', cap).textContent = a.lastChild.textContent;
-      meta();
-    }
-    function meta() {
-      var m = shots[cur].dataset;
-      $('.screen-meta', cap).textContent = lang === 'en' ? m.metaEn : m.metaPt;
-    }
-    names[0].classList.add('on');
-    names.forEach(function (a, i) {
-      a.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') show(i); });
-      a.addEventListener('focus', function () { show(i); });
-    });
-    /* the screen opens the project it shows */
-    screen.addEventListener('click', function (e) {
-      if (e.target.closest('.screen-open')) return;
-      open.click();
-    });
-    screen.setAttribute('data-cursor', 'Ver'); screen.setAttribute('data-cursor-en', 'View');
-    if (finePointer && !reduce) {
-      screen.addEventListener('pointermove', function (e) {
-        var r = screen.getBoundingClientRect(), shot = shots[cur];
-        var g = galleries[cur] || (galleries[cur] = JSON.parse(shot.dataset.gallery));
-        var k = Math.min(g.length - 1, Math.floor((e.clientX - r.left) / r.width * g.length));
-        var im = $('img', shot);
-        if (im.dataset.k !== String(k)) { im.dataset.k = k; im.src = g[k]; }
-        screen.classList.add('scrubbing');
-        scrub.textContent = (k + 1) + ' / ' + g.length;
-      });
-      screen.addEventListener('pointerleave', function () { screen.classList.remove('scrubbing'); });
-    } else {
-      /* on a phone the screen moves on by itself */
-      var visible = false;
-      if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(screen);
-      setInterval(function () { if (visible && !document.hidden) show((cur + 1) % total); }, 2600);
-    }
-    langHooks.push(meta);
-  })();
-
   /* ---------- IN THE PRESS: a carousel of article cards that glides as the pointer moves along the timeline ---------- */
   (function press() {
     var stops = $$('.stop'), cards = $$('.teaser'), box = $('.teasers'), track = $('.track');
@@ -917,15 +862,10 @@
 
   /* ---------- MOTION ---------- */
   function start() {
-    var steps = $('.steps'), frames = $$('.process-frame img');
-    function lightStep(i) {
-      $$('.step', steps).forEach(function (s, j) { s.classList.toggle('lit', j <= i); });
-      frames.forEach(function (f, j) { f.classList.toggle('on', j === i); });
-    }
     if (!window.gsap || !window.ScrollTrigger || reduce) {
       document.documentElement.classList.remove('intro-on');
       document.body.classList.add('no-anim');
-      if (steps) lightStep(0);
+      $$('.night-step').forEach(function (st) { st.classList.add('lit'); });
       return;
     }
     gsap.registerPlugin(ScrollTrigger);
@@ -957,17 +897,53 @@
         scrollTrigger: inHero ? null : { trigger: row, start: 'top 92%' } });
     });
     gsap.from('.hero-foot', { opacity: 0, y: 30, duration: 1.2, ease: 'expo.out', delay: heroAt + .45 });
-    $$('.ed-title, .ed-meta, .ed-cols, .sec-head, .inline-cta, .screen, .reel, .contact-grid, .value').forEach(function (el) {
+    $$('.ed-title, .ed-meta, .ed-cols, .sec-head, .inline-cta, .pg-head, .night-head, .contact-grid, .value').forEach(function (el) {
       gsap.from(el, { y: 50, opacity: 0, duration: 1.2, ease: 'expo.out', scrollTrigger: { trigger: el, start: 'top 90%' } });
     });
 
-    /* process: each step lights up at the middle of the screen, and the photo beside it follows */
-    if (steps) {
-      lightStep(0);
-      $$('.step', steps).forEach(function (s, i) {
-        ScrollTrigger.create({ trigger: s, start: 'top 60%', onEnter: function () { lightStep(i); }, onLeaveBack: function () { lightStep(Math.max(0, i - 1)); } });
+    /* projects and process: on wide screens the section stays put while scrolling down moves it sideways */
+    var mm = gsap.matchMedia();
+    mm.add('(min-width: 761px) and (pointer: fine)', function () {
+      function sideways(section, track, onProgress) {
+        var dist = function () { return Math.max(0, track.scrollWidth - track.parentElement.clientWidth); };
+        return gsap.to(track, {
+          x: function () { return -dist(); }, ease: 'none',
+          scrollTrigger: { trigger: section, start: 'top top', end: function () { return '+=' + dist(); },
+            pin: true, scrub: .6, invalidateOnRefresh: true, anticipatePin: 1, onUpdate: onProgress }
+        });
+      }
+      var pg = $('.projects'), pgTrack = $('.pg-track'), pgCount = $('.pg-count b'), cards = $$('.pg-card');
+      if (pg && pgTrack) sideways(pg, pgTrack, function (st) {
+        pg.style.setProperty('--pg', st.progress);
+        var i = Math.min(cards.length - 1, Math.round(st.progress * (cards.length - 1)));
+        if (pgCount) pgCount.textContent = (i < 9 ? '0' : '') + (i + 1);
       });
-    }
+      /* the evening: the sky goes from paper to dusk to night as the steps go by */
+      var night = $('.night'), nTrack = $('.night-track'), nSteps = $$('.night-step');
+      var sky = [[233, 230, 224], [236, 196, 160], [168, 96, 70], [44, 30, 28], [20, 18, 18]];
+      function mix(p) {
+        var x = p * (sky.length - 1), i = Math.min(sky.length - 2, Math.floor(x)), f = x - i;
+        return sky[i].map(function (c, k) { return Math.round(c + (sky[i + 1][k] - c) * f); });
+      }
+      if (night && nTrack) sideways(night, nTrack, function (st) {
+        var c = mix(st.progress);
+        night.style.setProperty('--sky', 'rgb(' + c.join(',') + ')');
+        night.style.color = (c[0] + c[1] + c[2]) / 3 < 120 ? '#f2efe9' : '';
+        night.style.setProperty('--np', st.progress);
+        nSteps.forEach(function (sp, j) { sp.classList.toggle('lit', st.progress >= j / Math.max(1, nSteps.length - 1) - .02); });
+      });
+    });
+    mm.add('(max-width: 760px), (pointer: coarse)', function () {
+      $$('.night-step').forEach(function (sp) {
+        ScrollTrigger.create({ trigger: sp, start: 'top 70%', onEnter: function () { sp.classList.add('lit'); }, onLeaveBack: function () { sp.classList.remove('lit'); } });
+      });
+      /* the gallery's counter follows the swipe */
+      var vp = $('.pg-viewport'), cards = $$('.pg-card'), pgCount = $('.pg-count b');
+      if (vp && cards.length > 1) vp.addEventListener('scroll', function () {
+        var i = Math.round(vp.scrollLeft / (cards[1].offsetLeft - cards[0].offsetLeft));
+        if (pgCount) pgCount.textContent = (i < 9 ? '0' : '') + (i + 1);
+      }, { passive: true });
+    });
 
     /* project pages: photos rise in */
     $$('.g').forEach(function (fr) {
