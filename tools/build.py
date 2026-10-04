@@ -305,6 +305,7 @@ def build_home():
     hero = f"""
   <section class="hero" id="top">
     {hero_drift()}
+    <div class="hero-wash" aria-hidden="true"></div>
     {mega(HERO["title"], 1, pics, "hero-mega")}
     <div class="hero-foot">
       <p class="tag mono pic-name" aria-hidden="true">[ <b>{esc(first["name"])}</b> · <span>{esc(first["meta"][0])}</span> ]</p>
