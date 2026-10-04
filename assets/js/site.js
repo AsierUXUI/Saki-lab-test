@@ -536,31 +536,65 @@
   var rz;
   window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { fitAll(); }, 120); });
 
-  /* ---------- PHOTOS INSIDE THE LINES: they change as the mouse travels (on a phone, on their own) ---------- */
+  /* ---------- HERO WALL: point at a bar to light it up and see it inside the headline ---------- */
+  (function wall() {
+    var hero = $('.hero'), tiles = $$('.hero .tile');
+    if (!hero || !tiles.length) return;
+    var imgs = $$('.hero .pic img'), cap = $('.hero .pic-name');
+    var cur = 0, hovering = false, visible = true;
+    function light(i) {
+      tiles[cur].classList.remove('on');
+      if (imgs[cur]) imgs[cur].classList.remove('on');
+      cur = i;
+      tiles[i].classList.add('on');
+      if (imgs[i]) { if (imgs[i].loading === 'lazy') imgs[i].loading = 'eager'; imgs[i].classList.add('on'); }
+      $('b', cap).textContent = tiles[i].dataset.name;
+      $('span', cap).textContent = tiles[i].getAttribute('data-meta-' + lang);
+    }
+    light(0);
+    langHooks.push(function () { light(cur); });
+    if (finePointer) {
+      tiles.forEach(function (t, i) {
+        t.addEventListener('pointerenter', function () { hovering = true; if (i !== cur) light(i); });
+      });
+      $('.wall', hero).addEventListener('pointerleave', function () { hovering = false; });
+    }
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(hero);
+    /* left alone, the wall lights a different bar every couple of seconds,
+       only where no words sit on top of it, so the text stays easy to read */
+    function free() {
+      var words = $$('.hero .row > span:first-child, .hero-sub, .pic-name, .hero .pic').map(function (el) { return el.getBoundingClientRect(); });
+      var ok = tiles.filter(function (t) {
+        if (t.offsetParent === null) return false;
+        var r = t.getBoundingClientRect();
+        return !words.some(function (w) { return r.left < w.right && r.right > w.left && r.top < w.bottom && r.bottom > w.top; });
+      });
+      return ok.length ? ok : tiles.filter(function (t) { return t.offsetParent !== null; });
+    }
+    function tick() {
+      if (hovering || !visible || document.hidden) return;
+      var shown = free();
+      var next;
+      do { next = tiles.indexOf(shown[Math.floor(Math.random() * shown.length)]); } while (next === cur && shown.length > 1);
+      light(next);
+    }
+    setInterval(tick, reduce ? 4000 : 2200);
+    /* the first light also goes to a free spot, once the headline has its size */
+    if (document.fonts) document.fonts.ready.then(function () { requestAnimationFrame(tick); }); else tick();
+  })();
+
+  /* other photos inside the big lines simply change on their own */
   $$('.pic').forEach(function (pic) {
-    var imgs = $$('img', pic), idx = 0, travel = 0, lx = null, ly = 0;
+    if (pic.closest('.hero')) return;
+    var imgs = $$('img', pic), idx = 0, visible = true;
     if (imgs.length < 2) return;
-    var section = pic.closest('section');
-    var nameEl = section && $('.pic-name span', section);
-    function next() {
+    if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(pic);
+    setInterval(function () {
+      if (!visible || document.hidden) return;
       imgs[idx].classList.remove('on');
       idx = (idx + 1) % imgs.length;
       imgs[idx].classList.add('on');
-      var after = imgs[(idx + 1) % imgs.length];
-      if (after.loading === 'lazy') after.loading = 'eager';
-      if (nameEl) nameEl.textContent = imgs[idx].dataset.name;
-    }
-    if (finePointer && !reduce) {
-      section.addEventListener('pointermove', function (e) {
-        if (lx !== null) travel += Math.hypot(e.clientX - lx, e.clientY - ly);
-        lx = e.clientX; ly = e.clientY;
-        if (travel > 140) { travel = 0; next(); }
-      });
-      section.addEventListener('pointerleave', function () { lx = null; });
-    }
-    var visible = true;
-    if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(pic);
-    setInterval(function () { if (visible && !document.hidden && (!finePointer || reduce)) next(); }, 1800);
+    }, 2000);
   });
 
   /* ---------- PILL BAR: a mark under the section you are in ---------- */
