@@ -9,7 +9,6 @@ import datetime
 import hashlib
 import html
 import json
-import math
 import os
 import re
 import sys
@@ -120,6 +119,15 @@ def shell(page, root, title, desc, body, head=""):
 </a>"""
     if page == "home":
         overlays += place_sheet()
+        overlays += f"""
+<div class="intro" aria-hidden="true">
+  <div class="intro-bg"></div>
+  <div class="intro-mark"><span class="intro-dot"><img src="{root}{SITE_PHOTOS[2]}" alt=""></span><span class="intro-word"><span>Sakim Lab</span></span></div>
+  <div class="intro-win"><img alt=""><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i></div>
+</div>"""
+        # decided before the first paint, so the page never flashes before the intro
+        head += """<script>try{if(!sessionStorage.getItem('sakim-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('intro-on')}catch(e){}</script>
+"""
     year = datetime.date.today().year
     footer = "" if page == "lugar" else f"""
 <footer class="foot mono">
@@ -477,34 +485,20 @@ def tier(p, j):
     return "g-l" if side >= 1000 else ("g-m" if side >= 750 else "g-s")
 
 
-MAP_W, MAP_H, TILE = 640, 440, 256
+MAP_W, MAP_H = 640, 440
 
 
 def map_snapshot(slug):
-    """A still map of where the project is: OpenStreetMap tiles (CARTO light style) laid out around
-    the point, loaded by the visitor's browser. No map library, nothing to drag."""
+    """A still map of where the project is. site.js draws it with MapLibre from OpenFreeMap
+    (free, no API key, fine for commercial use); until then, and if it cannot load, a paper grid
+    with the same pin is shown. Nothing to drag: it is a picture, not a widget."""
     g = GEO[slug]
     lat, lon = g["geo"]
-    z = g["zoom"]
-    n = TILE * 2 ** z
-    x = (lon + 180) / 360 * n
-    y = (1 - math.log(math.tan(math.radians(lat)) + 1 / math.cos(math.radians(lat))) / math.pi) / 2 * n
-    ox, oy = x - MAP_W / 2, y - MAP_H / 2
-    tiles = []
-    for tx in range(int(ox // TILE), int((ox + MAP_W) // TILE) + 1):
-        for ty in range(int(oy // TILE), int((oy + MAP_H) // TILE) + 1):
-            if ty < 0 or ty >= 2 ** z:
-                continue
-            sub = "abcd"[(tx + ty) % 4]
-            left, top = (tx * TILE - ox) / MAP_W * 100, (ty * TILE - oy) / MAP_H * 100
-            tiles.append(f'<img src="https://{sub}.basemaps.cartocdn.com/light_all/{z}/{tx % 2 ** z}/{ty}@2x.png" alt="" '
-                         f'loading="lazy" style="left:{left:.3f}%;top:{top:.3f}%;width:{TILE / MAP_W * 100:.3f}%" '
-                         f'onerror="this.remove()">')
     mark = {"pin": '<span class="map-pin"></span>', "area": '<span class="map-area"></span>'}.get(g["mark"], "")
     return f"""<figure class="map">
-      <div class="map-view" style="aspect-ratio:{MAP_W}/{MAP_H}">{"".join(tiles)}{mark}</div>
+      <div class="map-view" style="aspect-ratio:{MAP_W}/{MAP_H}" data-lat="{lat}" data-lon="{lon}" data-zoom="{g["zoom"] - 1}">{mark}</div>
       <figcaption class="mono"><span>{esc(g["addr"])}</span>
-        <span class="map-credit">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a></span></figcaption>
+        <span class="map-credit"><a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> · © <a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">OpenMapTiles</a> · © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></span></figcaption>
     </figure>"""
 
 

@@ -8,6 +8,8 @@
   var finePointer = matchMedia('(pointer: fine)').matches;
   var lenis = null;
   var langHooks = [];
+  /* where the site lives, so pages in lugares/ can load files from assets/ too */
+  var base = ((document.currentScript && document.currentScript.src) || '').replace(/assets\/js\/site\.js.*$/, '');
 
   /* ---------- LANGUAGE ---------- */
   var lang = 'pt';
@@ -441,6 +443,7 @@
         body.appendChild(document.importNode(content, true));
         translate(body);
         fitAll(body);
+        initMaps(body);
         body.scrollTop = 0;
         lastFocus = document.activeElement;
         sh.classList.add('open'); sh.setAttribute('aria-hidden', 'false');
@@ -566,7 +569,7 @@
     langHooks.push(caption);
     if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(pic);
     setInterval(function () {
-      if (!visible || document.hidden) return;
+      if (!visible || document.hidden || document.documentElement.classList.contains('intro-on')) return;
       imgs[idx].classList.remove('on');
       idx = (idx + 1) % imgs.length;
       imgs[idx].classList.add('on');
@@ -857,6 +860,48 @@
     })();
   })();
 
+  /* ---------- MAPS: a still map from OpenFreeMap, drawn only when it comes into view ---------- */
+  var mapLib = null;
+  function loadMapLib(cb) {
+    if (window.maplibregl) return cb();
+    if (mapLib) { mapLib.push(cb); return; }
+    mapLib = [cb];
+    var css = document.createElement('link');
+    css.rel = 'stylesheet'; css.href = base + 'assets/css/maplibre-gl.css';
+    document.head.appendChild(css);
+    var js = document.createElement('script');
+    js.src = base + 'assets/js/maplibre-gl.js';
+    js.onload = function () { mapLib.forEach(function (f) { f(); }); };
+    document.head.appendChild(js);
+  }
+  function drawMap(v) {
+    if (v.dataset.done) return;
+    v.dataset.done = '1';
+    loadMapLib(function () {
+      var holder = document.createElement('div');
+      holder.className = 'map-gl';
+      v.insertBefore(holder, v.firstChild);
+      try {
+        var map = new maplibregl.Map({
+          container: holder, style: 'https://tiles.openfreemap.org/styles/positron',
+          center: [+v.dataset.lon, +v.dataset.lat], zoom: +v.dataset.zoom,
+          interactive: false, attributionControl: false, fadeDuration: 0
+        });
+        map.on('load', function () { v.classList.add('drawn'); });
+      } catch (e) { holder.remove(); }
+    });
+  }
+  function initMaps(root) {
+    var views = $$('.map-view[data-lat]', root).filter(function (v) { return !v.dataset.done; });
+    if (!views.length) return;
+    if (!('IntersectionObserver' in window)) { views.forEach(drawMap); return; }
+    var io = new IntersectionObserver(function (en) {
+      en.forEach(function (x) { if (x.isIntersecting) { io.unobserve(x.target); drawMap(x.target); } });
+    }, { rootMargin: '200px' });
+    views.forEach(function (v) { io.observe(v); });
+  }
+  initMaps();
+
   /* ---------- MAGNETIC BUTTONS ---------- */
   if (finePointer && !reduce) {
     $$('.magnetic').forEach(function (b) {
@@ -883,6 +928,7 @@
       frames.forEach(function (f, j) { f.classList.toggle('on', j === i); });
     }
     if (!window.gsap || !window.ScrollTrigger || reduce) {
+      document.documentElement.classList.remove('intro-on');
       document.body.classList.add('no-anim');
       if (steps) lightStep(0);
       return;
@@ -905,13 +951,17 @@
       });
     });
 
+    var heroAt = playIntro();
+
     /* big lines rise out of their own baseline */
     $$('.mega .row').forEach(function (row) {
       var inHero = row.closest('.hero');
-      gsap.from(row, { yPercent: 40, opacity: 0, duration: 1.2, ease: 'expo.out', delay: inHero ? .1 + $$('.row', row.parentElement).indexOf(row) * .1 : 0,
+      /* after the intro the hero lines only fade in, so the photo lands exactly where it will rest */
+      gsap.from(row, { yPercent: inHero && heroAt ? 0 : 40, opacity: 0, duration: inHero && heroAt ? .7 : 1.2, ease: 'expo.out',
+        delay: inHero ? heroAt + .1 + $$('.row', row.parentElement).indexOf(row) * .1 : 0,
         scrollTrigger: inHero ? null : { trigger: row, start: 'top 92%' } });
     });
-    gsap.from('.hero-foot', { opacity: 0, y: 30, duration: 1.2, ease: 'expo.out', delay: .45 });
+    gsap.from('.hero-foot', { opacity: 0, y: 30, duration: 1.2, ease: 'expo.out', delay: heroAt + .45 });
     $$('.ed-title, .ed-meta, .ed-cols, .sec-head, .inline-cta, .screen, .reel, .contact-grid, .value').forEach(function (el) {
       gsap.from(el, { y: 50, opacity: 0, duration: 1.2, ease: 'expo.out', scrollTrigger: { trigger: el, start: 'top 90%' } });
     });
@@ -930,6 +980,51 @@
     });
 
     window.addEventListener('load', function () { fitAll(); ScrollTrigger.refresh(); });
+  }
+
+  /* ---------- INTRO, first visit only: the logo, the name in a pill, a window onto a bar that
+     fills the screen and then lands inside the headline. A click skips it. Returns when the hero starts. ---------- */
+  function playIntro() {
+    var html = document.documentElement, intro = $('.intro');
+    if (!intro || !html.classList.contains('intro-on')) { if (intro) intro.remove(); return 0; }
+    try { sessionStorage.setItem('sakim-intro', '1'); } catch (e) {}
+    if (lenis) lenis.stop();
+    var mark = $('.intro-mark', intro), dot = $('.intro-dot', intro), word = $('.intro-word', intro);
+    var win = $('.intro-win', intro), wimg = $('img', win), bg = $('.intro-bg', intro), corners = $$('.c', win);
+    var pic = $('.hero .pic'), shown = pic && $('img.on', pic);
+    if (shown) wimg.src = shown.currentSrc || shown.src;
+    var W = innerWidth, H = innerHeight, small = W < 760;
+    var target = function () { return pic ? pic.getBoundingClientRect() : { left: W / 2, top: H / 2, width: 0, height: 0 }; };
+    var wordW = word.scrollWidth;
+    gsap.set(word, { width: 0 });
+    gsap.set(dot, { scale: 0 });
+    function done() {
+      html.classList.remove('intro-on');
+      intro.remove();
+      if (lenis) lenis.start();
+    }
+    var tl = gsap.timeline({ onComplete: done });
+    intro.addEventListener('click', function () { tl.progress(1); });
+    tl.to(dot, { scale: 1, duration: .5, ease: 'back.out(2)' }, .2)
+      .to(word, { width: wordW, duration: .7, ease: 'expo.inOut' }, .65)
+      .to(mark, { borderColor: 'rgba(242,239,233,.55)', duration: .3 }, 1.15)
+      .add(function () {
+        var r = mark.getBoundingClientRect();
+        gsap.set(win, { left: r.left, top: r.top, width: r.width, height: r.height, borderRadius: 28, opacity: 1 });
+      }, 1.55)
+      .to(mark, { opacity: 0, duration: .25 }, 1.55)
+      .to(win, { left: W * (small ? .12 : .32), top: H * .32, width: W * (small ? .76 : .36), height: H * .36, borderRadius: 6, duration: .75, ease: 'expo.inOut' }, 1.6)
+      .fromTo(wimg, { scale: 1.35 }, { scale: 1, duration: 1.8, ease: 'expo.out' }, 1.6)
+      .to(win, { left: 0, top: 0, width: W, height: H, borderRadius: 0, duration: .85, ease: 'expo.inOut' }, 2.45)
+      .to(corners, { opacity: 0, duration: .3 }, 3.35)
+      .to(win, {
+        left: function () { return target().left; }, top: function () { return target().top; },
+        width: function () { return target().width; }, height: function () { return target().height; },
+        borderRadius: function () { return pic ? parseFloat(getComputedStyle(pic).borderTopLeftRadius) || 8 : 8; },
+        duration: .95, ease: 'expo.inOut'
+      }, 3.4)
+      .to(bg, { opacity: 0, duration: .7, ease: 'power2.inOut' }, 3.55);
+    return 3.6;
   }
 
   /* GSAP and Lenis are deferred, so they are ready by DOMContentLoaded */
