@@ -536,65 +536,27 @@
   var rz;
   window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { fitAll(); }, 120); });
 
-  /* ---------- HERO WALL: point at a bar to light it up and see it inside the headline ---------- */
-  (function wall() {
-    var hero = $('.hero'), tiles = $$('.hero .tile');
-    if (!hero || !tiles.length) return;
-    var imgs = $$('.hero .pic img'), cap = $('.hero .pic-name');
-    var cur = 0, hovering = false, visible = true;
-    function light(i) {
-      tiles[cur].classList.remove('on');
-      if (imgs[cur]) imgs[cur].classList.remove('on');
-      cur = i;
-      tiles[i].classList.add('on');
-      if (imgs[i]) { if (imgs[i].loading === 'lazy') imgs[i].loading = 'eager'; imgs[i].classList.add('on'); }
-      $('b', cap).textContent = tiles[i].dataset.name;
-      $('span', cap).textContent = tiles[i].getAttribute('data-meta-' + lang);
-    }
-    light(0);
-    langHooks.push(function () { light(cur); });
-    if (finePointer) {
-      tiles.forEach(function (t, i) {
-        t.addEventListener('pointerenter', function () { hovering = true; if (i !== cur) light(i); });
-      });
-      $('.wall', hero).addEventListener('pointerleave', function () { hovering = false; });
-    }
-    if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(hero);
-    /* left alone, the wall lights a different bar every couple of seconds,
-       only where no words sit on top of it, so the text stays easy to read */
-    function free() {
-      var words = $$('.hero .row > span:first-child, .hero-sub, .pic-name, .hero .pic').map(function (el) { return el.getBoundingClientRect(); });
-      var ok = tiles.filter(function (t) {
-        if (t.offsetParent === null) return false;
-        var r = t.getBoundingClientRect();
-        return !words.some(function (w) { return r.left < w.right && r.right > w.left && r.top < w.bottom && r.bottom > w.top; });
-      });
-      return ok.length ? ok : tiles.filter(function (t) { return t.offsetParent !== null; });
-    }
-    function tick() {
-      if (hovering || !visible || document.hidden) return;
-      var shown = free();
-      var next;
-      do { next = tiles.indexOf(shown[Math.floor(Math.random() * shown.length)]); } while (next === cur && shown.length > 1);
-      light(next);
-    }
-    setInterval(tick, reduce ? 4000 : 2200);
-    /* the first light also goes to a free spot, once the headline has its size */
-    if (document.fonts) document.fonts.ready.then(function () { requestAnimationFrame(tick); }); else tick();
-  })();
-
-  /* other photos inside the big lines simply change on their own */
+  /* ---------- PHOTOS INSIDE THE BIG LINES: they change on their own; the hero also names the place ---------- */
   $$('.pic').forEach(function (pic) {
-    if (pic.closest('.hero')) return;
     var imgs = $$('img', pic), idx = 0, visible = true;
     if (imgs.length < 2) return;
+    var cap = pic.closest('section') && $('.pic-name', pic.closest('section'));
+    function caption() {
+      if (!cap) return;
+      $('b', cap).textContent = imgs[idx].dataset.name;
+      $('span', cap).textContent = imgs[idx].getAttribute('data-meta-' + lang) || '';
+    }
+    langHooks.push(caption);
     if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(pic);
     setInterval(function () {
       if (!visible || document.hidden) return;
       imgs[idx].classList.remove('on');
       idx = (idx + 1) % imgs.length;
       imgs[idx].classList.add('on');
-    }, 2000);
+      var after = imgs[(idx + 1) % imgs.length];
+      if (after.loading === 'lazy') after.loading = 'eager';
+      caption();
+    }, reduce ? 4000 : 2000);
   });
 
   /* ---------- PILL BAR: a mark under the section you are in ---------- */
