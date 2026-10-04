@@ -20,7 +20,6 @@
   /* colour, used sparingly */
   --ember: #e8621a;   /* the orange: only for buttons, a few letters, highlights and underlines */
   --amber: #f0a37e;
-  --wine: #8f3a55;
   --display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
   --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
   --sans: var(--serif);
@@ -167,9 +166,13 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .hero-mega { position: relative; z-index: 2; }
 /* the lens: a complete copy of the hero (photos, wash, headline) that ripples like water under the cursor */
 .hero-lens { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; filter: url(#liquid);
-  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 55%, transparent 100%);
-  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 55%, transparent 100%); }
+  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 86%, transparent 100%);
+  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 86%, transparent 100%); }
 .hero-lens .hero-mega { position: absolute; margin: 0; }
+/* inside the circle only the lens shows: the real headline, photo and sentence step aside, so nothing is doubled */
+.hero.lensing > .hero-mega, .hero.lensing > .hero-foot {
+  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rxl, -999px) var(--ryl, -999px), transparent 86%, #000 100%);
+  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rxl, -999px) var(--ryl, -999px), transparent 86%, #000 100%); }
 @media (max-width: 760px) {
   .hero-drift { inset: -20% -30%; gap: 10px; }
   .drift-col { gap: 10px; }
@@ -216,7 +219,22 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .area-head { width: 100%; display: grid; grid-template-columns: 76px minmax(0, 1.5fr) minmax(0, 1fr) auto; gap: 28px; align-items: center; padding: clamp(18px, 2.8vh, 30px) 0; text-align: left; }
 .area-icon { width: 76px; height: 76px; border-radius: 50%; background: #111; color: #f2efe9; display: grid; place-items: center; transition: background .4s, transform .6s var(--ease); }
 .area-icon .icon { width: 34px; height: 34px; }
-.area.hover .area-icon, .area.open .area-icon { background: var(--wine); transform: rotate(-8deg); }
+.area-icon { position: relative; }
+.area-icon .icon { transition: transform .7s var(--ease); }
+/* hover: the name turns orange, the icon rolls in and does its own little movement */
+.area.hover .area-icon, .area.open .area-icon { background: var(--ember); color: var(--ink); transform: translateX(10px) rotate(-12deg); }
+.area.hover .area-icon .icon { animation: icon-move 1.6s var(--ease) infinite; }
+.area[data-move="spin"].hover .area-icon .icon { animation-name: icon-spin; }
+.area[data-move="tilt"].hover .area-icon .icon { animation-name: icon-tilt; }
+.area[data-move="swing"].hover .area-icon .icon { animation-name: icon-swing; transform-origin: 50% 0; }
+.area[data-move="hop"].hover .area-icon .icon { animation-name: icon-hop; }
+@keyframes icon-spin { 0% { transform: rotate(0); } 60%, 100% { transform: rotate(360deg); } }
+@keyframes icon-tilt { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-18deg); } 50% { transform: rotate(12deg); } 75% { transform: rotate(-6deg); } }
+@keyframes icon-swing { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(16deg); } 50% { transform: rotate(-12deg); } 75% { transform: rotate(6deg); } }
+@keyframes icon-hop { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-7px); } 45% { transform: translateY(0); } 60% { transform: translateY(-3px); } 75% { transform: translateY(0); } }
+.area.hover .area-name, .area.open .area-name { color: var(--ember); }
+.area.hover .area-letter { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .area.hover .area-icon .icon { animation: none; } }
 .area-title { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .area-letter { color: var(--ink-soft); }
 .area-name { font-family: var(--display); text-transform: uppercase; font-size: clamp(40px, 5.4vw, 96px); line-height: .9; transition: transform .6s var(--ease), color .4s; }
@@ -226,7 +244,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .area-head:hover .area-more { background: #111; color: #f2efe9; }
 .area-head:hover .area-more i { background: #f2efe9; color: #111; }
 .area.open .area-more i { transform: rotate(45deg); }
-.areas.hovering .area:not(.hover):not(.open) .area-name { color: rgba(22, 22, 22, .3); }
+.areas.hovering .area:not(.hover):not(.open) .area-name { color: rgba(22, 22, 22, .35); }
 .area-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .7s var(--ease); }
 .area.open .area-body { grid-template-rows: 1fr; }
 .area-body > ul { overflow: hidden; min-height: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-left: 104px; }
@@ -235,11 +253,6 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .item-icon { width: 30px; height: 30px; margin-bottom: 18px; color: var(--ember); }
 .area-body h4 { font-family: var(--mono); font-weight: 500; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
 .area-body p { font-size: 17px; line-height: 1.38; color: var(--ink-soft); }
-.follow { position: fixed; left: 0; top: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity .35s; }
-.follow.on { opacity: 1; }
-.follow-pic, .follow-dot { position: absolute; left: 0; top: 0; width: clamp(160px, 15vw, 240px); aspect-ratio: 1; border-radius: 50%; overflow: hidden; }
-.follow-dot { background: var(--wine); }
-.follow-pic img { width: 100%; height: 100%; object-fit: cover; }
 .inline-cta { display: flex; justify-content: space-between; align-items: center; gap: 20px 40px; flex-wrap: wrap; margin-top: clamp(40px, 7vh, 72px); }
 .inline-cta p { font-size: clamp(24px, 2.4vw, 38px); line-height: 1.1; }
 @media (max-width: 900px) {
@@ -307,7 +320,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .circles { position: relative; display: block; width: clamp(150px, 12vw, 200px); aspect-ratio: 1; margin-bottom: 28px; }
 .circles img, .circles i { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; }
 .circles img { z-index: 2; object-fit: cover; transition: transform .7s var(--ease); }
-.circles i { background: var(--wine); transition: transform .7s var(--ease); }
+.circles i { background: var(--ember); transition: transform .7s var(--ease); }
 .value:hover .circles i { transform: translateX(78%); }
 .value:hover .circles img { transform: scale(1.04); }
 .value h4 { font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(30px, 2.6vw, 44px); line-height: .95; margin-bottom: 12px; }
@@ -375,7 +388,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .map-view canvas { filter: sepia(.3) saturate(.75) contrast(.97); }
 .map-pin, .map-area { position: absolute; left: 50%; top: 50%; z-index: 2; border-radius: 50%; transform: translate(-50%, -50%); }
 .map-pin { width: 22px; height: 22px; background: var(--ember); border: 4px solid #f2efe9; box-shadow: 0 0 0 1px rgba(22, 22, 22, .25); }
-.map-area { width: 34%; aspect-ratio: 1; background: rgba(143, 58, 85, .22); border: 2px solid var(--wine); }
+.map-area { width: 34%; aspect-ratio: 1; background: rgba(232, 98, 26, .16); border: 2px solid var(--ember); }
 .map figcaption { display: flex; justify-content: space-between; gap: 8px 20px; flex-wrap: wrap; margin-top: 12px; }
 .map-credit { color: var(--ink-soft); text-transform: none; letter-spacing: 0; font-size: 11px; }
 .map-credit a { text-decoration: underline; text-decoration-color: var(--ember); text-underline-offset: 2px; }
@@ -506,40 +519,35 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 }
 
 
-/* ---------------------------------------------------------------- IN THE PRESS: newspaper clippings on the wall */
+/* ---------------------------------------------------------------- IN THE PRESS: a bar through time, a teaser underneath */
 .press { margin: clamp(80px, 14vh, 160px) var(--gutter) 0; }
 .press-head { margin-bottom: clamp(36px, 6vh, 64px); }
 .press-head .tag { margin-bottom: 18px; }
-.press-hint { margin-top: 16px; color: var(--ink-soft); }
-.clips { list-style: none; columns: 4; column-gap: clamp(16px, 2vw, 32px); padding: 20px 0 40px; }
-.clip { break-inside: avoid; margin-bottom: clamp(14px, 1.8vw, 30px); padding-top: 14px; }   /* room for the tape inside the clipping's own box */
-.clip { --x: 0px; --dy: 0px; --lift: 0px; --rot: var(--r); position: relative; transform: translate(var(--x), calc(var(--y) + var(--dy) + var(--lift))) rotate(var(--rot)); transition: transform .5s var(--ease), box-shadow .5s; touch-action: pan-y; }
-.clip a { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px 14px; color: #1d1b18;
-  background: #f7f4ec linear-gradient(transparent 0 calc(100% - 1px), rgba(22, 22, 22, .04) 0) 0 0 / 100% 26px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, .08), 0 10px 24px -12px rgba(0, 0, 0, .35);
-  /* the uneven edge of paper cut with scissors */
-  clip-path: polygon(0 1%, 7% 0, 18% .8%, 31% 0, 46% .9%, 60% .1%, 74% 1%, 88% 0, 100% .7%, 99.4% 22%, 100% 48%, 99.3% 74%, 100% 99%, 86% 100%, 71% 99.1%, 55% 100%, 40% 99.2%, 24% 100%, 10% 99.3%, 0 100%, .6% 76%, 0 51%, .7% 25%); }
-.clip-tape::before { content: ''; position: absolute; z-index: 2; left: 50%; top: 2px; width: 92px; height: 26px; margin-left: -46px; background: rgba(240, 225, 190, .72); transform: rotate(-4deg); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
-.clip-mast { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 0 8px; border-top: 3px double #1d1b18; border-bottom: 1px solid #1d1b18; }
-.clip-mast b { font-family: var(--serif); font-weight: 500; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
-.clip-photo { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; filter: grayscale(1) contrast(1.15) brightness(1.03); mix-blend-mode: multiply; }
-.clip-big .clip-photo { aspect-ratio: 4 / 5; }
-.clip-title { font-family: var(--serif); font-weight: 500; font-size: clamp(20px, 1.6vw, 26px); line-height: 1.12; letter-spacing: -.01em; }
-.clip-big .clip-title { font-size: clamp(24px, 2vw, 34px); line-height: 1.06; }
-.clip-foot { display: flex; justify-content: space-between; gap: 10px; padding-top: 8px; border-top: 1px solid rgba(29, 27, 24, .25); font-size: 11px; color: rgba(29, 27, 24, .7); }
-.clip-foot span:last-child { color: var(--ember); }
-.clip:hover { --lift: -8px; --rot: 0deg; z-index: 5; }
-.clip:hover a { box-shadow: 0 2px 2px rgba(0, 0, 0, .08), 0 26px 40px -16px rgba(0, 0, 0, .45); }
-.clip.dragging { transition: none; z-index: 20; --rot: 0deg; }
-.clip.moved { z-index: 4; }
-@media (pointer: fine) { .clip a { cursor: grab; } .clip.dragging a { cursor: grabbing; } }
-@media (max-width: 1100px) { .clips { columns: 3; } }
-@media (max-width: 800px) { .clips { columns: 2; } }
-@media (max-width: 600px) {
-  .clips { columns: 1; }
-  .clip { transform: rotate(calc(var(--r) * .6)); }
-  .clip:hover { --lift: 0px; }
-  .press-hint { display: none; }
+.timeline { overflow-x: auto; scrollbar-width: none; padding: 0 2px; }
+.timeline::-webkit-scrollbar { display: none; }
+.stops { list-style: none; display: flex; min-width: 640px; position: relative; padding-top: 30px; }
+.stops::before { content: ''; position: absolute; left: 0; right: 0; top: 30px; margin-top: 21px; height: 1px; background: var(--ink); }
+.stop { flex: 1; position: relative; }
+.stop-year { position: absolute; left: 0; top: -30px; white-space: nowrap; font-size: 13px; }
+.stop.new-year::before { content: ''; position: absolute; left: 21px; top: -10px; width: 1px; height: 18px; background: var(--ink); }
+.stop a { display: grid; place-items: center; width: 44px; height: 44px; }
+.stop i { width: 11px; height: 11px; border-radius: 50%; background: var(--paper); border: 1.5px solid var(--ink); transition: transform .4s var(--ease), background .3s, border-color .3s; }
+.stop a:hover i, .stop a:focus-visible i { transform: scale(1.5); background: var(--ink); }
+.stop.on i { transform: scale(1.9); background: var(--ember); border-color: var(--ember); }
+.stop.on .stop-year { color: var(--ember); }
+.teasers { position: relative; margin-top: clamp(24px, 4vh, 40px); }
+.teaser { position: absolute; inset: 0 0 auto 0; display: grid; grid-template-columns: clamp(160px, 22vw, 320px) minmax(0, 1fr); gap: clamp(20px, 3vw, 48px); align-items: start; padding-top: clamp(20px, 3vh, 32px); border-top: 1px solid var(--rule); opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .35s, transform .5s var(--ease); }
+.teaser.on { opacity: 1; transform: none; pointer-events: auto; position: relative; }
+.teaser img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
+.teaser-text { display: flex; flex-direction: column; gap: 16px; }
+.teaser-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink-soft); }
+.teaser-meta b { font-weight: 500; color: var(--ink); }
+.teaser-title { font-size: clamp(26px, 3vw, 48px); line-height: 1.08; letter-spacing: -.015em; max-width: 900px; }
+.teaser-read { align-self: flex-start; padding: 6px 0; border-bottom: 2px solid var(--ember); }
+.teaser:hover .teaser-read { color: var(--ember); }
+@media (max-width: 700px) {
+  .teaser { grid-template-columns: 1fr; }
+  .teaser img { aspect-ratio: 16 / 9; }
 }
 
 /* Mikas, in About */

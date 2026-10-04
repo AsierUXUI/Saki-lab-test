@@ -667,7 +667,7 @@
       if (Math.round(t / .016) % 20 === 0) syncDrift();
       speed *= .9;
       r += ((inside ? Math.min(240, hero.offsetWidth * .17) : 0) - r) * .1;
-      strength += ((inside ? 8 + speed * .55 : 0) - strength) * .06;
+      strength += ((inside ? 16 + speed * .8 : 0) - strength) * .06;
       disp.setAttribute('scale', strength.toFixed(1));
       noise.setAttribute('baseFrequency', (0.005 + 0.0015 * Math.sin(t * 1.1)).toFixed(4) + ' ' + (0.008 + 0.002 * Math.cos(t * .8)).toFixed(4));
       filter.setAttribute('x', (px - r - 40).toFixed(0));
@@ -677,6 +677,14 @@
       lens.style.setProperty('--rx', px + 'px');
       lens.style.setProperty('--ry', py + 'px');
       lens.style.setProperty('--rr', r + 'px');
+      /* the same circle, in the headline's and the sentence's own coordinates */
+      hero.classList.toggle('lensing', r > .5);
+      hero.style.setProperty('--rr', r + 'px');
+      [h1, $('.hero-foot', hero)].forEach(function (el) {
+        if (!el) return;
+        el.style.setProperty('--rxl', (px - el.offsetLeft) + 'px');
+        el.style.setProperty('--ryl', (py - el.offsetTop) + 'px');
+      });
     })();
     return { prepare: prepare, sync: syncDrift };
   })();
@@ -738,7 +746,7 @@
     }, { passive: true });
   })();
 
-  /* ---------- SERVICES: each area opens; a round photo and a round colour follow the mouse ---------- */
+  /* ---------- SERVICES: each area opens; on hover its name turns orange and its icon moves ---------- */
   (function services() {
     var ol = $('.areas');
     if (!ol) return;
@@ -753,41 +761,18 @@
         if (window.ScrollTrigger) setTimeout(function () { ScrollTrigger.refresh(); }, 750);
       });
     });
-    var f = $('.follow'), pic = f && $('.follow-pic', f), dot = f && $('.follow-dot', f), fimg = f && $('img', f);
-    if (!finePointer || !f || reduce) return;
-    var px = mx, py = my, dx = mx, dy = my, active = false;
+    /* hover marks the area under the cursor (name in orange, the icon moves) and dims the others */
     areas.forEach(function (a) {
-      a.addEventListener('pointerenter', function () {
+      a.addEventListener('pointerenter', function (e) {
+        if (e.pointerType !== 'mouse') return;
         areas.forEach(function (o) { o.classList.toggle('hover', o === a); });
         ol.classList.add('hovering');
-        if (fimg.getAttribute('src') !== a.dataset.photo) fimg.src = a.dataset.photo;
-        if (!active) { px = dx = mx; py = dy = my; }
-        active = true; f.classList.add('on');
       });
     });
-    function off() {
+    ol.addEventListener('pointerleave', function () {
       areas.forEach(function (o) { o.classList.remove('hover'); });
       ol.classList.remove('hovering');
-      active = false; f.classList.remove('on');
-    }
-    ol.addEventListener('pointerleave', off);
-    /* scrolling with the wheel moves the list away without a pointer event */
-    window.addEventListener('scroll', function () {
-      if (!active) return;
-      var r = ol.getBoundingClientRect();
-      if (mx < r.left || mx > r.right || my < r.top || my > r.bottom) off();
-    }, { passive: true });
-    (function loop() {
-      requestAnimationFrame(loop);
-      if (!active) return;
-      var w = pic.offsetWidth;
-      px = lerp(px, mx, .16); py = lerp(py, my, .16);
-      dx = lerp(dx, mx, .07); dy = lerp(dy, my, .07);
-      /* the photo sits beside the cursor, the colour trails behind it */
-      var side = mx + w + 60 > innerWidth ? -w - 30 : 30;
-      pic.style.transform = 'translate(' + (px + side) + 'px,' + (py - w / 2) + 'px)';
-      dot.style.transform = 'translate(' + (dx + side + (side > 0 ? w * .55 : -w * .55)) + 'px,' + (dy - w / 2) + 'px)';
-    })();
+    });
   })();
 
   /* ---------- PROJECTS: names change the screen; moving across the screen runs through its photos ---------- */
@@ -845,40 +830,25 @@
     langHooks.push(meta);
   })();
 
-  /* ---------- IN THE PRESS: clippings you can drag around the wall; a click (not a drag) opens the article ---------- */
-  (function clippings() {
-    var clips = $$('.clip');
-    if (!clips.length || !finePointer) return;
-    var top = 10;
-    clips.forEach(function (c) {
-      var a = $('a', c), sx = 0, sy = 0, ox = 0, oy = 0, moved = false, down = false;
-      a.addEventListener('pointerdown', function (e) {
-        if (e.button !== 0) return;
-        down = true; moved = false;
-        sx = e.clientX; sy = e.clientY;
-        ox = parseFloat(c.style.getPropertyValue('--x')) || 0;
-        oy = parseFloat(c.style.getPropertyValue('--dy')) || 0;
-        a.setPointerCapture(e.pointerId);
+  /* ---------- IN THE PRESS: pointing at a stop on the bar shows that article's teaser ---------- */
+  (function press() {
+    var stops = $$('.stop'), teasers = $$('.teaser');
+    if (!stops.length) return;
+    function show(i) {
+      stops.forEach(function (s, j) { s.classList.toggle('on', j === i); });
+      teasers.forEach(function (t, j) { t.classList.toggle('on', j === i); });
+    }
+    stops.forEach(function (s, i) {
+      var a = $('a', s);
+      var wasOn = false;
+      a.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') show(i); });
+      /* on a touch screen the first tap shows the teaser, a second tap (or the teaser) opens the article */
+      a.addEventListener('pointerdown', function (e) { wasOn = e.pointerType === 'mouse' || s.classList.contains('on'); });
+      a.addEventListener('focus', function () { show(i); });
+      a.addEventListener('click', function (e) {
+        if (!wasOn) { e.preventDefault(); show(i); }
+        wasOn = false;
       });
-      a.addEventListener('pointermove', function (e) {
-        if (!down) return;
-        var dx = e.clientX - sx, dy = e.clientY - sy;
-        if (!moved && Math.hypot(dx, dy) < 6) return;
-        if (!moved) { moved = true; c.classList.add('dragging'); c.style.zIndex = ++top; }
-        c.style.setProperty('--x', (ox + dx) + 'px');
-        c.style.setProperty('--dy', (oy + dy) + 'px');
-      });
-      function up() {
-        if (!down) return;
-        down = false;
-        c.classList.remove('dragging');
-        if (moved) c.classList.add('moved');
-      }
-      a.addEventListener('pointerup', up);
-      a.addEventListener('pointercancel', up);
-      /* a drag is not a click */
-      a.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
-      a.addEventListener('dragstart', function (e) { e.preventDefault(); });
     });
   })();
 

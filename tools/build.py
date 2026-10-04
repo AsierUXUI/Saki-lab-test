@@ -271,43 +271,46 @@ def pics_of(lst):
     return [(photo(s, n)[0], PROJECT_TEXT[s]["name"]) for s, n in lst]
 
 
-FEATURED = {"https://www.publico.pt/2010/06/27/culturaipsilon/noticia/mikas-uma-historia-do-cerco-de-lisboa-259846",
-            "https://www.cuisinenoir.com/mikas-social-b-lisbon-portugal/",
-            "https://www.timeout.pt/lisboa/pt/noticias/mikas-tem-um-novo-bar-e-e-um-club-de-jazz-so-what-041224"}
-# the loose way the clippings sit on the wall (degrees, and a nudge up or down in px), by position
-TILT = [-2.5, 1.8, -1.2, 3, -3.2, 1, -1.8, 2.4, -0.8, 2.8, -2.2, 1.4, -3]
-NUDGE = [0, 28, -14, 18, 6, -10, 24, -6, 16, -18, 10, 30, -8]
-
-
 def press_section():
-    clips = []
-    for i, a in enumerate(PRESS):
+    """In the press: a bar through time; pointing at an article shows its teaser underneath."""
+    dated = sorted([a for a in PRESS if a["year"]], key=lambda a: a["year"])
+    undated = [a for a in PRESS if not a["year"]]
+    stops, teasers, last = [], [], None
+    for i, a in enumerate(dated + undated):
         if a["about"] == "mikas":
-            about, src = "Mikas", None
+            about, src = "Mikas", SITE_PHOTOS[2]
         else:
             about = PROJECT_TEXT[a["about"]]["name"]
             src = cover_path(BY_SLUG[a["about"]]).replace("img/lugares/", "img/mini/")
-        big = a["url"] in FEATURED
-        tape = i % 3 == 0
-        photo_html = f'<img class="clip-photo" src="{src}" alt="" loading="lazy">' if src and (big or i % 2 == 0) else ""
         year = str(a["year"]) if a["year"] else ""
-        clips.append(f"""
-        <li class="clip{" clip-big" if big else ""}{" clip-tape" if tape else ""}" style="--r:{TILT[i % len(TILT)]}deg;--y:{NUDGE[i % len(NUDGE)]}px">
-          <a href="{esc(a["url"])}" target="_blank" rel="noopener" data-cursor="Ler" data-cursor-en="Read" draggable="false">
-            <span class="clip-mast"><b>{esc(a["outlet"])}</b><span class="mono">{year}</span></span>
-            {photo_html}
-            <span class="clip-title">“{esc(a["title"])}”</span>
-            <span class="clip-foot mono"><span>{esc(about)}</span><span>{t("Ler", "Read")} ↗</span></span>
-          </a>
+        # the year is written where it changes; undated articles get one "Sem data" mark
+        mark = (year or t("Sem data", "Undated")) if year != last else ""
+        last = year
+        stops.append(f"""
+        <li class="stop{" on" if i == 0 else ""}{" new-year" if mark else ""}">
+          <span class="stop-year mono">{mark}</span>
+          <a href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" aria-label="{esc(a["outlet"] + ": " + a["title"])}"><i></i></a>
         </li>""")
+        teasers.append(f"""
+        <a class="teaser{" on" if i == 0 else ""}" href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" tabindex="-1">
+          <img src="{src}" alt="" loading="lazy">
+          <span class="teaser-text">
+            <span class="teaser-meta mono"><b>{esc(a["outlet"])}</b><span>{year}</span><span>{esc(about)}</span></span>
+            <span class="teaser-title">“{esc(a["title"])}”</span>
+            <span class="teaser-read mono">{t("Ler artigo", "Read the article")} ↗</span>
+          </span>
+        </a>""")
     return f"""<div class="press" id="imprensa">
       <div class="press-head">
         {label(PRESS_LABEL)}
         {tp(PRESS_TITLE, "h3", 'class="sec-title"')}
-        {t("Arraste os recortes, clique para ler.", "Drag the clippings around, click to read.", "p", 'class="press-hint mono"')}
       </div>
-      <ul class="clips">{"".join(clips)}
-      </ul>
+      <div class="timeline">
+        <ol class="stops">{"".join(stops)}
+        </ol>
+      </div>
+      <div class="teasers" aria-live="polite">{"".join(teasers)}
+      </div>
     </div>"""
 
 
@@ -341,14 +344,13 @@ def build_home():
     </div>
   </section>"""
 
-    # SERVICES: four big lines; a round photo and a round colour follow the mouse
+    # SERVICES: four big lines; on hover the name turns orange and the icon moves
     areas = []
     for k, a in enumerate(SERVICES["areas"]):
-        src, _, _ = photo(*a["photo"])
         items = "".join(f'<li>{icon(ic, "item-icon")}{tp(n, "h4")}{tp(d, "p")}</li>'
                         for (n, d), ic in zip(a["items"], ITEMS[a["letter"]]))
         areas.append(f"""
-      <li class="area" data-photo="{src}">
+      <li class="area" data-move="{["spin", "tilt", "swing", "hop"][k]}">
         <button type="button" class="area-head" aria-expanded="false">
           <span class="area-icon">{icon(AREAS[a["letter"]])}</span>
           <span class="area-title">
@@ -369,7 +371,6 @@ def build_home():
     </div>
     <ol class="areas">{"".join(areas)}
     </ol>
-    <div class="follow" aria-hidden="true"><span class="follow-dot"></span><span class="follow-pic"><img alt=""></span></div>
     <div class="inline-cta">
       {tp(SERVICES["cta"], "p")}
       {t("Agendar uma Consulta", "Schedule a Consultation", "a", 'class="btn magnetic" href="contacto.html"')}
