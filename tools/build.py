@@ -239,6 +239,11 @@ def label(pair, attrs=""):
 
 
 HERO_PICS = TORCH
+# the photo inside the headline: only the three bars that look best, alternating
+HEADLINE_PICS = [("a-tabacaria", "balcao"), ("so-what", "abobada-acesa"), ("social-b", "bar-violeta"),
+                 ("a-tabacaria", "fachada"), ("so-what", "telefone-vermelho"), ("social-b", "bartenders"),
+                 ("a-tabacaria", "sala-a-noite"), ("so-what", "sala-cheia"), ("social-b", "musica"),
+                 ("a-tabacaria", "ultima-luz"), ("so-what", "tunel-vermelho"), ("social-b", "balcao-rosas")]
 # the sharpest photos we have (1500px originals first, then 800px), one per step
 PROCESS_PICS = [("sakim", "rua-a-noite"), ("velha-senhora", "candeeiros-velhos"), ("velha-senhora", "mesas-em-obra"),
                 ("so-what", "abobada-acesa"), ("so-what", "fila-a-porta")]
@@ -289,17 +294,17 @@ def press_section():
         stops.append(f"""
         <li class="stop{" on" if i == 0 else ""}{" new-year" if mark else ""}">
           <span class="stop-year mono">{mark}</span>
-          <a href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" aria-label="{esc(a["outlet"] + ": " + a["title"])}"><i></i></a>
+          <button type="button" data-i="{i}" aria-label="{esc(a["outlet"] + ": " + a["title"])}"><i></i></button>
         </li>""")
         teasers.append(f"""
-        <a class="teaser{" on" if i == 0 else ""}" href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" tabindex="-1">
+        <div class="teaser{" on" if i == 0 else ""}" data-i="{i}">
           <img src="{src}" alt="" loading="lazy">
           <span class="teaser-text">
             <span class="teaser-meta mono"><b>{esc(a["outlet"])}</b><span>{year}</span><span>{esc(about)}</span></span>
             <span class="teaser-title">“{esc(a["title"])}”</span>
-            <span class="teaser-read mono">{t("Ler artigo", "Read the article")} ↗</span>
+            <a class="teaser-read mono" href="{esc(a["url"])}" target="_blank" rel="noopener">{t("Ler artigo", "Read the article")} ↗</a>
           </span>
-        </a>""")
+        </div>""")
     return f"""<div class="press" id="imprensa">
       <div class="press-head">
         {label(PRESS_LABEL)}
@@ -309,15 +314,18 @@ def press_section():
         <ol class="stops">{"".join(stops)}
         </ol>
       </div>
-      <div class="teasers" aria-live="polite">{"".join(teasers)}
+      <div class="teasers">
+        <div class="track">{"".join(teasers)}
+        </div>
       </div>
+
     </div>"""
 
 
 def build_home():
     # HERO: the headline set huge, with a photo inside it that changes on its own
-    pics = [(src, PROJECT_TEXT[slug]["name"], PROJECT_TEXT[slug]["meta"]) for slug, ph, src in hero_photos()]
-    first = PROJECT_TEXT[hero_photos()[0][0]]
+    pics = [(photo(slug, ph)[0], PROJECT_TEXT[slug]["name"], PROJECT_TEXT[slug]["meta"]) for slug, ph in HEADLINE_PICS]
+    first = PROJECT_TEXT[HEADLINE_PICS[0][0]]
     hero = f"""
   <section class="hero" id="top">
     {hero_drift()}

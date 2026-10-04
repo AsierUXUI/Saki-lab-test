@@ -54,7 +54,7 @@ strong { font-weight: 500; }
 .cursor {
   position: fixed; left: 0; top: 0; z-index: 120; pointer-events: none;
   width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%;
-  background: #fff; mix-blend-mode: difference;
+  background: var(--ink); border: 1.5px solid transparent; color: var(--ink);
   display: grid; place-items: center;
   transition: width .4s var(--ease), height .4s var(--ease), margin .4s var(--ease), background .3s;
 }
@@ -65,7 +65,10 @@ strong { font-weight: 500; }
 /* on desktop the dot is the only cursor */
 html.has-cursor, html.has-cursor * { cursor: none !important; }
 html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.has-cursor [contenteditable] { cursor: text !important; }
-.cursor.is-link { width: 46px; height: 46px; margin: -23px 0 0 -23px; }
+.cursor.is-link { width: 46px; height: 46px; margin: -23px 0 0 -23px; background: transparent; border-color: currentColor; }
+/* over dark areas the dot turns cream */
+.cursor.on-dark { background: #f2efe9; color: #f2efe9; }
+.cursor.on-dark.is-link { background: transparent; }
 .cursor.is-text { opacity: 0; }
 .cursor { transition: width .4s var(--ease), height .4s var(--ease), margin .4s var(--ease), background .3s, opacity .2s; }
 
@@ -523,25 +526,31 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .stop { flex: 1; position: relative; }
 .stop-year { position: absolute; left: 0; top: -30px; white-space: nowrap; font-size: 13px; }
 .stop.new-year::before { content: ''; position: absolute; left: 21px; top: -10px; width: 1px; height: 18px; background: var(--ink); }
-.stop a { display: grid; place-items: center; width: 44px; height: 44px; }
+.stop button { display: grid; place-items: center; width: 44px; height: 44px; }
 .stop i { width: 11px; height: 11px; border-radius: 50%; background: var(--paper); border: 1.5px solid var(--ink); transition: transform .4s var(--ease), background .3s, border-color .3s; }
-.stop a:hover i, .stop a:focus-visible i { transform: scale(1.5); background: var(--ink); }
+.stop button:hover i, .stop button:focus-visible i { transform: scale(1.5); background: var(--ink); }
 .stop.on i { transform: scale(1.9); background: var(--ember); border-color: var(--ember); }
 .stop.on .stop-year { color: var(--ember); }
-.teasers { position: relative; margin-top: clamp(24px, 4vh, 40px); }
-.teaser { position: absolute; inset: 0 0 auto 0; display: grid; grid-template-columns: clamp(160px, 22vw, 320px) minmax(0, 1fr); gap: clamp(20px, 3vw, 48px); align-items: start; padding-top: clamp(20px, 3vh, 32px); border-top: 1px solid var(--rule); opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .35s, transform .5s var(--ease); }
-.teaser.on { opacity: 1; transform: none; pointer-events: auto; position: relative; }
-.teaser img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
-.teaser-text { display: flex; flex-direction: column; gap: 16px; }
-.teaser-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink-soft); }
+.teasers { margin: clamp(24px, 4vh, 40px) calc(var(--gutter) * -1) 0; padding: 0 var(--gutter); overflow: hidden; }
+.track { display: flex; gap: clamp(12px, 1.4vw, 20px); will-change: transform; }
+/* slim, horizontal cards: a small photo, then the words */
+.teaser { flex: 0 0 clamp(300px, 40vw, 600px); display: grid; grid-template-columns: clamp(96px, 9vw, 140px) minmax(0, 1fr); gap: clamp(14px, 1.6vw, 22px); align-items: center; opacity: .35; transition: opacity .6s var(--ease); user-select: none; }
+.teaser.on { opacity: 1; }
+.teaser img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; pointer-events: none; }
+.teaser-text { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.teaser-meta { display: flex; flex-wrap: wrap; gap: 2px 12px; color: var(--ink-soft); font-size: 11px; }
 .teaser-meta b { font-weight: 500; color: var(--ink); }
-.teaser-title { font-size: clamp(26px, 3vw, 48px); line-height: 1.08; letter-spacing: -.015em; max-width: 900px; }
-.teaser-read { align-self: flex-start; padding: 6px 0; border-bottom: 2px solid var(--ember); }
-.teaser:hover .teaser-read { color: var(--ember); }
-@media (max-width: 700px) {
-  .teaser { grid-template-columns: 1fr; }
-  .teaser img { aspect-ratio: 16 / 9; }
+.teaser-title { font-size: clamp(18px, 1.5vw, 23px); line-height: 1.15; letter-spacing: -.01em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.teaser-read { align-self: flex-start; padding: 2px 0; font-size: 11px; border-bottom: 2px solid var(--ember); }
+.teaser-read:hover { color: var(--ember); }
+.teaser:not(.on) { cursor: pointer; }
+/* on a touch screen the cards are swiped */
+@media (pointer: coarse) {
+  .teasers { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-padding: 0 var(--gutter); }
+  .teasers::-webkit-scrollbar { display: none; }
+  .teaser { scroll-snap-align: start; }
 }
+@media (max-width: 700px) { .teaser { flex-basis: 86vw; grid-template-columns: 84px minmax(0, 1fr); } }
 
 /* Mikas, in About */
 .mikas { margin-top: clamp(60px, 10vh, 110px); padding-top: clamp(28px, 5vh, 48px); border-top: 1px solid var(--ink); }
@@ -571,3 +580,31 @@ html.intro-on body { overflow: hidden; }
 .intro-win .tr { right: 8px; top: 8px; border-top-width: 1.5px; border-right-width: 1.5px; }
 .intro-win .bl { left: 8px; bottom: 8px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
 .intro-win .br { right: 8px; bottom: 8px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+/* ---------------------------------------------------------------- PHONES: tighter rhythm between and inside sections */
+@media (max-width: 760px) {
+  .editorial { padding: 48px 0; }
+  .services, .contact { padding-top: 48px; padding-bottom: 56px; }
+  .contact { padding-bottom: 96px; }
+  .projects { padding: 56px var(--gutter) 48px; }
+  .process { padding-top: 48px; padding-bottom: 48px; gap: 24px; }
+  .sec-head { margin-bottom: 28px; }
+  .sec-body { margin-top: 14px; }
+  .ed-title { margin-top: 28px; }
+  .ed-meta { margin-top: 28px; }
+  .ed-cols { margin-top: 28px; gap: 18px; }
+  .stats { gap: 20px; }
+  .area-head { padding: 16px 0; }
+  .inline-cta { margin-top: 28px; }
+  .reel { margin-top: 28px; }
+  .steps { margin-top: 24px; }
+  .step { padding: 24px 0; }
+  .values { margin-top: 40px; gap: 32px; }
+  .mikas { margin-top: 40px; padding-top: 24px; }
+  .mikas-before { margin: 20px 0 8px; }
+  .press { margin-top: 48px; }
+  .press-head { margin-bottom: 24px; }
+  .teasers { margin-top: 18px; }
+  .contact-grid { margin-top: 28px; gap: 28px; }
+  .foot { padding-bottom: 96px; }
+}
