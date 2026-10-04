@@ -209,8 +209,9 @@ def mega(pair, pic_row=None, pics=None, cls="", tag="h1"):
     for i, (rp, re_) in enumerate(zip(pt_rows, en_rows)):
         pic = ""
         if i == pic_row and pics:
-            imgs = "".join(f'<img class="photo{" on" if j == 0 else ""}" src="{src}" alt="" data-name="{esc(name)}"'
-                           f'{"" if j < 2 else " loading=" + chr(34) + "lazy" + chr(34)}>' for j, (src, name) in enumerate(pics))
+            imgs = "".join(f'<img class="photo{" on" if j == 0 else ""}" src="{pc[0]}" alt="" data-name="{esc(pc[1])}"'
+                           + (f' data-meta-pt="{esc(pc[2][0])}" data-meta-en="{esc(pc[2][1])}"' if len(pc) > 2 else "")
+                           + f'{"" if j < 2 else " loading=" + chr(34) + "lazy" + chr(34)}>' for j, pc in enumerate(pics))
             pic = f' <span class="pic" aria-hidden="true">{imgs}</span>'
         rows.append(f'<span class="row">{t(rp, re_)}{pic}</span>')
     label = esc(plain(pair[0].replace("<br>", " ")))
@@ -227,8 +228,8 @@ PROCESS_PICS = [("o-larguinho", "electrico"), ("a-tabacaria", "fachada"), ("velh
 CONTACT_PICS = [("sakim", "mesa-longa"), ("so-what", "mesa-posta"), ("a-tabacaria", "espuma"), ("o-terraco", "hora-azul")]
 
 
-def hero_tiles():
-    """The wall behind the headline: the cover of every project, then a second photo of each."""
+def hero_photos():
+    """The photos inside the headline: the cover of every project, then a second photo of each."""
     out = [(slug, BY_SLUG[slug]["cover"]) for slug in PROJECT_ORDER]
     for slug in PROJECT_ORDER:
         other = [ph[1] for ph in BY_SLUG[slug]["photos"] if ph[1] != BY_SLUG[slug]["cover"]]
@@ -242,20 +243,11 @@ def pics_of(lst):
 
 
 def build_home():
-    # HERO: the headline set huge over a wall of the bars. Pointing at a photo lights it up,
-    # names the place and puts it inside the headline; clicking opens the project.
-    tiles, pics = [], []
-    for i, (slug, ph, src) in enumerate(hero_tiles()):
-        tx = PROJECT_TEXT[slug]
-        pics.append((src, tx["name"]))
-        tiles.append(f'<a class="tile" href="lugares/{slug}.html" data-i="{i}" data-name="{esc(tx["name"])}" '
-                     f'data-meta-pt="{esc(tx["meta"][0])}" data-meta-en="{esc(tx["meta"][1])}" '
-                     f'data-cursor="{PROJECTS["open"][0]}" data-cursor-en="{PROJECTS["open"][1]}" tabindex="-1">'
-                     f'<img class="photo" src="{src}" alt="" loading="{"eager" if i < 14 else "lazy"}"></a>')
-    first = PROJECT_TEXT[hero_tiles()[0][0]]
+    # HERO: the headline set huge, with a photo inside it that changes on its own
+    pics = [(src, PROJECT_TEXT[slug]["name"], PROJECT_TEXT[slug]["meta"]) for slug, ph, src in hero_photos()]
+    first = PROJECT_TEXT[hero_photos()[0][0]]
     hero = f"""
   <section class="hero" id="top">
-    <div class="wall" aria-hidden="true">{"".join(tiles)}</div>
     {mega(HERO["title"], 1, pics, "hero-mega")}
     <div class="hero-foot">
       <p class="tag mono pic-name" aria-hidden="true">[ <b>{esc(first["name"])}</b> · <span>{esc(first["meta"][0])}</span> ]</p>
