@@ -11,11 +11,12 @@
 <link rel="icon" href="assets/img/marca/sakim-logo.jpg">
 <link rel="preload" href="assets/fonts/anton.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/newsreader-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/css/site.css?v=a6a08716">
+<link rel="stylesheet" href="assets/css/site.css?v=87f4865c">
 <script src="assets/js/gsap.min.js?v=5e6e6cba" defer></script>
 <script src="assets/js/ScrollTrigger.min.js?v=00a3e5c7" defer></script>
 <script src="assets/js/lenis.min.js?v=81fb34b5" defer></script>
-<script src="assets/js/site.js?v=1d009c0e" defer></script>
+<script src="assets/js/site.js?v=ad9d2938" defer></script>
+<script>try{if(!sessionStorage.getItem('sakim-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('intro-on')}catch(e){}</script>
 </head>
 <body class="no-js" data-page="home">
 <a class="skip" href="#main" data-pt="Saltar para o conteúdo" data-en="Skip to content">Saltar para o conteúdo</a>
@@ -78,6 +79,11 @@
 <div class="sheet" id="sheet" aria-hidden="true" role="dialog" aria-modal="true">
   <div class="sheet-bar"><button type="button" class="pill pill-back back" data-pt="← Voltar" data-en="← Back">← Voltar</button></div>
   <div class="sheet-body" data-lenis-prevent></div>
+</div>
+<div class="intro" aria-hidden="true">
+  <div class="intro-bg"></div>
+  <div class="intro-mark"><span class="intro-dot"><img src="assets/img/marca/sakim-logo.jpg" alt=""></span><span class="intro-word"><span>Sakim Lab</span></span></div>
+  <div class="intro-win"><img alt=""><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i></div>
 </div>
 <main id="main">
 

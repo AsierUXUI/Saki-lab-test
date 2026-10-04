@@ -18,6 +18,8 @@ The site is one long page, `index.html`: light paper, huge condensed type with p
 
 A card at the bottom of the screen opens the booking conversation from anywhere.
 
+On the first visit of a session an intro plays: the logo, the name in a pill, a window onto a bar that fills the screen and then lands inside the headline. A click skips it; it does not play with reduced motion.
+
 Other files:
 
 | File | Page |
@@ -54,7 +56,7 @@ tools/
 
 ## Project pages
 
-- **Where it is:** `GEO` in `tools/places.py` (coordinates, zoom, and `pin`, `area` or nothing while the address is unknown). The map is made of OpenStreetMap tiles in CARTO's light style, loaded by the visitor's browser; there is no map library.
+- **Where it is:** `GEO` in `tools/places.py` (coordinates, zoom, and `pin`, `area` or nothing while the address is unknown). The map is drawn with MapLibre (`assets/js/maplibre-gl.js`, loaded only when a map comes into view) from OpenFreeMap: free, no API key, fine for commercial use. It is a still picture, not draggable.
 - **Which services it had:** `SERVICES_DONE` in `tools/places.py`, e.g. `"some-project": ["A", "B"]`. Projects not listed had all four.
 - **Photo sizes:** photos that were sharp to begin with are shown larger. Their original sizes are in `tools/photo_sizes.json`.
 
