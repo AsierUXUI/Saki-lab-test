@@ -674,6 +674,11 @@
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
     links.forEach(function (a) { var s = document.getElementById(a.dataset.sec); if (s) io.observe(s); });
+    /* back at the top, no section is marked */
+    var top = document.getElementById('top');
+    if (top) new IntersectionObserver(function (en) {
+      if (en[0].isIntersecting) links.forEach(function (a) { a.classList.remove('on'); });
+    }, { rootMargin: '-45% 0px -50% 0px' }).observe(top);
   })();
 
   /* ---------- BOTTOM CARD: steps aside where the page already offers the same thing ---------- */
@@ -954,13 +959,16 @@
 
   /* ---------- INTRO, first visit only: the logo, the name in a pill, a window onto a bar that
      fills the screen and then lands inside the headline. A click skips it. Returns when the hero starts. ---------- */
+  var introTl = null;
   function playIntro() {
     var html = document.documentElement, intro = $('.intro');
-    if (!intro || !html.classList.contains('intro-on')) { if (intro) intro.remove(); return 0; }
-    try { sessionStorage.setItem('sakim-intro', '1'); } catch (e) {}
+    if (!intro || !html.classList.contains('intro-on')) return 0;
     if (lenis) lenis.stop();
     var mark = $('.intro-mark', intro), dot = $('.intro-dot', intro), word = $('.intro-word', intro);
     var win = $('.intro-win', intro), wimg = $('img', win), bg = $('.intro-bg', intro), corners = $$('.c', win);
+    /* start from scratch, so it can be played again */
+    if (introTl) introTl.kill();
+    gsap.set([mark, dot, word, win, bg].concat(corners), { clearProps: 'all' });
     var pic = $('.hero .pic'), shown = pic && $('img.on', pic);
     if (shown) wimg.src = shown.currentSrc || shown.src;
     var W = innerWidth, H = innerHeight, small = W < 760;
@@ -970,11 +978,13 @@
     gsap.set(dot, { scale: 0 });
     function done() {
       html.classList.remove('intro-on');
-      intro.remove();
       if (lenis) lenis.start();
     }
-    var tl = gsap.timeline({ onComplete: done });
-    intro.addEventListener('click', function () { tl.progress(1); });
+    var tl = introTl = gsap.timeline({ onComplete: done });
+    if (!intro.dataset.skip) {
+      intro.dataset.skip = '1';
+      intro.addEventListener('click', function () { if (introTl) introTl.progress(1); });
+    }
     tl.to(dot, { scale: 1, duration: .5, ease: 'back.out(2)' }, .2)
       .to(word, { width: wordW, duration: .7, ease: 'expo.inOut' }, .65)
       .to(mark, { borderColor: 'rgba(242,239,233,.55)', duration: .3 }, 1.15)
@@ -996,6 +1006,19 @@
       .to(bg, { opacity: 0, duration: .7, ease: 'power2.inOut' }, 3.55);
     return 3.6;
   }
+
+  /* the logo plays the intro again (on the home page; elsewhere it opens the home page, which plays it) */
+  $$('.pill-logo').forEach(function (logo) {
+    logo.addEventListener('click', function (e) {
+      if (!$('.intro') || !window.gsap || reduce || e.metaKey || e.ctrlKey) return;
+      e.preventDefault();
+      closeMenu();
+      if (lenis) lenis.scrollTo(0, { immediate: true }); else window.scrollTo(0, 0);
+      document.documentElement.classList.add('intro-on');
+      var at = playIntro();
+      gsap.fromTo($$('.hero .hero-mega .row, .hero-foot'), { opacity: 0 }, { opacity: 1, duration: .7, stagger: .1, delay: at + .1, ease: 'power2.out' });
+    });
+  });
 
   /* GSAP and Lenis are deferred, so they are ready by DOMContentLoaded */
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();

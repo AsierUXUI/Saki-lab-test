@@ -18,7 +18,7 @@ The site is one long page, `index.html`: light paper, huge condensed type with p
 
 A card at the bottom of the screen opens the booking conversation from anywhere.
 
-On the first visit of a session an intro plays: the logo, the name in a pill, a window onto a bar that fills the screen and then lands inside the headline. A click skips it; it does not play with reduced motion.
+Every time the home page loads (and when the logo is clicked) an intro plays: the logo, the name in a pill, a window onto a bar that fills the screen and then lands inside the headline. A click skips it. It does not play for links to a section or a project (`index.html#projectos`, `index.html#/so-what`), or with reduced motion.
 
 Other files:
 

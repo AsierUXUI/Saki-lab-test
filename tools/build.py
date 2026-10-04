@@ -126,7 +126,8 @@ def shell(page, root, title, desc, body, head=""):
   <div class="intro-win"><img alt=""><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i></div>
 </div>"""
         # decided before the first paint, so the page never flashes before the intro
-        head += """<script>try{if(!sessionStorage.getItem('sakim-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('intro-on')}catch(e){}</script>
+        # every full load plays it, except links that jump to a section or open a project (#projectos, #/so-what)
+        head += """<script>try{if((!location.hash||location.hash==='#top')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('intro-on')}catch(e){}</script>
 """
     year = datetime.date.today().year
     footer = "" if page == "lugar" else f"""
