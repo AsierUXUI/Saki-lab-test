@@ -534,7 +534,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .teasers { margin: clamp(24px, 4vh, 40px) calc(var(--gutter) * -1) 0; padding: 0 var(--gutter); overflow: hidden; }
 .track { display: flex; gap: clamp(12px, 1.4vw, 20px); will-change: transform; }
 /* slim, horizontal cards: a small photo, then the words */
-.teaser { flex: 0 0 clamp(300px, 40vw, 600px); display: grid; grid-template-columns: clamp(96px, 9vw, 140px) minmax(0, 1fr); gap: clamp(14px, 1.6vw, 22px); align-items: center; opacity: .35; transition: opacity .6s var(--ease); user-select: none; }
+.teaser { flex: 0 0 clamp(300px, 40vw, 600px); display: grid; grid-template-columns: clamp(96px, 9vw, 140px) minmax(0, 1fr); gap: clamp(14px, 1.6vw, 22px); align-items: center; padding: 12px 18px 12px 12px; background: #fff; border-radius: 14px; opacity: .45; transition: opacity .6s var(--ease); user-select: none; }
 .teaser.on { opacity: 1; }
 .teaser img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; pointer-events: none; }
 .teaser-text { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -556,10 +556,7 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .mikas { margin-top: clamp(60px, 10vh, 110px); padding-top: clamp(28px, 5vh, 48px); border-top: 1px solid var(--ink); }
 .mikas .tag { margin-bottom: 20px; }
 .mikas-text { font-size: clamp(24px, 2.5vw, 40px); line-height: 1.15; letter-spacing: -.01em; max-width: 1100px; }
-.mikas-before { margin: clamp(28px, 5vh, 44px) 0 12px; color: var(--ink-soft); }
-.mikas-places { list-style: none; display: flex; flex-wrap: wrap; gap: 0 .3em; font-family: var(--display); text-transform: uppercase; font-size: clamp(30px, 3.6vw, 58px); line-height: 1.2; }
-.mikas-places li:not(:last-child)::after { content: '/'; margin-left: .3em; color: var(--ember); }
-.mikas-source { display: inline-block; margin-top: 18px; padding: 6px 0; color: var(--ink-soft); }
+.mikas-source { display: inline-block; margin-top: 24px; padding: 6px 0; color: var(--ink-soft); }
 .mikas-source:hover { color: var(--ink); text-decoration: underline; text-decoration-color: var(--ember); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 
 /* ---------------------------------------------------------------- INTRO (first visit only)
@@ -601,7 +598,6 @@ html.intro-on body { overflow: hidden; }
   .step { padding: 24px 0; }
   .values { margin-top: 40px; gap: 32px; }
   .mikas { margin-top: 40px; padding-top: 24px; }
-  .mikas-before { margin: 20px 0 8px; }
   .press { margin-top: 48px; }
   .press-head { margin-bottom: 24px; }
   .teasers { margin-top: 18px; }

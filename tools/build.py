@@ -450,8 +450,6 @@ def build_home():
       <div class="mikas">
         {label(MIKAS["label"])}
         {tp(MIKAS["text"], "p", 'class="mikas-text"')}
-        {tp(MIKAS["before"], "p", 'class="mono mikas-before"')}
-        <ul class="mikas-places">{"".join(f"<li>{esc(n)}</li>" for n in MIKAS["places"])}</ul>
         <a class="mikas-source mono" href="{MIKAS["source_url"]}" target="_blank" rel="noopener">{tp(MIKAS["source"])} ↗</a>
       </div>
       <ul class="values">{"".join(values)}
