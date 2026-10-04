@@ -271,30 +271,43 @@ def pics_of(lst):
     return [(photo(s, n)[0], PROJECT_TEXT[s]["name"]) for s, n in lst]
 
 
+FEATURED = {"https://www.publico.pt/2010/06/27/culturaipsilon/noticia/mikas-uma-historia-do-cerco-de-lisboa-259846",
+            "https://www.cuisinenoir.com/mikas-social-b-lisbon-portugal/",
+            "https://www.timeout.pt/lisboa/pt/noticias/mikas-tem-um-novo-bar-e-e-um-club-de-jazz-so-what-041224"}
+# the loose way the clippings sit on the wall (degrees, and a nudge up or down in px), by position
+TILT = [-2.5, 1.8, -1.2, 3, -3.2, 1, -1.8, 2.4, -0.8, 2.8, -2.2, 1.4, -3]
+NUDGE = [0, 28, -14, 18, 6, -10, 24, -6, 16, -18, 10, 30, -8]
+
+
 def press_section():
-    rows = []
-    for a in PRESS:
+    clips = []
+    for i, a in enumerate(PRESS):
         if a["about"] == "mikas":
-            about, src = "Mikas", SITE_PHOTOS[2]
+            about, src = "Mikas", None
         else:
-            about, src = PROJECT_TEXT[a["about"]]["name"], cover_path(BY_SLUG[a["about"]])
-        year = str(a["year"]) if a["year"] else "—"
-        rows.append(f"""
-        <li><a href="{esc(a["url"])}" target="_blank" rel="noopener" data-photo="{src}">
-          <span class="press-outlet mono">{esc(a["outlet"])}</span>
-          <span class="press-title">{esc(a["title"])}</span>
-          <span class="press-about mono">{esc(about)}</span>
-          <span class="press-year mono">{year}</span>
-          <i aria-hidden="true">↗</i>
-        </a></li>""")
+            about = PROJECT_TEXT[a["about"]]["name"]
+            src = cover_path(BY_SLUG[a["about"]]).replace("img/lugares/", "img/mini/")
+        big = a["url"] in FEATURED
+        tape = i % 3 == 0
+        photo_html = f'<img class="clip-photo" src="{src}" alt="" loading="lazy">' if src and (big or i % 2 == 0) else ""
+        year = str(a["year"]) if a["year"] else ""
+        clips.append(f"""
+        <li class="clip{" clip-big" if big else ""}{" clip-tape" if tape else ""}" style="--r:{TILT[i % len(TILT)]}deg;--y:{NUDGE[i % len(NUDGE)]}px">
+          <a href="{esc(a["url"])}" target="_blank" rel="noopener" data-cursor="Ler" data-cursor-en="Read" draggable="false">
+            <span class="clip-mast"><b>{esc(a["outlet"])}</b><span class="mono">{year}</span></span>
+            {photo_html}
+            <span class="clip-title">“{esc(a["title"])}”</span>
+            <span class="clip-foot mono"><span>{esc(about)}</span><span>{t("Ler", "Read")} ↗</span></span>
+          </a>
+        </li>""")
     return f"""<div class="press" id="imprensa">
       <div class="press-head">
         {label(PRESS_LABEL)}
         {tp(PRESS_TITLE, "h3", 'class="sec-title"')}
+        {t("Arraste os recortes, clique para ler.", "Drag the clippings around, click to read.", "p", 'class="press-hint mono"')}
       </div>
-      <ol class="press-list">{"".join(rows)}
-      </ol>
-      <div class="press-peek" aria-hidden="true"><img alt=""></div>
+      <ul class="clips">{"".join(clips)}
+      </ul>
     </div>"""
 
 

@@ -506,31 +506,40 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 }
 
 
-/* ---------------------------------------------------------------- IN THE PRESS (inside About) */
+/* ---------------------------------------------------------------- IN THE PRESS: newspaper clippings on the wall */
 .press { margin: clamp(80px, 14vh, 160px) var(--gutter) 0; }
-.press-head { margin-bottom: clamp(28px, 5vh, 48px); }
+.press-head { margin-bottom: clamp(36px, 6vh, 64px); }
 .press-head .tag { margin-bottom: 18px; }
-.press-list { list-style: none; border-top: 1px solid var(--ink); }
-.press-list li { border-bottom: 1px solid var(--ink); }
-.press-list a { display: grid; grid-template-columns: minmax(150px, .7fr) minmax(0, 2.4fr) minmax(110px, .6fr) 60px 28px; gap: 20px; align-items: baseline; padding: 20px 0; transition: padding .5s var(--ease); }
-.press-outlet { color: var(--ink-soft); }
-.press-title { font-size: clamp(20px, 1.8vw, 28px); line-height: 1.2; text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 2px; text-underline-offset: 6px; transition: text-decoration-color .3s; }
-.press-about { color: var(--ink-soft); }
-.press-year { text-align: right; }
-.press-list i { font-style: normal; justify-self: end; font-size: 20px; transition: transform .5s var(--ease), color .3s; }
-.press-list a:hover { padding-left: 12px; }
-.press-list a:hover .press-title { text-decoration-color: var(--ember); }
-.press-list a:hover i { color: var(--ember); transform: translate(3px, -3px); }
-.press-peek { position: fixed; left: 0; top: 0; z-index: 6; width: clamp(150px, 13vw, 210px); aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden; pointer-events: none; opacity: 0; transition: opacity .3s; }
-.press-peek.on { opacity: 1; }
-.press-peek img { width: 100%; height: 100%; object-fit: cover; }
-@media (max-width: 760px) {
-  .press-list a { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; }
-  .press-outlet { grid-column: 1; }
-  .press-year { grid-column: 2; grid-row: 1; }
-  .press-title { grid-column: 1 / -1; }
-  .press-about { grid-column: 1; }
-  .press-list i { grid-column: 2; grid-row: 3; }
+.press-hint { margin-top: 16px; color: var(--ink-soft); }
+.clips { list-style: none; columns: 4; column-gap: clamp(16px, 2vw, 32px); padding: 20px 0 40px; }
+.clip { break-inside: avoid; margin-bottom: clamp(14px, 1.8vw, 30px); padding-top: 14px; }   /* room for the tape inside the clipping's own box */
+.clip { --x: 0px; --dy: 0px; --lift: 0px; --rot: var(--r); position: relative; transform: translate(var(--x), calc(var(--y) + var(--dy) + var(--lift))) rotate(var(--rot)); transition: transform .5s var(--ease), box-shadow .5s; touch-action: pan-y; }
+.clip a { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px 14px; color: #1d1b18;
+  background: #f7f4ec linear-gradient(transparent 0 calc(100% - 1px), rgba(22, 22, 22, .04) 0) 0 0 / 100% 26px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, .08), 0 10px 24px -12px rgba(0, 0, 0, .35);
+  /* the uneven edge of paper cut with scissors */
+  clip-path: polygon(0 1%, 7% 0, 18% .8%, 31% 0, 46% .9%, 60% .1%, 74% 1%, 88% 0, 100% .7%, 99.4% 22%, 100% 48%, 99.3% 74%, 100% 99%, 86% 100%, 71% 99.1%, 55% 100%, 40% 99.2%, 24% 100%, 10% 99.3%, 0 100%, .6% 76%, 0 51%, .7% 25%); }
+.clip-tape::before { content: ''; position: absolute; z-index: 2; left: 50%; top: 2px; width: 92px; height: 26px; margin-left: -46px; background: rgba(240, 225, 190, .72); transform: rotate(-4deg); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
+.clip-mast { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 0 8px; border-top: 3px double #1d1b18; border-bottom: 1px solid #1d1b18; }
+.clip-mast b { font-family: var(--serif); font-weight: 500; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+.clip-photo { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; filter: grayscale(1) contrast(1.15) brightness(1.03); mix-blend-mode: multiply; }
+.clip-big .clip-photo { aspect-ratio: 4 / 5; }
+.clip-title { font-family: var(--serif); font-weight: 500; font-size: clamp(20px, 1.6vw, 26px); line-height: 1.12; letter-spacing: -.01em; }
+.clip-big .clip-title { font-size: clamp(24px, 2vw, 34px); line-height: 1.06; }
+.clip-foot { display: flex; justify-content: space-between; gap: 10px; padding-top: 8px; border-top: 1px solid rgba(29, 27, 24, .25); font-size: 11px; color: rgba(29, 27, 24, .7); }
+.clip-foot span:last-child { color: var(--ember); }
+.clip:hover { --lift: -8px; --rot: 0deg; z-index: 5; }
+.clip:hover a { box-shadow: 0 2px 2px rgba(0, 0, 0, .08), 0 26px 40px -16px rgba(0, 0, 0, .45); }
+.clip.dragging { transition: none; z-index: 20; --rot: 0deg; }
+.clip.moved { z-index: 4; }
+@media (pointer: fine) { .clip a { cursor: grab; } .clip.dragging a { cursor: grabbing; } }
+@media (max-width: 1100px) { .clips { columns: 3; } }
+@media (max-width: 800px) { .clips { columns: 2; } }
+@media (max-width: 600px) {
+  .clips { columns: 1; }
+  .clip { transform: rotate(calc(var(--r) * .6)); }
+  .clip:hover { --lift: 0px; }
+  .press-hint { display: none; }
 }
 
 /* Mikas, in About */
