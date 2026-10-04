@@ -338,8 +338,6 @@ MIKAS = {
              "Behind Sakim Lab is <strong>Mikas</strong>, Mozambican, shaping Lisbon's nights for more than thirty years. "
              "When Bica was still a neighbourhood closed in on itself, he opened W.I.P. there — a bar, a clothes shop and a hairdresser all at once. "
              "Then came Bicaense, and nights in Bica were never the same again."),
-    "before": ("Antes da Sakim Lab, entre outros", "Before Sakim Lab, among others"),
-    "places": ["Atira-te ao Rio", "Bar das Imagens", "W.I.P.", "Bicaense", "Terraço do Mercado do Chão do Loureiro", "Bica-me", "Clube Ferroviário"],
     "source": ("Segundo o Público, 2010", "According to Público, 2010"),
     "source_url": "https://www.publico.pt/2010/06/27/culturaipsilon/noticia/mikas-uma-historia-do-cerco-de-lisboa-259846",
 }
