@@ -501,6 +501,7 @@
       var link = !t && !typing && e.target.closest('a, button, label, summary, [role="button"]');
       cursor.classList.toggle('is-label', !!t);
       cursor.classList.toggle('is-link', !!link);
+      cursor.classList.toggle('on-dark', !!e.target.closest('.projects, .drawer-panel, .menu-panel, .dock, .pill, .pill-round, .btn, .area-icon, .intro, .chat'));
       cursor.classList.toggle('is-text', !!typing);
       if (t) $('span', cursor).textContent = (lang === 'en' && t.dataset.cursorEn) || t.dataset.cursor;
     });
@@ -842,17 +843,15 @@
       }, { passive: true });
     }
 
+    /* the line and the cards only bring an article to the front; 'Ler artigo' is what opens it */
     stops.forEach(function (s, i) {
-      var a = $('a', s), wasOn = false;
-      a.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') target = i; });
-      a.addEventListener('pointerdown', function (e) { wasOn = e.pointerType === 'mouse' || s.classList.contains('on'); });
-      a.addEventListener('focus', function () { go(i); });
-      /* on a touch screen the first tap brings its card, a second tap (or the card) opens the article */
-      a.addEventListener('click', function (e) { if (!wasOn) { e.preventDefault(); go(i); } wasOn = false; });
+      var b = $('button', s);
+      b.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') target = i; });
+      b.addEventListener('focus', function () { go(i); });
+      b.addEventListener('click', function () { go(i); });
     });
     cards.forEach(function (c, i) {
-      /* a card further along first comes to the front; the one in front opens */
-      c.addEventListener('click', function (e) { if (i !== cur) { e.preventDefault(); go(i); } });
+      c.addEventListener('click', function (e) { if (!e.target.closest('.teaser-read')) go(i); });
     });
   })();
 

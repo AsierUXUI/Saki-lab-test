@@ -294,17 +294,17 @@ def press_section():
         stops.append(f"""
         <li class="stop{" on" if i == 0 else ""}{" new-year" if mark else ""}">
           <span class="stop-year mono">{mark}</span>
-          <a href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" aria-label="{esc(a["outlet"] + ": " + a["title"])}"><i></i></a>
+          <button type="button" data-i="{i}" aria-label="{esc(a["outlet"] + ": " + a["title"])}"><i></i></button>
         </li>""")
         teasers.append(f"""
-        <a class="teaser{" on" if i == 0 else ""}" href="{esc(a["url"])}" target="_blank" rel="noopener" data-i="{i}" draggable="false">
+        <div class="teaser{" on" if i == 0 else ""}" data-i="{i}">
           <img src="{src}" alt="" loading="lazy">
           <span class="teaser-text">
             <span class="teaser-meta mono"><b>{esc(a["outlet"])}</b><span>{year}</span><span>{esc(about)}</span></span>
             <span class="teaser-title">“{esc(a["title"])}”</span>
-            <span class="teaser-read mono">{t("Ler artigo", "Read the article")} ↗</span>
+            <a class="teaser-read mono" href="{esc(a["url"])}" target="_blank" rel="noopener">{t("Ler artigo", "Read the article")} ↗</a>
           </span>
-        </a>""")
+        </div>""")
     return f"""<div class="press" id="imprensa">
       <div class="press-head">
         {label(PRESS_LABEL)}
