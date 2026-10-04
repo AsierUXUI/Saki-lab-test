@@ -580,111 +580,81 @@
     }, reduce ? 4000 : 2000);
   });
 
-  /* ---------- HERO HOVER: the letters widen under the cursor and fill with the bar photo around it ---------- */
+  /* ---------- HERO HOVER: the headline turns liquid under the cursor, rippling more the faster it moves ---------- */
   var heroFx = (function () {
     var hero = $('.hero'), h1 = hero && $('.hero-mega', hero), pic = h1 && $('.pic', h1);
-    if (!hero || !h1 || !pic || !finePointer || reduce) return null;
-    var photos = $$('img', pic), current = $('img.on', pic) || photos[0];
-    var clone = null, letters = [], ghosts = [], lines = [];
-    var px = -999, py = -999, inside = false, r = 0;
-    function split() {
-      /* each letter in its own box, so it can move on its own */
-      $$('.row > span[data-pt]', h1).forEach(function (sp) {
-        if ($('.ch', sp)) return;
-        sp.innerHTML = sp.textContent.split('').map(function (c, i, all) {
-          if (c === ' ') return ' ';
-          return '<span class="ch' + (c === '.' && i === all.length - 1 ? ' acc' : '') + '">' + c + '</span>';
-        }).join('');
-      });
-    }
-    function paint() {
-      /* every letter of the copy carries the same photo, positioned as if it were one picture behind the whole headline */
-      if (!clone) return;
-      var W = clone.offsetWidth, H = clone.offsetHeight;
-      var nw = current.naturalWidth || 4, nh = current.naturalHeight || 3;
-      var k = Math.max(W / nw, H / nh), bw = nw * k, bh = nh * k, ox = (W - bw) / 2, oy = (H - bh) / 2;
-      var url = 'url("' + (current.currentSrc || current.src) + '")';
-      /* offsets ignore the stretching, so the picture lines up with the letters at rest */
-      ghosts.forEach(function (g) {
-        var left = 0, top = 0, el = g;
-        while (el && el !== clone) { left += el.offsetLeft; top += el.offsetTop; el = el.offsetParent; }
-        g.style.backgroundImage = url;
-        g.style.backgroundSize = bw + 'px ' + bh + 'px';
-        g.style.backgroundPosition = (ox - left) + 'px ' + (oy - top) + 'px';
-      });
-    }
+    if (!hero || !h1 || !finePointer || reduce) return null;
+    /* the water: noise that displaces the letters; its strength follows the cursor's speed */
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
+    svg.style.position = 'absolute';
+    svg.innerHTML = '<filter id="liquid" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">' +
+      '<feTurbulence type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="1" seed="4" result="noise"/>' +
+      '<feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>';
+    document.body.appendChild(svg);
+    var noise = svg.querySelector('feTurbulence'), disp = svg.querySelector('feDisplacementMap');
+    var clone = null, px = -999, py = -999, inside = false, r = 0, strength = 0, last = null, speed = 0, t = 0;
+
     function prepare() {
-      split();
       if (clone) clone.remove();
       clone = h1.cloneNode(true);
-      clone.className = 'mega hero-mega mega-photo';
+      clone.className = 'mega hero-mega mega-liquid';
       clone.removeAttribute('aria-label');
       clone.setAttribute('aria-hidden', 'true');
-      $$('.row', clone).forEach(function (row) { row.removeAttribute('style'); row.style.fontSize = ''; });
-      $$('.row', h1).forEach(function (row, i) { if (row.style.fontSize) $$('.row', clone)[i].style.fontSize = row.style.fontSize; });
+      $$('.row', clone).forEach(function (row, i) {
+        row.removeAttribute('style');
+        var size = $$('.row', h1)[i].style.fontSize;
+        if (size) row.style.fontSize = size;
+      });
       clone.style.top = h1.offsetTop + 'px';
       clone.style.left = h1.offsetLeft + 'px';
       clone.style.width = h1.offsetWidth + 'px';
       h1.after(clone);
-      letters = $$('.ch', h1);
-      ghosts = $$('.ch', clone);
-      var hb = hero.getBoundingClientRect();
-      /* each line keeps its letters (and the photo) in order, so widening one pushes the others aside */
-      var k = 0;
-      lines = $$('.row', h1).map(function (row) {
-        return $$('.ch, .pic', row).map(function (el) {
-          var b = el.getBoundingClientRect();
-          var isPic = el.classList.contains('pic');
-          return { el: el, ghost: isPic ? null : ghosts[k++], pic: isPic, x: b.left - hb.left + b.width / 2,
-                   y: b.top - hb.top + b.height / 2, w: b.width, h: b.height, s: 1 };
-        });
-      });
-      paint();
+      h1.classList.add('liquid-on');
     }
-    pic.addEventListener('picchange', function (e) {
-      current = e.detail;
-      if (current.complete) paint(); else current.addEventListener('load', paint, { once: true });
+    /* the copy shows the same photo as the headline */
+    if (pic) pic.addEventListener('picchange', function () {
+      if (!clone) return;
+      var on = $$('img', pic).map(function (im) { return im.classList.contains('on'); });
+      $$('.pic img', clone).forEach(function (im, i) { im.classList.toggle('on', on[i]); });
     });
 
     hero.addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
       var hb = hero.getBoundingClientRect();
       px = e.clientX - hb.left; py = e.clientY - hb.top; inside = true;
+      if (last) speed = Math.min(80, speed + Math.hypot(e.clientX - last.x, e.clientY - last.y));
+      last = { x: e.clientX, y: e.clientY };
     });
-    hero.addEventListener('pointerleave', function () { inside = false; });
+    hero.addEventListener('pointerleave', function () { inside = false; last = null; });
 
     (function loop() {
       requestAnimationFrame(loop);
       if (!clone) return;
-      var target = inside ? Math.min(240, hero.offsetWidth * .17) : 0;
-      var moving = lines.some(function (line) { return line.some(function (it) { return it.s > 1.002; }); });
-      if (!inside && r < .5 && !moving) return;
-      r += (target - r) * .12;
-      clone.style.setProperty('--rx', (px - clone.offsetLeft) + 'px');
-      clone.style.setProperty('--ry', (py - clone.offsetTop) + 'px');
-      clone.style.setProperty('--rr', r + 'px');
-      /* letters near the cursor grow wider; the rest of the line slides apart to make room */
-      lines.forEach(function (line) {
-        var h = line.length ? line[0].h : 1, total = 0;
-        line.forEach(function (it) {
-          var dx = (px - it.x) / (h * .45), dy = (py - it.y) / (h * .6);
-          var goal = it.pic || !inside ? 1 : 1 + .6 * Math.exp(-(dx * dx + dy * dy) / 2);
-          it.s += (goal - it.s) * .16;
-          it.extra = it.w * (it.s - 1);
-          total += it.extra;
-        });
-        var before = 0;
-        line.forEach(function (it) {
-          var shift = before + it.extra / 2 - total / 2;
-          before += it.extra;
-          var tf = Math.abs(shift) < .05 && it.s < 1.001 ? '' : 'translateX(' + shift.toFixed(2) + 'px)' + (it.pic ? '' : ' scaleX(' + it.s.toFixed(3) + ')');
-          it.el.style.transform = tf;
-          if (it.ghost) it.ghost.style.transform = tf;
-        });
+      if (!inside && r < .5 && strength < .2) return;
+      t += .016;
+      speed *= .9;
+      r += ((inside ? Math.min(260, hero.offsetWidth * .18) : 0) - r) * .1;
+      /* a little movement even when still, more when the cursor sweeps */
+      strength += ((inside ? 8 + speed * .55 : 0) - strength) * .06;
+      disp.setAttribute('scale', strength.toFixed(1));
+      noise.setAttribute('baseFrequency', (0.005 + 0.0015 * Math.sin(t * 1.1)).toFixed(4) + ' ' + (0.008 + 0.002 * Math.cos(t * .8)).toFixed(4));
+      [h1, clone].forEach(function (el) {
+        el.style.setProperty('--rx', (px - h1.offsetLeft) + 'px');
+        el.style.setProperty('--ry', (py - h1.offsetTop) + 'px');
+        el.style.setProperty('--rr', r + 'px');
       });
     })();
     return { prepare: prepare };
   })();
+  /* the drifting photos rest while the hero is off screen */
+  (function () {
+    var drift = $('.hero-drift');
+    if (!drift || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver(function (en) { drift.classList.toggle('paused', !en[0].isIntersecting); }).observe(drift.parentElement);
+  })();
+
   if (heroFx) {
     heroFx.prepare();
     langHooks.push(heroFx.prepare);
@@ -704,6 +674,11 @@
       });
     }, { rootMargin: '-45% 0px -50% 0px' });
     links.forEach(function (a) { var s = document.getElementById(a.dataset.sec); if (s) io.observe(s); });
+    /* back at the top, no section is marked */
+    var top = document.getElementById('top');
+    if (top) new IntersectionObserver(function (en) {
+      if (en[0].isIntersecting) links.forEach(function (a) { a.classList.remove('on'); });
+    }, { rootMargin: '-45% 0px -50% 0px' }).observe(top);
   })();
 
   /* ---------- BOTTOM CARD: steps aside where the page already offers the same thing ---------- */
@@ -984,13 +959,16 @@
 
   /* ---------- INTRO, first visit only: the logo, the name in a pill, a window onto a bar that
      fills the screen and then lands inside the headline. A click skips it. Returns when the hero starts. ---------- */
+  var introTl = null;
   function playIntro() {
     var html = document.documentElement, intro = $('.intro');
-    if (!intro || !html.classList.contains('intro-on')) { if (intro) intro.remove(); return 0; }
-    try { sessionStorage.setItem('sakim-intro', '1'); } catch (e) {}
+    if (!intro || !html.classList.contains('intro-on')) return 0;
     if (lenis) lenis.stop();
     var mark = $('.intro-mark', intro), dot = $('.intro-dot', intro), word = $('.intro-word', intro);
     var win = $('.intro-win', intro), wimg = $('img', win), bg = $('.intro-bg', intro), corners = $$('.c', win);
+    /* start from scratch, so it can be played again */
+    if (introTl) introTl.kill();
+    gsap.set([mark, dot, word, win, bg].concat(corners), { clearProps: 'all' });
     var pic = $('.hero .pic'), shown = pic && $('img.on', pic);
     if (shown) wimg.src = shown.currentSrc || shown.src;
     var W = innerWidth, H = innerHeight, small = W < 760;
@@ -1000,11 +978,13 @@
     gsap.set(dot, { scale: 0 });
     function done() {
       html.classList.remove('intro-on');
-      intro.remove();
       if (lenis) lenis.start();
     }
-    var tl = gsap.timeline({ onComplete: done });
-    intro.addEventListener('click', function () { tl.progress(1); });
+    var tl = introTl = gsap.timeline({ onComplete: done });
+    if (!intro.dataset.skip) {
+      intro.dataset.skip = '1';
+      intro.addEventListener('click', function () { if (introTl) introTl.progress(1); });
+    }
     tl.to(dot, { scale: 1, duration: .5, ease: 'back.out(2)' }, .2)
       .to(word, { width: wordW, duration: .7, ease: 'expo.inOut' }, .65)
       .to(mark, { borderColor: 'rgba(242,239,233,.55)', duration: .3 }, 1.15)
@@ -1026,6 +1006,19 @@
       .to(bg, { opacity: 0, duration: .7, ease: 'power2.inOut' }, 3.55);
     return 3.6;
   }
+
+  /* the logo plays the intro again (on the home page; elsewhere it opens the home page, which plays it) */
+  $$('.pill-logo').forEach(function (logo) {
+    logo.addEventListener('click', function (e) {
+      if (!$('.intro') || !window.gsap || reduce || e.metaKey || e.ctrlKey) return;
+      e.preventDefault();
+      closeMenu();
+      if (lenis) lenis.scrollTo(0, { immediate: true }); else window.scrollTo(0, 0);
+      document.documentElement.classList.add('intro-on');
+      var at = playIntro();
+      gsap.fromTo($$('.hero .hero-mega .row, .hero-foot'), { opacity: 0 }, { opacity: 1, duration: .7, stagger: .1, delay: at + .1, ease: 'power2.out' });
+    });
+  });
 
   /* GSAP and Lenis are deferred, so they are ready by DOMContentLoaded */
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();

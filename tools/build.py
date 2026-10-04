@@ -126,7 +126,8 @@ def shell(page, root, title, desc, body, head=""):
   <div class="intro-win"><img alt=""><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i></div>
 </div>"""
         # decided before the first paint, so the page never flashes before the intro
-        head += """<script>try{if(!sessionStorage.getItem('sakim-intro')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('intro-on')}catch(e){}</script>
+        # every full load plays it, except links that jump to a section or open a project (#projectos, #/so-what)
+        head += """<script>try{if((!location.hash||location.hash==='#top')&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('intro-on')}catch(e){}</script>
 """
     year = datetime.date.today().year
     footer = "" if page == "lugar" else f"""
@@ -254,6 +255,18 @@ def hero_photos():
     return [(slug, ph, photo(slug, ph)[0]) for slug, ph in out[:28]]
 
 
+def hero_drift(cols=6):
+    """Behind the headline: columns of bar photos drifting up and down on their own, like a slow carousel.
+    Uses the small copies made by tools/thumbs.py; each column is repeated once so the loop has no seam."""
+    minis = [src.replace("img/lugares/", "img/mini/") for _, _, src in hero_photos()]
+    columns = []
+    for c in range(cols):
+        col = minis[c::cols]
+        imgs = "".join(f'<img src="{m}" alt="" loading="{"eager" if c < 4 and k < 3 else "lazy"}">' for k, m in enumerate(col + col))
+        columns.append(f'<div class="drift-col">{imgs}</div>')
+    return f'<div class="hero-drift" aria-hidden="true">{"".join(columns)}</div>'
+
+
 def pics_of(lst):
     return [(photo(s, n)[0], PROJECT_TEXT[s]["name"]) for s, n in lst]
 
@@ -291,6 +304,7 @@ def build_home():
     first = PROJECT_TEXT[hero_photos()[0][0]]
     hero = f"""
   <section class="hero" id="top">
+    {hero_drift()}
     {mega(HERO["title"], 1, pics, "hero-mega")}
     <div class="hero-foot">
       <p class="tag mono pic-name" aria-hidden="true">[ <b>{esc(first["name"])}</b> · <span>{esc(first["meta"][0])}</span> ]</p>
