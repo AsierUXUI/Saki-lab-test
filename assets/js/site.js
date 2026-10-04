@@ -490,11 +490,19 @@
   var cursor = $('.cursor');
   if (finePointer && cursor) {
     var cx = mx, cy = my;
+    /* the dot replaces the system pointer; text fields keep their own text cursor */
+    document.documentElement.classList.add('has-cursor');
     document.addEventListener('pointerover', function (e) {
       var t = e.target.closest('[data-cursor]');
+      var typing = e.target.closest('input, textarea, select, [contenteditable]');
+      var link = !t && !typing && e.target.closest('a, button, label, summary, [role="button"]');
       cursor.classList.toggle('is-label', !!t);
+      cursor.classList.toggle('is-link', !!link);
+      cursor.classList.toggle('is-text', !!typing);
       if (t) $('span', cursor).textContent = (lang === 'en' && t.dataset.cursorEn) || t.dataset.cursor;
     });
+    document.documentElement.addEventListener('pointerleave', function () { cursor.style.opacity = 0; });
+    document.documentElement.addEventListener('pointerenter', function () { cursor.style.opacity = ''; });
     (function loop() {
       cx = lerp(cx, mx, .25); cy = lerp(cy, my, .25);
       cursor.style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
