@@ -9,12 +9,13 @@ import datetime
 import hashlib
 import html
 import json
+import math
 import os
 import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from places import PLACES, SITE_PHOTOS, photo_path, cover_path  # noqa: E402
+from places import PLACES, SITE_PHOTOS, GEO, photo_path, cover_path, services_done  # noqa: E402
 from icons import icon, AREAS, ITEMS  # noqa: E402
 from content import (NAV, START, HERO, STUDIO, SERVICES, PROJECTS, PROJECT_TEXT, PROJECT_ORDER,  # noqa: E402
                      PROCESS, ABOUT, CONTACT)
@@ -396,27 +397,110 @@ def build_home():
 
 
 # ---------------------------------------------------------------- PROJECT PAGE
-LAYOUT = ["f-full", "f-narrow-l", "f-narrow-r", "f-center", "f-left", "f-right", "f-narrow-l", "f-narrow-r"]
+with open(os.path.join(ROOT, "tools", "photo_sizes.json")) as f:
+    ORIGINAL_SIZE = json.load(f)   # longest side of each photo before it was upscaled
+
+
+SPAN = {"g-l": 6, "g-m": 4, "g-s": 3}
+
+
+def pack(p, order):
+    """Lays the photos out in rows of 12 columns that always end flush: when the next photo does
+    not fit, a later one that does is pulled forward, and any space left over widens the row's
+    last photos."""
+    queue, rows, row, used = list(order), [], [], 0
+    while queue:
+        pick = next((k for k in range(min(4, len(queue))) if used + SPAN[tier(p, queue[k])] <= 12), None)
+        if pick is None:
+            rows.append(row); row, used = [], 0
+            continue
+        j = queue.pop(pick)
+        row.append([j, SPAN[tier(p, j)]]); used += row[-1][1]
+        if used == 12:
+            rows.append(row); row, used = [], 0
+    if row:
+        rows.append(row)
+    for r in rows:
+        left = 12 - sum(sp for _, sp in r)
+        k = len(r) - 1
+        while left > 0:
+            r[k][1] += 1; left -= 1
+            k = k - 1 if k > 0 else len(r) - 1
+    return [item for r in rows for item in r]
+
+
+def tier(p, j):
+    """Photos that were sharp to begin with are shown larger than the small ones."""
+    side = ORIGINAL_SIZE.get(photo_path(p, j).split("lugares/")[1], 800)
+    return "g-l" if side >= 1000 else ("g-m" if side >= 750 else "g-s")
+
+
+MAP_W, MAP_H, TILE = 640, 440, 256
+
+
+def map_snapshot(slug):
+    """A still map of where the project is: OpenStreetMap tiles (CARTO light style) laid out around
+    the point, loaded by the visitor's browser. No map library, nothing to drag."""
+    g = GEO[slug]
+    lat, lon = g["geo"]
+    z = g["zoom"]
+    n = TILE * 2 ** z
+    x = (lon + 180) / 360 * n
+    y = (1 - math.log(math.tan(math.radians(lat)) + 1 / math.cos(math.radians(lat))) / math.pi) / 2 * n
+    ox, oy = x - MAP_W / 2, y - MAP_H / 2
+    tiles = []
+    for tx in range(int(ox // TILE), int((ox + MAP_W) // TILE) + 1):
+        for ty in range(int(oy // TILE), int((oy + MAP_H) // TILE) + 1):
+            if ty < 0 or ty >= 2 ** z:
+                continue
+            sub = "abcd"[(tx + ty) % 4]
+            left, top = (tx * TILE - ox) / MAP_W * 100, (ty * TILE - oy) / MAP_H * 100
+            tiles.append(f'<img src="https://{sub}.basemaps.cartocdn.com/light_all/{z}/{tx % 2 ** z}/{ty}@2x.png" alt="" '
+                         f'loading="lazy" style="left:{left:.3f}%;top:{top:.3f}%;width:{TILE / MAP_W * 100:.3f}%" '
+                         f'onerror="this.remove()">')
+    mark = {"pin": '<span class="map-pin"></span>', "area": '<span class="map-area"></span>'}.get(g["mark"], "")
+    return f"""<figure class="map">
+      <div class="map-view" style="aspect-ratio:{MAP_W}/{MAP_H}">{"".join(tiles)}{mark}</div>
+      <figcaption class="mono"><span>{esc(g["addr"])}</span>
+        <span class="map-credit">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> · © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a></span></figcaption>
+    </figure>"""
+
+
+def services_row(slug):
+    done = services_done(slug)
+    chips = "".join(f'<li class="{"on" if a["letter"] in done else "off"}">{icon(AREAS[a["letter"]])}'
+                    f'<span class="mono">{a["letter"]}</span>{tp(a["name"])}</li>' for a in SERVICES["areas"])
+    pct = round(100 * len(done) / len(SERVICES["areas"]))
+    return f"""<div class="done">
+        <p class="mono">{t("Serviços", "Services")} · {len(done)}/{len(SERVICES["areas"])} · {pct}%</p>
+        <ul>{chips}</ul>
+      </div>"""
 
 
 def build_place(slug, n):
     p, tx = BY_SLUG[slug], PROJECT_TEXT[slug]
     root = "../"
+    # the cover first, then the rest in their order
+    order = sorted(range(len(p["photos"])), key=lambda j: p["photos"][j][1] != p["cover"])
     frames = []
-    for j, ph in enumerate(p["photos"]):
-        _, _, alt_pt, alt_en = ph
-        cls = LAYOUT[j % len(LAYOUT)] if len(p["photos"]) > 3 else ("f-full" if j == 0 else ["f-narrow-l", "f-narrow-r"][j % 2])
+    for j, span in pack(p, order):
+        _, _, alt_pt, alt_en = p["photos"][j]
         frames.append(f"""
-    <figure class="frame {cls}">{img(root + photo_path(p, j), alt_pt, alt_en)}</figure>""")
+      <figure class="g {tier(p, j)}" style="--span:{span}">{img(root + photo_path(p, j), alt_pt, alt_en)}</figure>""")
     body = f"""
   <div class="place-content" data-place="{slug}">
     <header class="place-head">
       <p class="tag mono">[ {n:02d} / {len(PROJECT_ORDER)} ] · {tp(tx["meta"])}</p>
       <h1 class="mega place-mega"><span class="row">{esc(tx["name"])}</span></h1>
     </header>
-    <figure class="place-cover"><img class="photo" src="{root}{cover_path(p)}" alt=""></figure>
-    {tp(tx["desc"], "p", 'class="place-desc"')}
-    <section class="frames" aria-label="Fotografias">{"".join(frames)}
+    <div class="place-intro">
+      <div class="place-text">
+        {tp(tx["desc"], "p", 'class="place-desc"')}
+        {services_row(slug)}
+      </div>
+      {map_snapshot(slug)}
+    </div>
+    <section class="gallery" aria-label="Fotografias">{"".join(frames)}
     </section>
   </div>
 """

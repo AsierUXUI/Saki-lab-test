@@ -22,7 +22,7 @@ Other files:
 
 | File | Page |
 |---|---|
-| `lugares/<project>.html` | One page per project (also opens over the home page) |
+| `lugares/<project>.html` | One page per project (also opens over the home page): name, description, the services it had, a still map of where it is, and its photos in a grid |
 | `contacto.html` | Book a conversation (it also opens as a side panel from every page) |
 | `lugares.html`, `sobre.html`, `metodo.html` | Old addresses; they forward to their section |
 
@@ -51,6 +51,12 @@ tools/
   places.py                photo list for each project
   build.py                 builds the pages
 ```
+
+## Project pages
+
+- **Where it is:** `GEO` in `tools/places.py` (coordinates, zoom, and `pin`, `area` or nothing while the address is unknown). The map is made of OpenStreetMap tiles in CARTO's light style, loaded by the visitor's browser; there is no map library.
+- **Which services it had:** `SERVICES_DONE` in `tools/places.py`, e.g. `"some-project": ["A", "B"]`. Projects not listed had all four.
+- **Photo sizes:** photos that were sharp to begin with are shown larger. Their original sizes are in `tools/photo_sizes.json`.
 
 ## Adding or changing photos
 
