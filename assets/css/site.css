@@ -531,8 +531,8 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .teasers { margin: clamp(24px, 4vh, 40px) calc(var(--gutter) * -1) 0; padding: 0 var(--gutter); overflow: hidden; }
 .track { display: flex; gap: clamp(12px, 1.4vw, 20px); will-change: transform; }
 /* slim, horizontal cards: a small photo, then the words */
-.teaser { flex: 0 0 clamp(300px, 40vw, 600px); display: grid; grid-template-columns: clamp(96px, 9vw, 140px) minmax(0, 1fr); gap: clamp(14px, 1.6vw, 22px); align-items: center; padding: 12px 18px 12px 12px; border: 1px solid var(--rule); border-radius: 14px; opacity: .35; transition: opacity .6s var(--ease), border-color .4s, background .4s; user-select: none; }
-.teaser.on { opacity: 1; border-color: var(--ink); background: rgba(255, 255, 255, .28); }
+.teaser { flex: 0 0 clamp(300px, 40vw, 600px); display: grid; grid-template-columns: clamp(96px, 9vw, 140px) minmax(0, 1fr); gap: clamp(14px, 1.6vw, 22px); align-items: center; opacity: .35; transition: opacity .6s var(--ease); user-select: none; }
+.teaser.on { opacity: 1; }
 .teaser img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; pointer-events: none; }
 .teaser-text { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .teaser-meta { display: flex; flex-wrap: wrap; gap: 2px 12px; color: var(--ink-soft); font-size: 11px; }
@@ -576,3 +576,31 @@ html.intro-on body { overflow: hidden; }
 .intro-win .tr { right: 8px; top: 8px; border-top-width: 1.5px; border-right-width: 1.5px; }
 .intro-win .bl { left: 8px; bottom: 8px; border-bottom-width: 1.5px; border-left-width: 1.5px; }
 .intro-win .br { right: 8px; bottom: 8px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+/* ---------------------------------------------------------------- PHONES: tighter rhythm between and inside sections */
+@media (max-width: 760px) {
+  .editorial { padding: 48px 0; }
+  .services, .contact { padding-top: 48px; padding-bottom: 56px; }
+  .contact { padding-bottom: 96px; }
+  .projects { padding: 56px var(--gutter) 48px; }
+  .process { padding-top: 48px; padding-bottom: 48px; gap: 24px; }
+  .sec-head { margin-bottom: 28px; }
+  .sec-body { margin-top: 14px; }
+  .ed-title { margin-top: 28px; }
+  .ed-meta { margin-top: 28px; }
+  .ed-cols { margin-top: 28px; gap: 18px; }
+  .stats { gap: 20px; }
+  .area-head { padding: 16px 0; }
+  .inline-cta { margin-top: 28px; }
+  .reel { margin-top: 28px; }
+  .steps { margin-top: 24px; }
+  .step { padding: 24px 0; }
+  .values { margin-top: 40px; gap: 32px; }
+  .mikas { margin-top: 40px; padding-top: 24px; }
+  .mikas-before { margin: 20px 0 8px; }
+  .press { margin-top: 48px; }
+  .press-head { margin-bottom: 24px; }
+  .teasers { margin-top: 18px; }
+  .contact-grid { margin-top: 28px; gap: 28px; }
+  .foot { padding-bottom: 96px; }
+}
