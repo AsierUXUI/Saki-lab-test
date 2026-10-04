@@ -556,8 +556,105 @@
       var after = imgs[(idx + 1) % imgs.length];
       if (after.loading === 'lazy') after.loading = 'eager';
       caption();
+      pic.dispatchEvent(new CustomEvent('picchange', { detail: imgs[idx] }));
     }, reduce ? 4000 : 2000);
   });
+
+  /* ---------- HERO HOVER: the letters stretch under the cursor and fill with the bar photo around it ---------- */
+  var heroFx = (function () {
+    var hero = $('.hero'), h1 = hero && $('.hero-mega', hero), pic = h1 && $('.pic', h1);
+    if (!hero || !h1 || !pic || !finePointer || reduce) return null;
+    var photos = $$('img', pic), current = $('img.on', pic) || photos[0];
+    var clone = null, letters = [], ghosts = [], centres = [];
+    var px = -999, py = -999, inside = false, r = 0;
+    function split() {
+      /* each letter in its own box, so it can move on its own */
+      $$('.row > span[data-pt]', h1).forEach(function (sp) {
+        if ($('.ch', sp)) return;
+        sp.innerHTML = sp.textContent.split('').map(function (c) {
+          return c === ' ' ? ' ' : '<span class="ch">' + c + '</span>';
+        }).join('');
+      });
+    }
+    function paint() {
+      /* every letter of the copy carries the same photo, positioned as if it were one picture behind the whole headline */
+      if (!clone) return;
+      var W = clone.offsetWidth, H = clone.offsetHeight;
+      var nw = current.naturalWidth || 4, nh = current.naturalHeight || 3;
+      var k = Math.max(W / nw, H / nh), bw = nw * k, bh = nh * k, ox = (W - bw) / 2, oy = (H - bh) / 2;
+      var url = 'url("' + (current.currentSrc || current.src) + '")';
+      var base = clone.getBoundingClientRect();
+      ghosts.forEach(function (g) {
+        var b = g.getBoundingClientRect();
+        g.style.backgroundImage = url;
+        g.style.backgroundSize = bw + 'px ' + bh + 'px';
+        g.style.backgroundPosition = (ox - (b.left - base.left)) + 'px ' + (oy - (b.top - base.top)) + 'px';
+      });
+    }
+    function prepare() {
+      split();
+      if (clone) clone.remove();
+      clone = h1.cloneNode(true);
+      clone.className = 'mega hero-mega mega-photo';
+      clone.removeAttribute('aria-label');
+      clone.setAttribute('aria-hidden', 'true');
+      $$('.row', clone).forEach(function (row) { row.removeAttribute('style'); row.style.fontSize = ''; });
+      $$('.row', h1).forEach(function (row, i) { if (row.style.fontSize) $$('.row', clone)[i].style.fontSize = row.style.fontSize; });
+      clone.style.top = h1.offsetTop + 'px';
+      clone.style.left = h1.offsetLeft + 'px';
+      clone.style.width = h1.offsetWidth + 'px';
+      h1.after(clone);
+      letters = $$('.ch', h1);
+      ghosts = $$('.ch', clone);
+      var hb = hero.getBoundingClientRect();
+      centres = letters.map(function (l) {
+        var b = l.getBoundingClientRect();
+        return { x: b.left - hb.left + b.width / 2, y: b.top - hb.top + b.height * .55, h: b.height, s: 1 };
+      });
+      paint();
+    }
+    pic.addEventListener('picchange', function (e) {
+      current = e.detail;
+      if (current.complete) paint(); else current.addEventListener('load', paint, { once: true });
+    });
+
+    hero.addEventListener('pointermove', function (e) {
+      if (e.pointerType !== 'mouse') return;
+      var hb = hero.getBoundingClientRect();
+      px = e.clientX - hb.left; py = e.clientY - hb.top; inside = true;
+    });
+    hero.addEventListener('pointerleave', function () { inside = false; });
+
+    (function loop() {
+      requestAnimationFrame(loop);
+      if (!clone) return;
+      var target = inside ? Math.min(240, hero.offsetWidth * .17) : 0;
+      if (!inside && r < .5 && !letters.some(function (l, i) { return centres[i].s > 1.002; })) return;
+      r += (target - r) * .12;
+      clone.style.setProperty('--rx', (px - clone.offsetLeft) + 'px');
+      clone.style.setProperty('--ry', (py - clone.offsetTop) + 'px');
+      clone.style.setProperty('--rr', r + 'px');
+      /* letters near the cursor grow taller, like a lens passing over the type */
+      letters.forEach(function (l, i) {
+        var c = centres[i];
+        var dx = (px - c.x) / (c.h * .55), dy = (py - c.y) / (c.h * .9);
+        var f = inside ? Math.exp(-(dx * dx + dy * dy) / 2) : 0;
+        var goal = 1 + .42 * f;
+        c.s += (goal - c.s) * .16;
+        var tf = c.s > 1.001 ? 'scaleY(' + c.s.toFixed(3) + ')' : '';
+        l.style.transform = tf;
+        ghosts[i].style.transform = tf;
+      });
+    })();
+    return { prepare: prepare };
+  })();
+  if (heroFx) {
+    heroFx.prepare();
+    langHooks.push(heroFx.prepare);
+    if (document.fonts) document.fonts.ready.then(heroFx.prepare);
+    window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { fitAll(); heroFx.prepare(); }, 140); });
+    window.addEventListener('load', function () { heroFx.prepare(); });
+  }
 
   /* ---------- PILL BAR: a mark under the section you are in ---------- */
   (function sections() {
