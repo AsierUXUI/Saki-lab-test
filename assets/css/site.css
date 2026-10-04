@@ -164,15 +164,8 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 @keyframes drift-down { from { transform: translateY(calc(-50% - 8px)); } to { transform: translateY(0); } }
 .hero-wash { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: rgba(233, 230, 224, .78); }
 .hero-mega { position: relative; z-index: 2; }
-/* the lens: a complete copy of the hero (photos, wash, headline) that ripples like water under the cursor */
-.hero-lens { position: absolute; inset: 0; z-index: 4; pointer-events: none; overflow: hidden; filter: url(#liquid);
-  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 86%, transparent 100%);
-  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rx, -999px) var(--ry, -999px), #000 86%, transparent 100%); }
-.hero-lens .hero-mega { position: absolute; margin: 0; }
-/* inside the circle only the lens shows: the real headline, photo and sentence step aside, so nothing is doubled */
-.hero.lensing > .hero-mega, .hero.lensing > .hero-foot {
-  -webkit-mask-image: radial-gradient(circle var(--rr, 0px) at var(--rxl, -999px) var(--ryl, -999px), transparent 86%, #000 100%);
-  mask-image: radial-gradient(circle var(--rr, 0px) at var(--rxl, -999px) var(--ryl, -999px), transparent 86%, #000 100%); }
+.hero { background: var(--paper); }   /* opaque, so the rippling square sits back over it seamlessly */
+.hero.rippling { filter: url(#liquid); }
 @media (max-width: 760px) {
   .hero-drift { inset: -20% -30%; gap: 10px; }
   .drift-col { gap: 10px; }

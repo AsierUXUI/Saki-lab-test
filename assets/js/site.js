@@ -580,113 +580,72 @@
     }, reduce ? 4000 : 2000);
   });
 
-  /* ---------- HERO HOVER: a lens of water under the cursor; the headline and the photos behind it ripple,
-     more the faster the cursor moves. The lens is a full copy of the hero, so nothing fades or halos. ---------- */
+  /* ---------- HERO HOVER: the hero itself ripples like water around the cursor, more the faster it moves.
+     No copy, no circle: one SVG filter on the real hero, its strength fading out with distance. ---------- */
   var heroFx = (function () {
-    var hero = $('.hero'), h1 = hero && $('.hero-mega', hero), pic = h1 && $('.pic', h1), drift = hero && $('.hero-drift', hero);
-    if (!hero || !h1 || !finePointer || reduce) return null;
-    var svgNS = 'http://www.w3.org/2000/svg';
-    var svg = document.createElementNS(svgNS, 'svg');
+    var hero = $('.hero');
+    if (!hero || !finePointer || reduce) return null;
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
     svg.style.position = 'absolute';
-    /* the filter only works on the square around the cursor, which keeps it light */
-    svg.innerHTML = '<filter id="liquid" filterUnits="userSpaceOnUse" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">' +
-      '<feTurbulence type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="1" seed="4" result="noise"/>' +
-      '<feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>';
+    /* every step works only on the square around the cursor ("near"), which keeps it light; the last step lays that
+       square back over the untouched hero, which has its own paper background so the two match exactly */
+    var ALL = 'x="-100" y="-100" width="6000" height="6000"';
+    svg.innerHTML =
+      '<filter id="liquid" x="0" y="0" width="1" height="1" primitiveUnits="userSpaceOnUse" color-interpolation-filters="sRGB">' +
+        '<feTurbulence class="near" type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="1" seed="4" result="n0"/>' +
+        '<feColorMatrix class="near" in="n0" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0 1" result="noise"/>' +
+        '<feFlood flood-color="#fff" x="-999" y="-999" width="1" height="1" result="dot"/>' +
+        '<feGaussianBlur class="near" in="dot" stdDeviation="60" result="soft"/>' +
+        '<feColorMatrix class="near" in="soft" type="matrix" values="0 0 0 1 0  0 0 0 1 0  0 0 0 1 0  0 0 0 0 1" result="spot"/>' +
+        '<feComposite class="near" in="noise" in2="spot" operator="arithmetic" k1="1" k2="0" k3="-0.5" k4="0.5" result="map"/>' +
+        '<feDisplacementMap class="near" in="SourceGraphic" in2="map" scale="0" xChannelSelector="R" yChannelSelector="G" result="wet"/>' +
+        '<feMerge ' + ALL + '><feMergeNode in="SourceGraphic"/><feMergeNode in="wet"/></feMerge>' +
+      '</filter>';
     document.body.appendChild(svg);
-    var filter = svg.querySelector('filter'), noise = svg.querySelector('feTurbulence'), disp = svg.querySelector('feDisplacementMap');
-    var lens = null, lensH1 = null, px = -999, py = -999, inside = false, r = 0, strength = 0, last = null, speed = 0, t = 0;
+    var noise = svg.querySelector('feTurbulence'), dot = svg.querySelector('feFlood'),
+        blur = svg.querySelector('feGaussianBlur'), disp = svg.querySelector('feDisplacementMap'),
+        near = Array.prototype.slice.call(svg.querySelectorAll('.near'));
+    var px = -999, py = -999, inside = false, size = 0, strength = 0, last = null, speed = 0, t = 0;
 
-    function syncDrift() {
-      /* the copy's columns move in step with the real ones */
-      if (!lens || !drift) return;
-      var real = $$('.drift-col', drift), copy = $$('.drift-col', lens);
-      real.forEach(function (col, i) {
-        var a = col.getAnimations && col.getAnimations()[0], b = copy[i] && copy[i].getAnimations && copy[i].getAnimations()[0];
-        if (a && b) { b.currentTime = a.currentTime; b.playbackRate = a.playbackRate; }
-      });
-    }
-    function prepare() {
-      if (lens) lens.remove();
-      lens = document.createElement('div');
-      lens.className = 'hero-lens';
-      lens.setAttribute('aria-hidden', 'true');
-      if (drift) lens.appendChild(drift.cloneNode(true));
-      var wash = $('.hero-wash', hero);
-      if (wash) lens.appendChild(wash.cloneNode(true));
-      lensH1 = h1.cloneNode(true);
-      lensH1.removeAttribute('aria-label');
-      $$('.row', lensH1).forEach(function (row, i) {
-        row.removeAttribute('style');
-        var size = $$('.row', h1)[i].style.fontSize;
-        if (size) row.style.fontSize = size;
-      });
-      lensH1.style.top = h1.offsetTop + 'px';
-      lensH1.style.left = h1.offsetLeft + 'px';
-      lensH1.style.width = h1.offsetWidth + 'px';
-      lens.appendChild(lensH1);
-      /* the sentence and the place's name under the headline, so they ripple too instead of vanishing */
-      var foot = $('.hero-foot', hero);
-      if (foot) {
-        var lensFoot = foot.cloneNode(true);
-        lensFoot.removeAttribute('style');
-        lensFoot.style.position = 'absolute';
-        lensFoot.style.margin = '0';
-        lensFoot.style.top = foot.offsetTop + 'px';
-        lensFoot.style.left = foot.offsetLeft + 'px';
-        lensFoot.style.width = foot.offsetWidth + 'px';
-        lens.appendChild(lensFoot);
-      }
-      hero.appendChild(lens);
-      syncDrift();
-    }
-    /* the copy shows the same photo inside the headline */
-    if (pic) pic.addEventListener('picchange', function () {
-      if (!lensH1) return;
-      var realCap = $('.hero-foot .pic-name', hero), copyCap = $('.pic-name', lens);
-      if (realCap && copyCap) copyCap.innerHTML = realCap.innerHTML;
-      var on = $$('img', pic).map(function (im) { return im.classList.contains('on'); });
-      $$('.pic img', lensH1).forEach(function (im, i) { im.classList.toggle('on', on[i]); });
-    });
-
-    hero.addEventListener('pointerenter', syncDrift);
     hero.addEventListener('pointermove', function (e) {
       if (e.pointerType !== 'mouse') return;
       var hb = hero.getBoundingClientRect();
       px = e.clientX - hb.left; py = e.clientY - hb.top; inside = true;
-      if (last) speed = Math.min(80, speed + Math.hypot(e.clientX - last.x, e.clientY - last.y));
+      if (last) speed = Math.min(90, speed + Math.hypot(e.clientX - last.x, e.clientY - last.y));
       last = { x: e.clientX, y: e.clientY };
     });
     hero.addEventListener('pointerleave', function () { inside = false; last = null; });
 
-    (function loop() {
+    var prev = performance.now();
+    (function loop(now) {
       requestAnimationFrame(loop);
-      if (!lens) return;
-      if (!inside && r < .5 && strength < .2) return;
-      t += .016;
-      if (Math.round(t / .016) % 20 === 0) syncDrift();
-      speed *= .9;
-      r += ((inside ? Math.min(240, hero.offsetWidth * .17) : 0) - r) * .1;
-      strength += ((inside ? 16 + speed * .8 : 0) - strength) * .06;
+      /* everything eases by time, not by frames, so a slow machine fades out just as quickly */
+      var dt = Math.min(.1, ((now || performance.now()) - prev) / 1000); prev = now || performance.now();
+      var k = function (rate) { return 1 - Math.pow(1 - rate, dt * 60); };
+      speed *= 1 - k(.1);
+      /* it calms down when the cursor rests, and fades away when it leaves */
+      var goal = inside ? 6 + speed * 1.1 : 0;
+      strength += (goal - strength) * k(.08);
+      size += ((inside ? Math.min(220, hero.offsetWidth * .15) : 0) - size) * k(.1);
+      if (strength < .3) { if (hero.classList.contains('rippling')) hero.classList.remove('rippling'); return; }
+      hero.classList.add('rippling');
+      t += dt;
       disp.setAttribute('scale', strength.toFixed(1));
       noise.setAttribute('baseFrequency', (0.005 + 0.0015 * Math.sin(t * 1.1)).toFixed(4) + ' ' + (0.008 + 0.002 * Math.cos(t * .8)).toFixed(4));
-      filter.setAttribute('x', (px - r - 40).toFixed(0));
-      filter.setAttribute('y', (py - r - 40).toFixed(0));
-      filter.setAttribute('width', (2 * r + 80).toFixed(0));
-      filter.setAttribute('height', (2 * r + 80).toFixed(0));
-      lens.style.setProperty('--rx', px + 'px');
-      lens.style.setProperty('--ry', py + 'px');
-      lens.style.setProperty('--rr', r + 'px');
-      /* the same circle, in the headline's and the sentence's own coordinates */
-      hero.classList.toggle('lensing', r > .5);
-      hero.style.setProperty('--rr', r + 'px');
-      [h1, $('.hero-foot', hero)].forEach(function (el) {
-        if (!el) return;
-        el.style.setProperty('--rxl', (px - el.offsetLeft) + 'px');
-        el.style.setProperty('--ryl', (py - el.offsetTop) + 'px');
+      var w = size * .9;
+      dot.setAttribute('x', (px - w / 2).toFixed(0));
+      dot.setAttribute('y', (py - w / 2).toFixed(0));
+      dot.setAttribute('width', w.toFixed(0));
+      dot.setAttribute('height', w.toFixed(0));
+      blur.setAttribute('stdDeviation', (size * .32).toFixed(0));
+      var reach = size * 1.6;
+      near.forEach(function (el) {
+        el.setAttribute('x', (px - reach).toFixed(0)); el.setAttribute('y', (py - reach).toFixed(0));
+        el.setAttribute('width', (2 * reach).toFixed(0)); el.setAttribute('height', (2 * reach).toFixed(0));
       });
     })();
-    return { prepare: prepare, sync: syncDrift };
+    return { prepare: function () {}, sync: function () {} };
   })();
 
   /* the drifting photos rest while the hero is off screen */
