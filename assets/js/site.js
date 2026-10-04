@@ -830,40 +830,25 @@
     langHooks.push(meta);
   })();
 
-  /* ---------- IN THE PRESS: clippings you can drag around the wall; a click (not a drag) opens the article ---------- */
-  (function clippings() {
-    var clips = $$('.clip');
-    if (!clips.length || !finePointer) return;
-    var top = 10;
-    clips.forEach(function (c) {
-      var a = $('a', c), sx = 0, sy = 0, ox = 0, oy = 0, moved = false, down = false;
-      a.addEventListener('pointerdown', function (e) {
-        if (e.button !== 0) return;
-        down = true; moved = false;
-        sx = e.clientX; sy = e.clientY;
-        ox = parseFloat(c.style.getPropertyValue('--x')) || 0;
-        oy = parseFloat(c.style.getPropertyValue('--dy')) || 0;
-        a.setPointerCapture(e.pointerId);
+  /* ---------- IN THE PRESS: pointing at a stop on the bar shows that article's teaser ---------- */
+  (function press() {
+    var stops = $$('.stop'), teasers = $$('.teaser');
+    if (!stops.length) return;
+    function show(i) {
+      stops.forEach(function (s, j) { s.classList.toggle('on', j === i); });
+      teasers.forEach(function (t, j) { t.classList.toggle('on', j === i); });
+    }
+    stops.forEach(function (s, i) {
+      var a = $('a', s);
+      var wasOn = false;
+      a.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') show(i); });
+      /* on a touch screen the first tap shows the teaser, a second tap (or the teaser) opens the article */
+      a.addEventListener('pointerdown', function (e) { wasOn = e.pointerType === 'mouse' || s.classList.contains('on'); });
+      a.addEventListener('focus', function () { show(i); });
+      a.addEventListener('click', function (e) {
+        if (!wasOn) { e.preventDefault(); show(i); }
+        wasOn = false;
       });
-      a.addEventListener('pointermove', function (e) {
-        if (!down) return;
-        var dx = e.clientX - sx, dy = e.clientY - sy;
-        if (!moved && Math.hypot(dx, dy) < 6) return;
-        if (!moved) { moved = true; c.classList.add('dragging'); c.style.zIndex = ++top; }
-        c.style.setProperty('--x', (ox + dx) + 'px');
-        c.style.setProperty('--dy', (oy + dy) + 'px');
-      });
-      function up() {
-        if (!down) return;
-        down = false;
-        c.classList.remove('dragging');
-        if (moved) c.classList.add('moved');
-      }
-      a.addEventListener('pointerup', up);
-      a.addEventListener('pointercancel', up);
-      /* a drag is not a click */
-      a.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
-      a.addEventListener('dragstart', function (e) { e.preventDefault(); });
     });
   })();
 

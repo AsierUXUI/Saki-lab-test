@@ -519,40 +519,35 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 }
 
 
-/* ---------------------------------------------------------------- IN THE PRESS: newspaper clippings on the wall */
+/* ---------------------------------------------------------------- IN THE PRESS: a bar through time, a teaser underneath */
 .press { margin: clamp(80px, 14vh, 160px) var(--gutter) 0; }
 .press-head { margin-bottom: clamp(36px, 6vh, 64px); }
 .press-head .tag { margin-bottom: 18px; }
-.press-hint { margin-top: 16px; color: var(--ink-soft); }
-.clips { list-style: none; columns: 4; column-gap: clamp(16px, 2vw, 32px); padding: 20px 0 40px; }
-.clip { break-inside: avoid; margin-bottom: clamp(14px, 1.8vw, 30px); padding-top: 14px; }   /* room for the tape inside the clipping's own box */
-.clip { --x: 0px; --dy: 0px; --lift: 0px; --rot: var(--r); position: relative; transform: translate(var(--x), calc(var(--y) + var(--dy) + var(--lift))) rotate(var(--rot)); transition: transform .5s var(--ease), box-shadow .5s; touch-action: pan-y; }
-.clip a { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px 14px; color: #1d1b18;
-  background: #f7f4ec linear-gradient(transparent 0 calc(100% - 1px), rgba(22, 22, 22, .04) 0) 0 0 / 100% 26px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, .08), 0 10px 24px -12px rgba(0, 0, 0, .35);
-  /* the uneven edge of paper cut with scissors */
-  clip-path: polygon(0 1%, 7% 0, 18% .8%, 31% 0, 46% .9%, 60% .1%, 74% 1%, 88% 0, 100% .7%, 99.4% 22%, 100% 48%, 99.3% 74%, 100% 99%, 86% 100%, 71% 99.1%, 55% 100%, 40% 99.2%, 24% 100%, 10% 99.3%, 0 100%, .6% 76%, 0 51%, .7% 25%); }
-.clip-tape::before { content: ''; position: absolute; z-index: 2; left: 50%; top: 2px; width: 92px; height: 26px; margin-left: -46px; background: rgba(240, 225, 190, .72); transform: rotate(-4deg); box-shadow: 0 1px 2px rgba(0, 0, 0, .08); }
-.clip-mast { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 6px 0 8px; border-top: 3px double #1d1b18; border-bottom: 1px solid #1d1b18; }
-.clip-mast b { font-family: var(--serif); font-weight: 500; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
-.clip-photo { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; filter: grayscale(1) contrast(1.15) brightness(1.03); mix-blend-mode: multiply; }
-.clip-big .clip-photo { aspect-ratio: 4 / 5; }
-.clip-title { font-family: var(--serif); font-weight: 500; font-size: clamp(20px, 1.6vw, 26px); line-height: 1.12; letter-spacing: -.01em; }
-.clip-big .clip-title { font-size: clamp(24px, 2vw, 34px); line-height: 1.06; }
-.clip-foot { display: flex; justify-content: space-between; gap: 10px; padding-top: 8px; border-top: 1px solid rgba(29, 27, 24, .25); font-size: 11px; color: rgba(29, 27, 24, .7); }
-.clip-foot span:last-child { color: var(--ember); }
-.clip:hover { --lift: -8px; --rot: 0deg; z-index: 5; }
-.clip:hover a { box-shadow: 0 2px 2px rgba(0, 0, 0, .08), 0 26px 40px -16px rgba(0, 0, 0, .45); }
-.clip.dragging { transition: none; z-index: 20; --rot: 0deg; }
-.clip.moved { z-index: 4; }
-@media (pointer: fine) { .clip a { cursor: grab; } .clip.dragging a { cursor: grabbing; } }
-@media (max-width: 1100px) { .clips { columns: 3; } }
-@media (max-width: 800px) { .clips { columns: 2; } }
-@media (max-width: 600px) {
-  .clips { columns: 1; }
-  .clip { transform: rotate(calc(var(--r) * .6)); }
-  .clip:hover { --lift: 0px; }
-  .press-hint { display: none; }
+.timeline { overflow-x: auto; scrollbar-width: none; padding: 0 2px; }
+.timeline::-webkit-scrollbar { display: none; }
+.stops { list-style: none; display: flex; min-width: 640px; position: relative; padding-top: 30px; }
+.stops::before { content: ''; position: absolute; left: 0; right: 0; top: 30px; margin-top: 21px; height: 1px; background: var(--ink); }
+.stop { flex: 1; position: relative; }
+.stop-year { position: absolute; left: 0; top: -30px; white-space: nowrap; font-size: 13px; }
+.stop.new-year::before { content: ''; position: absolute; left: 21px; top: -10px; width: 1px; height: 18px; background: var(--ink); }
+.stop a { display: grid; place-items: center; width: 44px; height: 44px; }
+.stop i { width: 11px; height: 11px; border-radius: 50%; background: var(--paper); border: 1.5px solid var(--ink); transition: transform .4s var(--ease), background .3s, border-color .3s; }
+.stop a:hover i, .stop a:focus-visible i { transform: scale(1.5); background: var(--ink); }
+.stop.on i { transform: scale(1.9); background: var(--ember); border-color: var(--ember); }
+.stop.on .stop-year { color: var(--ember); }
+.teasers { position: relative; margin-top: clamp(24px, 4vh, 40px); }
+.teaser { position: absolute; inset: 0 0 auto 0; display: grid; grid-template-columns: clamp(160px, 22vw, 320px) minmax(0, 1fr); gap: clamp(20px, 3vw, 48px); align-items: start; padding-top: clamp(20px, 3vh, 32px); border-top: 1px solid var(--rule); opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .35s, transform .5s var(--ease); }
+.teaser.on { opacity: 1; transform: none; pointer-events: auto; position: relative; }
+.teaser img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; }
+.teaser-text { display: flex; flex-direction: column; gap: 16px; }
+.teaser-meta { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink-soft); }
+.teaser-meta b { font-weight: 500; color: var(--ink); }
+.teaser-title { font-size: clamp(26px, 3vw, 48px); line-height: 1.08; letter-spacing: -.015em; max-width: 900px; }
+.teaser-read { align-self: flex-start; padding: 6px 0; border-bottom: 2px solid var(--ember); }
+.teaser:hover .teaser-read { color: var(--ember); }
+@media (max-width: 700px) {
+  .teaser { grid-template-columns: 1fr; }
+  .teaser img { aspect-ratio: 16 / 9; }
 }
 
 /* Mikas, in About */
