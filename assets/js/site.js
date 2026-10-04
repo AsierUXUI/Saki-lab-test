@@ -845,30 +845,41 @@
     langHooks.push(meta);
   })();
 
-  /* ---------- IN THE PRESS: a photo of the place follows the cursor along the list ---------- */
-  (function press() {
-    var list = $('.press-list'), peek = $('.press-peek'), im = peek && $('img', peek);
-    if (!list || !peek || !finePointer || reduce) return;
-    var x = mx, y = my, on = false;
-    $$('a', list).forEach(function (a) {
-      a.addEventListener('pointerenter', function () {
-        if (im.getAttribute('src') !== a.dataset.photo) im.src = a.dataset.photo;
-        if (!on) { x = mx; y = my; }
-        on = true; peek.classList.add('on');
+  /* ---------- IN THE PRESS: clippings you can drag around the wall; a click (not a drag) opens the article ---------- */
+  (function clippings() {
+    var clips = $$('.clip');
+    if (!clips.length || !finePointer) return;
+    var top = 10;
+    clips.forEach(function (c) {
+      var a = $('a', c), sx = 0, sy = 0, ox = 0, oy = 0, moved = false, down = false;
+      a.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return;
+        down = true; moved = false;
+        sx = e.clientX; sy = e.clientY;
+        ox = parseFloat(c.style.getPropertyValue('--x')) || 0;
+        oy = parseFloat(c.style.getPropertyValue('--dy')) || 0;
+        a.setPointerCapture(e.pointerId);
       });
+      a.addEventListener('pointermove', function (e) {
+        if (!down) return;
+        var dx = e.clientX - sx, dy = e.clientY - sy;
+        if (!moved && Math.hypot(dx, dy) < 6) return;
+        if (!moved) { moved = true; c.classList.add('dragging'); c.style.zIndex = ++top; }
+        c.style.setProperty('--x', (ox + dx) + 'px');
+        c.style.setProperty('--dy', (oy + dy) + 'px');
+      });
+      function up() {
+        if (!down) return;
+        down = false;
+        c.classList.remove('dragging');
+        if (moved) c.classList.add('moved');
+      }
+      a.addEventListener('pointerup', up);
+      a.addEventListener('pointercancel', up);
+      /* a drag is not a click */
+      a.addEventListener('click', function (e) { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
+      a.addEventListener('dragstart', function (e) { e.preventDefault(); });
     });
-    list.addEventListener('pointerleave', function () { on = false; peek.classList.remove('on'); });
-    window.addEventListener('scroll', function () {
-      var r = list.getBoundingClientRect();
-      if (on && (my < r.top || my > r.bottom)) { on = false; peek.classList.remove('on'); }
-    }, { passive: true });
-    (function loop() {
-      requestAnimationFrame(loop);
-      if (!on) return;
-      x += (mx - x) * .14; y += (my - y) * .14;
-      var w = peek.offsetWidth;
-      peek.style.transform = 'translate(' + (x + 28) + 'px,' + (y - w * .62) + 'px) rotate(' + Math.max(-6, Math.min(6, (mx - x) * .05)) + 'deg)';
-    })();
   })();
 
   /* ---------- MAPS: a still map from OpenFreeMap, drawn only when it comes into view ---------- */
