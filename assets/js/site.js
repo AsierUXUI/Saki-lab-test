@@ -504,6 +504,10 @@
 
   /* ---------- BIG LINES: each block is sized so its longest line fills the width ---------- */
   function fitAll(root) {
+    /* lines with accented capitals (Ê, Ó, Ã) get a little more room above, in whichever language is showing */
+    $$('.mega .row', root).forEach(function (row) {
+      row.classList.toggle('row-acc', /[ÁÀÂÃÉÊÈÍÓÔÕÚáàâãéêèíóôõú]/.test(row.textContent));
+    });
     $$('.mega', root).forEach(function (el) {
       if (el.classList.contains('place-mega')) return;
       var box = el.parentElement, cs = getComputedStyle(box);
@@ -525,6 +529,11 @@
       }
       if (el.classList.contains('mega-s')) size = Math.min(size, Math.max(64, innerWidth * .11));
       el.style.fontSize = Math.floor(size * .995) + 'px';
+      if (el.classList.contains('hero-mega')) {
+        /* measured, not guessed: lines with accents take a little more height */
+        var room = innerHeight * .54;
+        if (el.offsetHeight > room) el.style.fontSize = Math.floor(size * .995 * room / el.offsetHeight) + 'px';
+      }
     });
   }
   langHooks.push(function () {

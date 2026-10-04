@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from places import PLACES, SITE_PHOTOS, GEO, photo_path, cover_path, services_done  # noqa: E402
 from icons import icon, AREAS, ITEMS  # noqa: E402
 from content import (NAV, START, HERO, STUDIO, SERVICES, PROJECTS, PROJECT_TEXT, PROJECT_ORDER,  # noqa: E402
-                     PROCESS, ABOUT, CONTACT, PRESS, PRESS_LABEL, PRESS_TITLE)
+                     PROCESS, ABOUT, CONTACT, PRESS, PRESS_LABEL, PRESS_TITLE, MIKAS)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BY_SLUG = {p["slug"]: p for p in PLACES}
@@ -219,7 +219,8 @@ def mega(pair, pic_row=None, pics=None, cls="", tag="h1"):
                            + (f' data-meta-pt="{esc(pc[2][0])}" data-meta-en="{esc(pc[2][1])}"' if len(pc) > 2 else "")
                            + f'{"" if j < 2 else " loading=" + chr(34) + "lazy" + chr(34)}>' for j, pc in enumerate(pics))
             pic = f' <span class="pic" aria-hidden="true">{imgs}</span>'
-        rows.append(f'<span class="row">{t(accent_stop(rp), accent_stop(re_))}{pic}</span>')
+        tall = " row-acc" if re.search("[ÁÀÂÃÉÊÈÍÓÔÕÚáàâãéêèíóôõú]", rp + re_) else ""
+        rows.append(f'<span class="row{tall}">{t(accent_stop(rp), accent_stop(re_))}{pic}</span>')
     label = esc(plain(pair[0].replace("<br>", " ")))
     return f'<{tag} class="mega {cls}" aria-label="{label}" data-label-pt="{label}" data-label-en="{esc(plain(pair[1].replace("<br>", " ")))}">{"".join(rows)}</{tag}>'
 
@@ -229,8 +230,9 @@ def label(pair, attrs=""):
 
 
 HERO_PICS = TORCH
-PROCESS_PICS = [("o-larguinho", "electrico"), ("a-tabacaria", "fachada"), ("velha-senhora", "mesas-em-obra"),
-                ("a-tabacaria", "torneiras"), ("so-what", "fila-a-porta")]
+# the sharpest photos we have (1500px originals first, then 800px), one per step
+PROCESS_PICS = [("sakim", "rua-a-noite"), ("velha-senhora", "candeeiros-velhos"), ("velha-senhora", "mesas-em-obra"),
+                ("so-what", "abobada-acesa"), ("so-what", "fila-a-porta")]
 CONTACT_PICS = [("sakim", "mesa-longa"), ("so-what", "mesa-posta"), ("a-tabacaria", "espuma"), ("o-terraco", "hora-azul")]
 
 
@@ -399,6 +401,13 @@ def build_home():
       <div class="ed-cols">
         {tp(ABOUT["paras"][1], "p")}
         {tp(ABOUT["paras"][2], "p")}
+      </div>
+      <div class="mikas">
+        {label(MIKAS["label"])}
+        {tp(MIKAS["text"], "p", 'class="mikas-text"')}
+        {tp(MIKAS["before"], "p", 'class="mono mikas-before"')}
+        <ul class="mikas-places">{"".join(f"<li>{esc(n)}</li>" for n in MIKAS["places"])}</ul>
+        <a class="mikas-source mono" href="{MIKAS["source_url"]}" target="_blank" rel="noopener">{tp(MIKAS["source"])} ↗</a>
       </div>
       <ul class="values">{"".join(values)}
       </ul>
