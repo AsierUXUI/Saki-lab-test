@@ -282,3 +282,64 @@ CONTACT = {
     "city": ("Lisboa, Portugal", "Lisbon, Portugal"),
     "rights": ("Todos os direitos reservados.", "All rights reserved."),
 }
+
+# In the press: real articles about Mikas and his places, newest first. Titles stay in their original language.
+# about: a project slug (its cover shows on hover) or "mikas".
+PRESS_LABEL = ("Na Imprensa", "In the Press")
+PRESS_TITLE = ("O que se <em>escreveu</em>", "What's been <em>written</em>")
+PRESS = [
+    {"outlet": "Time Out Lisboa", "year": 2024, "about": "so-what",
+     "title": "Mikas tem um novo bar e é um club de jazz: So What",
+     "url": "https://www.timeout.pt/lisboa/pt/noticias/mikas-tem-um-novo-bar-e-e-um-club-de-jazz-so-what-041224"},
+    {"outlet": "Cuisine Noir", "year": None, "about": "mikas",
+     "title": "Mikas Builds a Renaissance Legacy at Social B",
+     "url": "https://www.cuisinenoir.com/mikas-social-b-lisbon-portugal/"},
+    {"outlet": "Time Out Lisboa", "year": 2019, "about": "bicaense",
+     "title": "A noite que dá fama à Bica “está progressivamente a desaparecer”",
+     "url": "https://www.timeout.pt/lisboa/pt/noticias/a-noite-que-da-fama-a-bica-esta-progressivamente-a-desaparecer-011019"},
+    {"outlet": "Time Out Lisboa", "year": 2019, "about": "bicaense",
+     "title": "Bicaense fecha e deixa Lisboa sem um dos seus bares de referência",
+     "url": "https://www.timeout.pt/lisboa/pt/noticias/bicaense-fecha-e-deixa-lisboa-sem-um-dos-seus-bares-de-referencia-010919"},
+    {"outlet": "Visão Se7e", "year": 2018, "about": "social-b",
+     "title": "Social B, em Lisboa: um bar sem conceitos",
+     "url": "https://visao.pt/visaose7e/sair/2018-08-09-social-b-em-lisboa-um-bar-sem-conceitos/"},
+    {"outlet": "Time Out Lisboa", "year": 2018, "about": "social-b",
+     "title": "Social B: este novo bar no Cais do Sodré pode ser a sua sala de estar",
+     "url": "https://www.timeout.pt/lisboa/pt/noticias/social-b-este-novo-bar-no-cais-do-sodre-pode-ser-a-sua-sala-de-estar-090618"},
+    {"outlet": "The Infatuation", "year": None, "about": "social-b",
+     "title": "Social B — Lisbon review",
+     "url": "https://www.theinfatuation.com/lisbon/reviews/social-b"},
+    {"outlet": "Observador", "year": 2015, "about": "a-tabacaria",
+     "title": "A Tabacaria: uma lotaria de rum, gin e petiscos",
+     "url": "https://observador.pt/2015/10/23/tabacaria-lotaria-rum-gin-petiscos/"},
+    {"outlet": "NiT", "year": 2015, "about": "a-tabacaria",
+     "title": "A nova Tabacaria onde se servem gins e cerveja",
+     "url": "https://www.nit.pt/comida/09-08-2015-a-nova-tabacaria-onde-ser-servem-gins-e-cerveja"},
+    {"outlet": "Observador", "year": 2015, "about": "clube-ferroviario",
+     "title": "10 terraços para celebrar o sol",
+     "url": "https://observador.pt/2015/05/12/10-terracos-para-celebrar-o-sol/"},
+    {"outlet": "Público · Ípsilon", "year": 2010, "about": "mikas",
+     "title": "Mikas: uma história do cerco de Lisboa",
+     "url": "https://www.publico.pt/2010/06/27/culturaipsilon/noticia/mikas-uma-historia-do-cerco-de-lisboa-259846"},
+    {"outlet": "Time Out Lisbon", "year": None, "about": "clube-ferroviario",
+     "title": "Clube Ferroviário",
+     "url": "https://www.timeout.com/lisbon/nightlife/clube-ferroviario"},
+    {"outlet": "Público · Fugas", "year": None, "about": "velha-senhora",
+     "title": "Bar da Velha Senhora",
+     "url": "https://fugas.publico.pt/restaurantesebares/296729_bar-da-velha-senhora"},
+]
+
+# Mikas, in About. From Público (Ípsilon, 27 June 2010) and Cuisine Noir.
+MIKAS = {
+    "label": ("Quem Está à Mesa", "Who's at the Table"),
+    "text": ("Por trás da Sakim Lab está <strong>Mikas</strong>, moçambicano, há mais de trinta anos a fazer a noite de Lisboa. "
+             "Quando a Bica era ainda um bairro fechado sobre si mesmo, abriu lá o W.I.P. — bar, loja de roupa e cabeleireiro ao mesmo tempo. "
+             "Seguiu-se o Bicaense, e a noite da Bica nunca mais foi a mesma.",
+             "Behind Sakim Lab is <strong>Mikas</strong>, Mozambican, shaping Lisbon's nights for more than thirty years. "
+             "When Bica was still a neighbourhood closed in on itself, he opened W.I.P. there — a bar, a clothes shop and a hairdresser all at once. "
+             "Then came Bicaense, and nights in Bica were never the same again."),
+    "before": ("Antes da Sakim Lab, entre outros", "Before Sakim Lab, among others"),
+    "places": ["Atira-te ao Rio", "Bar das Imagens", "W.I.P.", "Bicaense", "Terraço do Mercado do Chão do Loureiro", "Bica-me", "Clube Ferroviário"],
+    "source": ("Segundo o Público, 2010", "According to Público, 2010"),
+    "source_url": "https://www.publico.pt/2010/06/27/culturaipsilon/noticia/mikas-uma-historia-do-cerco-de-lisboa-259846",
+}
