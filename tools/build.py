@@ -239,6 +239,11 @@ def label(pair, attrs=""):
 
 
 HERO_PICS = TORCH
+# the photo inside the headline: only the three bars that look best, alternating
+HEADLINE_PICS = [("a-tabacaria", "balcao"), ("so-what", "abobada-acesa"), ("social-b", "bar-violeta"),
+                 ("a-tabacaria", "fachada"), ("so-what", "telefone-vermelho"), ("social-b", "bartenders"),
+                 ("a-tabacaria", "sala-a-noite"), ("so-what", "sala-cheia"), ("social-b", "musica"),
+                 ("a-tabacaria", "ultima-luz"), ("so-what", "tunel-vermelho"), ("social-b", "balcao-rosas")]
 # the sharpest photos we have (1500px originals first, then 800px), one per step
 PROCESS_PICS = [("sakim", "rua-a-noite"), ("velha-senhora", "candeeiros-velhos"), ("velha-senhora", "mesas-em-obra"),
                 ("so-what", "abobada-acesa"), ("so-what", "fila-a-porta")]
@@ -313,18 +318,14 @@ def press_section():
         <div class="track">{"".join(teasers)}
         </div>
       </div>
-      <div class="press-nav">
-        <button type="button" class="pill-round nav-prev" aria-label="Anterior / Previous">←</button>
-        <span class="press-count mono"><b>01</b> / {len(PRESS):02d}</span>
-        <button type="button" class="pill-round nav-next" aria-label="Seguinte / Next">→</button>
-      </div>
+
     </div>"""
 
 
 def build_home():
     # HERO: the headline set huge, with a photo inside it that changes on its own
-    pics = [(src, PROJECT_TEXT[slug]["name"], PROJECT_TEXT[slug]["meta"]) for slug, ph, src in hero_photos()]
-    first = PROJECT_TEXT[hero_photos()[0][0]]
+    pics = [(photo(slug, ph)[0], PROJECT_TEXT[slug]["name"], PROJECT_TEXT[slug]["meta"]) for slug, ph in HEADLINE_PICS]
+    first = PROJECT_TEXT[HEADLINE_PICS[0][0]]
     hero = f"""
   <section class="hero" id="top">
     {hero_drift()}

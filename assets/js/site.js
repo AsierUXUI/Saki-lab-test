@@ -793,7 +793,7 @@
   (function press() {
     var stops = $$('.stop'), cards = $$('.teaser'), box = $('.teasers'), track = $('.track');
     if (!stops.length || !track) return;
-    var line = $('.stops'), prevB = $('.nav-prev'), nextB = $('.nav-next'), count = $('.press-count b');
+    var line = $('.stops');
     var n = cards.length, pos = 0, target = 0, cur = -1, step = 1;
     function measure() { step = cards.length > 1 ? cards[1].offsetLeft - cards[0].offsetLeft : 1; }
     function mark(i) {
@@ -801,15 +801,12 @@
       cur = i;
       stops.forEach(function (s, j) { s.classList.toggle('on', j === i); });
       cards.forEach(function (c, j) { c.classList.toggle('on', j === i); });
-      if (count) count.textContent = (i < 9 ? '0' : '') + (i + 1);
       /* on a small screen the line scrolls too, so the lit stop stays in view */
       var tl = $('.timeline');
       if (tl && tl.scrollWidth > tl.clientWidth) {
         var sl = stops[i].offsetLeft - tl.clientWidth / 2;
         tl.scrollTo({ left: Math.max(0, sl), behavior: reduce ? 'auto' : 'smooth' });
       }
-      if (prevB) prevB.disabled = i === 0;
-      if (nextB) nextB.disabled = i === n - 1;
     }
     function go(i) { target = Math.max(0, Math.min(n - 1, i)); if (!finePointer) scrollToCard(target); }
     function scrollToCard(i) { box.scrollTo({ left: cards[i].offsetLeft - cards[0].offsetLeft, behavior: reduce ? 'auto' : 'smooth' }); mark(i); }
@@ -857,8 +854,6 @@
       /* a card further along first comes to the front; the one in front opens */
       c.addEventListener('click', function (e) { if (i !== cur) { e.preventDefault(); go(i); } });
     });
-    if (prevB) prevB.addEventListener('click', function () { go(cur - 1); });
-    if (nextB) nextB.addEventListener('click', function () { go(cur + 1); });
   })();
 
   /* ---------- MAPS: a still map from OpenFreeMap, drawn only when it comes into view ---------- */
