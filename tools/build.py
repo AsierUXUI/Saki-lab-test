@@ -571,12 +571,10 @@ def build_place(slug, n):
       <figure class="g {tier(p, j)}" style="--span:{span}">{img(root + photo_path(p, j), alt_pt, alt_en)}</figure>""")
     body = f"""
   <div class="place-content" data-place="{slug}">
-    <header class="place-head">
-      <p class="tag mono">[ {n:02d} / {len(PROJECT_ORDER)} ] · {tp(tx["meta"])}</p>
-      <h1 class="mega place-mega"><span class="row">{esc(tx["name"])}</span></h1>
-    </header>
     <div class="place-intro">
       <div class="place-text">
+        <p class="tag mono">[ {n:02d} / {len(PROJECT_ORDER)} ] · {tp(tx["meta"])}</p>
+        <h1 class="mega place-mega"><span class="row">{esc(tx["name"])}</span></h1>
         {tp(tx["desc"], "p", 'class="place-desc"')}
         {services_row(slug)}
       </div>
