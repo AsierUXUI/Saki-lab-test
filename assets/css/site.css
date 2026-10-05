@@ -167,8 +167,11 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 @keyframes drift-down { from { transform: translateY(calc(-50% - 8px)); } to { transform: translateY(0); } }
 .hero-wash { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: rgba(233, 230, 224, .78); }
 .hero-mega { position: relative; z-index: 2; }
-.hero { background: var(--paper); }   /* opaque, so the rippling square sits back over it seamlessly */
-.hero.rippling { filter: url(#liquid); }
+.hero { background: var(--paper); }
+/* the drifting photos drawn by the graphics card (desktop); the page's own columns stay as the fallback */
+.hero-gl { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; }
+.hero .ch { display: inline-block; will-change: transform; }
+.hero .pic { will-change: transform; }
 @media (max-width: 760px) {
   .hero-drift { inset: -20% -30%; gap: 10px; }
   .drift-col { gap: 10px; }
