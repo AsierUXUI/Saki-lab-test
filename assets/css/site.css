@@ -375,14 +375,14 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .sheet-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
 .sheet-body .frame img { transform: none !important; }
 .place-content { padding-bottom: clamp(60px, 12vh, 140px); }
-.place-head { padding: 100px var(--gutter) 0; }
+.place-head { padding: 96px var(--gutter) 0; }
 .place-head .tag { margin-bottom: 16px; }
-.place-mega { font-size: clamp(64px, 14vw, 240px); }
+.place-mega { font-size: clamp(56px, 10vw, 170px); }
 .place-mega .row { white-space: normal; width: auto; }
-.place-intro { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); align-items: start; padding: clamp(28px, 5vh, 56px) var(--gutter) clamp(48px, 8vh, 96px); }
+.place-intro { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: clamp(28px, 4vw, 64px); align-items: start; padding: clamp(20px, 3vh, 36px) var(--gutter) clamp(28px, 4vh, 44px); }
 .place-desc { font-size: clamp(24px, 2.4vw, 40px); line-height: 1.15; letter-spacing: -.01em; }
 /* which services the project had */
-.done { margin-top: clamp(28px, 5vh, 48px); }
+.done { margin-top: clamp(20px, 3vh, 32px); }
 .done > .mono { margin-bottom: 14px; }
 .done ul { list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .done li { display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 10px; border-radius: 999px; font-size: 16px; line-height: 1.2; }
@@ -394,6 +394,8 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 .done li.off .icon { border: 1px solid var(--rule); }
 /* the still map */
 .map { margin: 0; }
+/* a small, wide map, so the photos show above the fold */
+.map-view { aspect-ratio: 16 / 9 !important; max-height: 240px; }
 .map-view { position: relative; overflow: hidden; border-radius: clamp(12px, 1.4vw, 20px); background-color: #e2ded6;
   background-image: linear-gradient(rgba(22, 22, 22, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(22, 22, 22, .06) 1px, transparent 1px);
   background-size: 40px 40px; }
@@ -414,11 +416,19 @@ html.has-cursor input, html.has-cursor textarea, html.has-cursor select, html.ha
 /* rows of equal height: sharp photos take half a row, most a third, the small ones a quarter */
 @media (max-width: 900px) {
   .place-intro { grid-template-columns: 1fr; }
+  .map-view { aspect-ratio: 16 / 7 !important; max-height: 170px; }
   .gallery { grid-template-columns: repeat(2, 1fr); grid-auto-rows: auto; grid-auto-flow: row dense; }
   .g { grid-column: span 1; aspect-ratio: 4 / 5; }
   .g-l { grid-column: span 2; aspect-ratio: 4 / 3; }
 }
-@media (max-width: 520px) { .done ul { grid-template-columns: 1fr; } }
+@media (max-width: 520px) {
+  .place-head { padding-top: 84px; }
+  .place-desc { font-size: 21px; }
+  .done ul { gap: 6px; }
+  .done li { gap: 8px; padding: 6px 10px 6px 6px; font-size: 12.5px; line-height: 1.15; }
+  .done li .icon { width: 26px; height: 26px; padding: 5px; }
+  .done li .mono { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .pic img { transition: none; }
