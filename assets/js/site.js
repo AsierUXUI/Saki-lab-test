@@ -569,8 +569,19 @@
     }
     langHooks.push(caption);
     if ('IntersectionObserver' in window) new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(pic);
+    /* back to the first photo (A Tabacaria), e.g. when the intro plays; it then stays a full turn */
+    var held = 0;
+    pic.addEventListener('picreset', function () {
+      imgs[idx].classList.remove('on');
+      idx = 0;
+      imgs[0].classList.add('on');
+      caption();
+      held = 2;
+      pic.dispatchEvent(new CustomEvent('picchange', { detail: imgs[0] }));
+    });
     setInterval(function () {
       if (!visible || document.hidden || document.documentElement.classList.contains('intro-on')) return;
+      if (held > 0) { held--; return; }
       imgs[idx].classList.remove('on');
       idx = (idx + 1) % imgs.length;
       imgs[idx].classList.add('on');
@@ -1123,7 +1134,10 @@
     /* start from scratch, so it can be played again */
     if (introTl) introTl.kill();
     gsap.set([mark, dot, word, win, bg].concat(corners), { clearProps: 'all' });
-    var pic = $('.hero .pic'), shown = pic && $('img.on', pic);
+    var pic = $('.hero .pic');
+    /* the intro always opens on A Tabacaria, the first photo in the headline */
+    if (pic) pic.dispatchEvent(new CustomEvent('picreset'));
+    var shown = pic && $('img.on', pic);
     if (shown) wimg.src = shown.currentSrc || shown.src;
     var W = innerWidth, H = innerHeight, small = W < 760;
     var target = function () { return pic ? pic.getBoundingClientRect() : { left: W / 2, top: H / 2, width: 0, height: 0 }; };
