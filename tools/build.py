@@ -239,14 +239,13 @@ def label(pair, attrs=""):
 
 
 HERO_PICS = TORCH
+# opening years confirmed online (Time Out, Observador, Público, listings); others are left without one
+YEARS = {"bicaense": 2002, "clube-ferroviario": 2010, "a-tabacaria": 2015, "social-b": 2018, "so-what": 2024}
 # the photo inside the headline: only the three bars that look best, alternating
 HEADLINE_PICS = [("a-tabacaria", "balcao"), ("so-what", "abobada-acesa"), ("social-b", "bar-violeta"),
                  ("a-tabacaria", "fachada"), ("so-what", "telefone-vermelho"), ("social-b", "bartenders"),
                  ("a-tabacaria", "sala-a-noite"), ("so-what", "sala-cheia"), ("social-b", "musica"),
                  ("a-tabacaria", "ultima-luz"), ("so-what", "tunel-vermelho"), ("social-b", "balcao-rosas")]
-# the sharpest photos we have (1500px originals first, then 800px), one per step
-PROCESS_PICS = [("sakim", "rua-a-noite"), ("velha-senhora", "candeeiros-velhos"), ("velha-senhora", "mesas-em-obra"),
-                ("so-what", "abobada-acesa"), ("so-what", "fila-a-porta")]
 CONTACT_PICS = [("sakim", "mesa-longa"), ("so-what", "mesa-posta"), ("a-tabacaria", "espuma"), ("o-terraco", "hora-azul")]
 
 
@@ -385,50 +384,62 @@ def build_home():
     </div>
   </section>"""
 
-    # PROJECTS: a dark room with one big screen; the names below change it, the mouse scrubs through its photos
-    shots, names = [], []
+    # PROJECTS: a horizontal gallery; scrolling down moves sideways through the bars, one big photo each
+    cards = []
     for n, slug in enumerate(PROJECT_ORDER):
         p, tx = BY_SLUG[slug], PROJECT_TEXT[slug]
-        gallery = [photo_path(p, i) for i in range(min(10, len(p["photos"])))]
-        shots.append(f'<figure class="shot{" on" if n == 0 else ""}" data-gallery="{esc(json.dumps(gallery))}" '
-                     f'data-meta-pt="{esc(tx["meta"][0])}" data-meta-en="{esc(tx["meta"][1])}">'
-                     f'<img class="photo" src="{cover_path(p)}" alt=""{"" if n < 2 else " loading=" + chr(34) + "lazy" + chr(34)}></figure>')
-        names.append(f"""
-      <li><a href="lugares/{slug}.html" data-i="{n}" data-cursor="{PROJECTS["open"][0]}" data-cursor-en="{PROJECTS["open"][1]}"><sup class="mono">{n + 1:02d}</sup>{esc(tx["name"])}</a></li>""")
-    first = PROJECT_TEXT[PROJECT_ORDER[0]]
+        year = YEARS.get(slug)
+        meta_pt = tx["meta"][0] + (f" · {year}" if year else "")
+        meta_en = tx["meta"][1] + (f" · {year}" if year else "")
+        cards.append(f"""
+      <a class="pg-card" href="lugares/{slug}.html" data-cursor="{PROJECTS["open"][0]}" data-cursor-en="{PROJECTS["open"][1]}">
+        <figure><img class="photo" src="{cover_path(p)}" alt="" loading="{"eager" if n < 3 else "lazy"}"></figure>
+        <span class="pg-n mono">{n + 1:02d}</span>
+        <span class="pg-name">{esc(tx["name"])}</span>
+        {t(meta_pt, meta_en, "span", 'class="pg-meta mono"')}
+      </a>""")
     projects = f"""
   <section class="projects" id="projectos">
-    <div class="sec-head">
-      {label(PROJECTS["label"])}
-      {tp(PROJECTS["title"], "h2", 'class="sec-title"')}
+    <div class="pg-pin">
+      <div class="pg-head">
+        {label(PROJECTS["label"])}
+        {tp(PROJECTS["title"], "h2", 'class="sec-title"')}
+        <p class="pg-count mono"><b>01</b> / {len(PROJECT_ORDER):02d}</p>
+      </div>
+      <div class="pg-viewport">
+        <div class="pg-track">{"".join(cards)}
+        </div>
+      </div>
+      <div class="pg-bar" aria-hidden="true"><i></i></div>
     </div>
-    <div class="screen">
-      {"".join(shots)}
-      <p class="screen-cap mono"><span class="screen-n">01 / {len(PROJECT_ORDER)}</span> <b>{esc(first["name"])}</b> {tp(first["meta"], "span", 'class="screen-meta"')}</p>
-      <a class="btn btn-play screen-open" href="lugares/{PROJECT_ORDER[0]}.html">{t("Ver projecto", "View project")}<i aria-hidden="true"></i></a>
-      <span class="scrub mono" aria-hidden="true"></span>
-    </div>
-    <ol class="reel">{"".join(names)}
-    </ol>
-    {tp(PROJECTS["body"], "p", 'class="sec-body reel-note"')}
   </section>"""
 
-    # PROCESS: steps on the left, a tall photo on the right that changes with each step
-    steps, frames = [], []
-    for i, ((n, d), (slug, ph)) in enumerate(zip(PROCESS["steps"], PROCESS_PICS)):
+    # PROCESS: an evening, from 18:00 to opening; the steps lie along one line and the section goes from day to night
+    times = ["18:00", "19:30", "21:00", "22:30", "00:00"]
+    steps = []
+    for i, ((n, d), hour) in enumerate(zip(PROCESS["steps"], times)):
         steps.append(f"""
-      <li class="step" data-i="{i}"><span class="mono">[ {i + 1:02d} ]</span>{tp(n, "h3")}{tp(d, "p")}</li>""")
-        frames.append(f'<img class="photo{" on" if i == 0 else ""}" src="{photo(slug, ph)[0]}" alt="" loading="lazy">')
+        <li class="night-step">
+          <span class="night-time">{hour}</span>
+          <span class="night-dot" aria-hidden="true"></span>
+          <span class="mono night-n">[ {i + 1:02d} ]</span>
+          {tp(n, "h3")}
+          {tp(d, "p")}
+        </li>""")
     process = f"""
-  <section class="process" id="processo">
-    <div class="process-text">
-      {label(PROCESS["label"])}
-      {mega((plain(PROCESS["title"][0]), plain(PROCESS["title"][1])), cls="mega-s", tag="h2")}
-      {tp(PROCESS["body"], "p", 'class="sec-body"')}
-      <ol class="steps">{"".join(steps)}
-      </ol>
+  <section class="process night" id="processo">
+    <div class="night-pin">
+      <div class="night-head">
+        {label(PROCESS["label"])}
+        {mega((plain(PROCESS["title"][0]), plain(PROCESS["title"][1])), cls="mega-s", tag="h2")}
+        {tp(PROCESS["body"], "p", 'class="sec-body"')}
+      </div>
+      <div class="night-viewport">
+        <ol class="night-track">
+          <li class="night-line" aria-hidden="true"><i></i></li>{"".join(steps)}
+        </ol>
+      </div>
     </div>
-    <div class="process-pic" aria-hidden="true"><div class="process-frame">{"".join(frames)}</div></div>
   </section>"""
 
     # ABOUT: an editorial page; each value is a round photo with a round colour behind it

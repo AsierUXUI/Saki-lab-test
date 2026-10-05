@@ -11,8 +11,8 @@ The site is one long page, `index.html`: light paper, huge condensed type with p
 | Hero | The headline over columns of bar photos drifting on their own; the photo inside the headline changes by itself; under the cursor the headline ripples like water |
 | Studio | An editorial page between two rules: the quote, the numbers, two columns of text |
 | Services | Four big lines that open on click; a round photo and a round colour follow the mouse |
-| Projects | A dark room with one big screen; the names below change it, moving across it runs through the photos; it opens the project over the page |
-| Process | Steps light up as you scroll, the photo beside them changes with each step |
+| Projects | A horizontal gallery: the section holds still while scrolling down moves sideways through one big photo per bar; it opens the project over the page (swiped on phones) |
+| Process | One evening from 18:00 to opening: the five steps on a line that moves sideways as you scroll, the section going from day to night (down the page on phones) |
 | About | Each value is a round photo with a round colour that slides out on hover |
 | Contact | The big lines again, then the ways to reach him |
 
