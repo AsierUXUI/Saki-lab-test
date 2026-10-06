@@ -621,15 +621,15 @@
     }
 
     /* ---- the photo grid on the graphics card ---- */
-    var gl = null, canvas = null, prog = null, uni = {}, tex = null, geo = null, building = false;
+    var gl = null, canvas = null, prog = null, uni = {}, tex = null, geo = null, building = false, rebuild = false;
     var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
     var FS = [
       'precision mediump float;',
       'uniform vec2 uRes;uniform vec4 uBox;uniform float uAng;uniform float uColX[6];uniform float uColW;',
       'uniform float uOff[6];uniform float uPer[6];uniform vec2 uAtlas;uniform float uScale;',
-      'uniform vec2 uMouse;uniform float uStr;uniform float uRad;uniform float uT;uniform sampler2D uTex;',
+      'uniform vec2 uMouse;uniform float uStr;uniform float uRad;uniform float uT;uniform float uDpr;uniform sampler2D uTex;',
       'void main(){',
-      '  vec2 p=vec2(gl_FragCoord.x,uRes.y-gl_FragCoord.y);',
+      '  vec2 p=vec2(gl_FragCoord.x,gl_FragCoord.y)/uDpr;p.y=uRes.y-p.y;',
       '  vec2 d=p-uMouse;float f=exp(-dot(d,d)/(uRad*uRad));',
       '  p+=f*uStr*vec2(sin(p.y*.022+uT*2.2)+.6*sin(p.x*.017-uT*1.7),cos(p.x*.02-uT*2.)+.6*cos(p.y*.016+uT*1.5));',
       '  vec2 c=uBox.xy+uBox.zw*.5;vec2 q=p-c;float s=sin(uAng),k=cos(uAng);',
@@ -666,14 +666,17 @@
       var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
       var loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-      ['uRes', 'uBox', 'uAng', 'uColX', 'uColW', 'uOff', 'uPer', 'uAtlas', 'uScale', 'uMouse', 'uStr', 'uRad', 'uT', 'uTex'].forEach(function (n) { uni[n] = gl.getUniformLocation(prog, n); });
+      ['uRes', 'uBox', 'uAng', 'uColX', 'uColW', 'uOff', 'uPer', 'uAtlas', 'uScale', 'uMouse', 'uStr', 'uRad', 'uT', 'uDpr', 'uTex'].forEach(function (n) { uni[n] = gl.getUniformLocation(prog, n); });
       drift.after(canvas);
+      /* if the graphics card drops the drawing (low memory, sleep), fall back to the plain columns */
+      canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); giveUp(); });
       return true;
     }
 
     /* the columns, measured from the page's own layout, painted once into one picture (the atlas) */
     function buildAtlas() {
-      if (!gl || building) return;
+      if (!gl) return;
+      if (building) { rebuild = true; return; }
       building = true;
       var cols = $$('.drift-col', drift).filter(function (c) { return c.offsetWidth > 0; }).slice(0, 6);
       var colW = cols.length ? cols[0].offsetWidth : 0;
@@ -687,7 +690,9 @@
         g.cols.push(imgs.slice(0, half).map(function (im) { return { src: im.currentSrc || im.src, y: im.offsetTop - imgs[0].offsetTop, h: im.offsetHeight }; }));
       });
       var maxPer = Math.max.apply(null, g.per.concat([1]));
-      var scale = Math.min(1.5, 4096 / Math.max(colW * cols.length, maxPer));
+      /* the photos are small (480px), so the picture needs no more detail than that; and it must fit the graphics card */
+      var limit = Math.min(4096, gl.getParameter(gl.MAX_TEXTURE_SIZE) || 2048);
+      var scale = Math.min(1, limit / Math.max(colW * cols.length, maxPer));
       var W = Math.ceil(colW * cols.length * scale), H = Math.ceil(maxPer * scale);
       var c2 = document.createElement('canvas'); c2.width = W; c2.height = H;
       var ctx = c2.getContext('2d');
@@ -722,6 +727,7 @@
         g.atlas = [W, H]; g.scale = scale;
         geo = g;
         building = false;
+        if (rebuild) { rebuild = false; buildAtlas(); return; }
         /* the page's own moving columns can rest now: the graphics card draws them */
         drift.style.visibility = 'hidden';
         drift.classList.add('paused');
@@ -752,10 +758,10 @@
       gl.uniform1f(uni.uColW, geo.colW); gl.uniform2f(uni.uAtlas, geo.atlas[0], geo.atlas[1]); gl.uniform1f(uni.uScale, geo.scale);
       gl.uniform2f(uni.uMouse, px, py); gl.uniform1f(uni.uStr, strength * 1.6);
       gl.uniform1f(uni.uRad, Math.min(260, hero.offsetWidth * .18)); gl.uniform1f(uni.uT, t);
+      /* the canvas has more pixels than the page on sharp screens; the shader works in page pixels */
+      gl.uniform1f(uni.uDpr, dpr);
       gl.uniform1i(uni.uTex, 0);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      /* the shader works in page pixels; the canvas is drawn at a lower or higher density */
-      void dpr;
     }
 
     if (initGL()) {
@@ -775,8 +781,9 @@
 
     var prev = performance.now(), start = prev, still = true, frames = [];
     function giveUp() {
+      if (!canvas) return;
       gl = null; geo = null;
-      if (canvas) canvas.remove();
+      canvas.remove(); canvas = null;
       drift.style.visibility = ''; drift.classList.remove('paused');
       hero.classList.remove('gl-on');
     }
