@@ -621,13 +621,14 @@
     }
 
     /* ---- the photo grid on the graphics card ---- */
-    var gl = null, canvas = null, prog = null, uni = {}, tex = null, geo = null, building = false, rebuild = false;
+    var gl = null, canvas = null, prog = null, uni = {}, tex = null, textTex = null, textReady = false, geo = null, building = false, rebuild = false;
     var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
     var FS = [
       'precision mediump float;',
       'uniform vec2 uRes;uniform vec4 uBox;uniform float uAng;uniform float uColX[6];uniform float uColW;',
       'uniform float uOff[6];uniform float uPer[6];uniform vec2 uAtlas;uniform float uScale;',
       'uniform vec2 uMouse;uniform float uStr;uniform float uRad;uniform float uT;uniform float uDpr;uniform sampler2D uTex;',
+      'uniform sampler2D uText;uniform float uTextOn;uniform float uWash;',
       'void main(){',
       '  vec2 p=vec2(gl_FragCoord.x,gl_FragCoord.y)/uDpr;p.y=uRes.y-p.y;',
       '  vec2 d=p-uMouse;float f=exp(-dot(d,d)/(uRad*uRad));',
@@ -643,7 +644,11 @@
       '    }',
       '  }',
       '  vec3 paper=vec3(.914,.902,.878);',
-      '  gl_FragColor=vec4(mix(paper,col.rgb,col.a),1.);',
+      '  vec3 bg=mix(paper,col.rgb,col.a);',
+      '  bg=mix(bg,paper,uWash);',
+      /* the headline and its photo, drawn once into a picture, bent by the same water */
+      '  vec4 tx=texture2D(uText,clamp(p/uRes,0.,1.));',
+      '  gl_FragColor=vec4(mix(bg,tx.rgb,tx.a*uTextOn),1.);',
       '}'].join('\n');
 
     function initGL() {
@@ -666,7 +671,7 @@
       var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
       gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
       var loc = gl.getAttribLocation(prog, 'a'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-      ['uRes', 'uBox', 'uAng', 'uColX', 'uColW', 'uOff', 'uPer', 'uAtlas', 'uScale', 'uMouse', 'uStr', 'uRad', 'uT', 'uDpr', 'uTex'].forEach(function (n) { uni[n] = gl.getUniformLocation(prog, n); });
+      ['uRes', 'uBox', 'uAng', 'uColX', 'uColW', 'uOff', 'uPer', 'uAtlas', 'uScale', 'uMouse', 'uStr', 'uRad', 'uT', 'uDpr', 'uTex', 'uText', 'uTextOn', 'uWash'].forEach(function (n) { uni[n] = gl.getUniformLocation(prog, n); });
       drift.after(canvas);
       /* if the graphics card drops the drawing (low memory, sleep), fall back to the plain columns */
       canvas.addEventListener('webglcontextlost', function (e) { e.preventDefault(); giveUp(); });
@@ -718,6 +723,7 @@
       });
       Promise.all(jobs).then(function () {
         if (!tex) tex = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c2);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -732,8 +738,70 @@
         drift.style.visibility = 'hidden';
         drift.classList.add('paused');
         hero.classList.add('gl-on');
+        if (document.fonts) document.fonts.ready.then(paintText); else paintText();
       });
     }
+
+    /* the headline (each letter where the page puts it, the orange stop, the photo) painted into a picture */
+    function paintText() {
+      if (!gl) return;
+      var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      var W = Math.round(hero.offsetWidth * dpr), H = Math.round(hero.offsetHeight * dpr);
+      var c2 = document.createElement('canvas'); c2.width = W; c2.height = H;
+      var ctx = c2.getContext('2d');
+      ctx.scale(dpr, dpr);
+      /* positions from the layout itself, so any animation still moving the headline does not count */
+      function place(el) {
+        var x = 0, y = 0, e = el;
+        while (e && e !== hero) { x += e.offsetLeft; y += e.offsetTop; e = e.offsetParent; }
+        return { left: x, top: y, width: el.offsetWidth, height: el.offsetHeight };
+      }
+      var hb = { left: 0, top: 0 };
+      var pic = $('.pic', h1), shown = pic && $('img.on', pic);
+      function finish() {
+        $$('.ch', h1).forEach(function (ch) {
+          var b = place(ch), cs = getComputedStyle(ch);
+          ctx.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+          ctx.fillStyle = cs.color;
+          ctx.textBaseline = 'alphabetic';
+          var txt = cs.textTransform === 'uppercase' ? ch.textContent.toUpperCase() : ch.textContent;
+          var m = ctx.measureText(txt);
+          /* where the browser puts the baseline: the letters' full height centred in the (tighter) line height */
+          var fs = parseFloat(cs.fontSize), A = m.fontBoundingBoxAscent || fs * .9, D = m.fontBoundingBoxDescent || fs * .25;
+          var lh = parseFloat(cs.lineHeight) || b.height;
+          ctx.fillText(txt, b.left - hb.left, b.top - hb.top + (lh - (A + D)) / 2 + A);
+        });
+        if (!textTex) textTex = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, textTex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, c2);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.activeTexture(gl.TEXTURE0);
+        textReady = true;
+        hero.classList.add('gl-text');
+      }
+      if (shown && pic) {
+        var b = place(pic), im = new Image();
+        im.onload = function () {
+          var x = b.left - hb.left, y = b.top - hb.top, w = b.width, h = b.height;
+          var r = parseFloat(getComputedStyle(pic).borderTopLeftRadius) || 8;
+          var ir = im.naturalWidth / im.naturalHeight, br = w / h, sw, sh, sx, sy;
+          if (ir > br) { sh = im.naturalHeight; sw = sh * br; sx = (im.naturalWidth - sw) / 2; sy = 0; }
+          else { sw = im.naturalWidth; sh = sw / br; sx = 0; sy = (im.naturalHeight - sh) / 2; }
+          ctx.save(); ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h);
+          ctx.clip(); ctx.drawImage(im, sx, sy, sw, sh, x, y, w, h); ctx.restore();
+          finish();
+        };
+        im.onerror = finish;
+        im.src = shown.currentSrc || shown.src;
+      } else finish();
+    }
+    var picEl = $('.pic', h1);
+    if (picEl) picEl.addEventListener('picchange', function () { paintText(); });
 
     function resize() {
       if (!gl) return;
@@ -756,11 +824,17 @@
       });
       gl.uniform1fv(uni.uColX, colX); gl.uniform1fv(uni.uPer, per); gl.uniform1fv(uni.uOff, off);
       gl.uniform1f(uni.uColW, geo.colW); gl.uniform2f(uni.uAtlas, geo.atlas[0], geo.atlas[1]); gl.uniform1f(uni.uScale, geo.scale);
-      gl.uniform2f(uni.uMouse, px, py); gl.uniform1f(uni.uStr, strength * 1.6);
+      gl.uniform2f(uni.uMouse, px, py); gl.uniform1f(uni.uStr, strength * .55);
       gl.uniform1f(uni.uRad, Math.min(260, hero.offsetWidth * .18)); gl.uniform1f(uni.uT, t);
       /* the canvas has more pixels than the page on sharp screens; the shader works in page pixels */
       gl.uniform1f(uni.uDpr, dpr);
       gl.uniform1i(uni.uTex, 0);
+      gl.uniform1i(uni.uText, 1);
+      gl.uniform1f(uni.uWash, .78);
+      /* the headline fades in with the page (the rows' own opacity), and only once its picture is ready */
+      var rows = $$('.row', h1), op = 0;
+      rows.forEach(function (r) { op += parseFloat(getComputedStyle(r).opacity) || 0; });
+      gl.uniform1f(uni.uTextOn, textReady ? op / Math.max(1, rows.length) : 0);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
@@ -785,7 +859,7 @@
       gl = null; geo = null;
       canvas.remove(); canvas = null;
       drift.style.visibility = ''; drift.classList.remove('paused');
-      hero.classList.remove('gl-on');
+      hero.classList.remove('gl-on', 'gl-text');
     }
     (function loop(now) {
       requestAnimationFrame(loop);
@@ -793,7 +867,7 @@
       var dt = Math.min(.1, (now - prev) / 1000); prev = now;
       var k = function (rate) { return 1 - Math.pow(1 - rate, dt * 60); };
       speed *= 1 - k(.1);
-      strength += ((inside ? 5 + speed * .5 : 0) - strength) * k(.07);
+      strength += ((inside ? 8 + Math.min(40, speed * .5) : 0) - strength) * k(.06);
       t += dt;
       if (gl && geo) {
         draw((now - start) / 1000);
@@ -801,26 +875,10 @@
         frames.push(dt); if (frames.length > 90) frames.shift();
         if (frames.length === 90 && frames.reduce(function (x, y) { return x + y; }, 0) / 90 > 1 / 35) giveUp();
       }
-      /* the letters: a wave spreading from the cursor, fading with distance */
-      if (strength < .05) {
-        if (!still) { items.forEach(function (it) { it.el.style.transform = ''; }); still = true; }
-        return;
-      }
-      still = false;
-      var R = Math.min(260, hero.offsetWidth * .18);
-      items.forEach(function (it) {
-        var dx = it.x - px, dy = it.y - py, d = Math.sqrt(dx * dx + dy * dy);
-        var f = Math.exp(-(d * d) / (R * R));
-        if (f < .01) { if (it.on) { it.el.style.transform = ''; it.on = false; } return; }
-        it.on = true;
-        var a = Math.min(16, strength) * f * (it.pic ? .5 : .85);
-        var ox = a * .55 * Math.cos(d * .04 - t * 5), oy = a * Math.sin(d * .045 - t * 6);
-        it.el.style.transform = 'translate(' + ox.toFixed(2) + 'px,' + oy.toFixed(2) + 'px) skewX(' + (a * .35 * Math.sin(d * .03 - t * 4)).toFixed(2) + 'deg)';
-      });
     })(prev);
 
     return {
-      prepare: function () { measure(); if (gl) { resize(); buildAtlas(); } },
+      prepare: function () { measure(); if (gl) { resize(); buildAtlas(); if (textReady) paintText(); } },
       sync: function () {}
     };
   })();
